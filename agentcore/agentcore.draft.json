@@ -1,0 +1,59 @@
+{
+  "project": "decision-layer-virtual-data-scientist",
+  "status": "draft-local-first",
+  "cli": {
+    "recommended": "@aws/agentcore",
+    "legacy_toolkit_status": "Do not start new work with bedrock-agentcore-starter-toolkit; it is now a legacy Python workflow.",
+    "local_validation_commands": ["agentcore dev", "agentcore validate"],
+    "deploy_command": "agentcore deploy"
+  },
+  "agent": {
+    "name": "virtual-data-scientist",
+    "entrypoint": "app/VirtualDataScientistAgent/main.py",
+    "runtime": "python3.12",
+    "protocols": ["http", "websocket"],
+    "environment": {
+      "DATA_SCIENCE_MCP_BASE_URL": "https://YOUR-BI-APP-API"
+    }
+  },
+  "mcp": {
+    "name": "virtual-data-scientist-mcp",
+    "transport": "stdio",
+    "command": "python3",
+    "args": ["-m", "mcp_server.server"],
+    "tools": [
+      "create_analysis_session",
+      "run_light_analysis",
+      "request_deep_analysis",
+      "get_analysis_status",
+      "continue_analysis"
+    ]
+  },
+  "runtime_contract": {
+    "request_fields": [
+      "prompt",
+      "session_id",
+      "analysis_session_id",
+      "data_source_id",
+      "table_name",
+      "run_deep"
+    ],
+    "response_fields": [
+      "response",
+      "session_id",
+      "analysis_session_id",
+      "data_source_id",
+      "table_name",
+      "light_run_id",
+      "deep_run_id",
+      "deep_status",
+      "artifacts"
+    ],
+    "artifact_policy": "Return artifact metadata only; keep full artifact content behind authenticated app APIs."
+  },
+  "notes": [
+    "Use current AgentCore CLI to generate or validate the deployable runtime config from this scaffold.",
+    "Do not deploy until DATA_SCIENCE_MCP_BASE_URL points at an authenticated backend.",
+    "The app database and artifact store remain the source of truth; AgentCore Memory is continuity only."
+  ]
+}

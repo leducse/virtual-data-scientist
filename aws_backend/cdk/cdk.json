@@ -1,0 +1,6 @@
+{
+  "app": "node dist/bin/backend.js",
+  "context": {
+    "@aws-cdk/core:newStyleStackSynthesis": true
+  }
+}

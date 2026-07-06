@@ -1,0 +1,54 @@
+{
+  "$schema": "https://schema.agentcore.aws.dev/v1/agentcore.json",
+  "name": "vdsagentcore",
+  "version": 1,
+  "managedBy": "CDK",
+  "tags": {
+    "agentcore:created-by": "agentcore-cli",
+    "agentcore:project-name": "vdsagentcore",
+    "app": "virtual-data-scientist",
+    "owner": "decision-layer"
+  },
+  "runtimes": [
+    {
+      "name": "VirtualDataScientistAgent",
+      "build": "CodeZip",
+      "entrypoint": "main.py",
+      "codeLocation": "app/VirtualDataScientistAgent",
+      "runtimeVersion": "PYTHON_3_13",
+      "networkMode": "PUBLIC",
+      "protocol": "HTTP",
+      "authorizerType": "AWS_IAM",
+      "lifecycleConfiguration": {
+        "idleRuntimeSessionTimeout": 900,
+        "maxLifetime": 3600
+      },
+      "envVars": [
+        {
+          "name": "DATA_SCIENCE_MCP_BASE_URL",
+          "value": "https://fdzrbtz4sewn6nrnlnbgbykbpu0jcutl.lambda-url.us-east-1.on.aws"
+        },
+        {
+          "name": "DATA_SCIENCE_MCP_AUTH_MODE",
+          "value": "aws_iam"
+        },
+        {
+          "name": "DATA_SCIENCE_MCP_AWS_SIGNING_SERVICE",
+          "value": "lambda"
+        }
+      ]
+    }
+  ],
+  "memories": [],
+  "knowledgeBases": [],
+  "credentials": [],
+  "evaluators": [],
+  "onlineEvalConfigs": [],
+  "agentCoreGateways": [],
+  "policyEngines": [],
+  "configBundles": [],
+  "abTests": [],
+  "harnesses": [],
+  "datasets": [],
+  "payments": []
+}

@@ -1,0 +1,17 @@
+{
+  "region": "us-east-1",
+  "runtime_name": "decision-layer-virtual-data-scientist",
+  "runtime_arn_env": "DATA_SCIENTIST_AGENTCORE_RUNTIME_ARN",
+  "endpoint_name": "DEFAULT",
+  "network_mode": "PUBLIC",
+  "observability": {
+    "enabled": true
+  },
+  "memory": {
+    "mode": "STM_ONLY",
+    "retention_days": 30
+  },
+  "required_external_config": {
+    "DATA_SCIENCE_MCP_BASE_URL": "HTTPS endpoint for the data-science MCP/API facade"
+  }
+}

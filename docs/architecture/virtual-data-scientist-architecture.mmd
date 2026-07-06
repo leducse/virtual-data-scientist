@@ -1,0 +1,25 @@
+flowchart LR
+  user["Business user"]
+  site["Consulting website demo<br/>or MCP client"]
+  facade["VDS MCP / API facade"]
+  light["Light analysis<br/>fast bounded profiling"]
+  deep["Deep analysis request<br/>async run"]
+  agentcore["AWS AgentCore runtime<br/>VirtualDataScientistAgent"]
+  backend["Authenticated backend<br/>Lambda Function URL"]
+  state["App state<br/>sessions, runs, datasets"]
+  artifacts["Artifact store<br/>reports, code, profiles"]
+  memory["AgentCore Memory<br/>continuity later"]
+
+  user --> site
+  site --> facade
+  facade --> light
+  facade --> deep
+  light --> state
+  light --> artifacts
+  deep --> agentcore
+  agentcore --> backend
+  backend --> state
+  backend --> artifacts
+  agentcore -. future continuity .-> memory
+  state --> site
+  artifacts --> site
