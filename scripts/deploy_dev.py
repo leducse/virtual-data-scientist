@@ -54,6 +54,11 @@ def main():
         if args.domain:changes.update(WebOrigin='https://'+args.domain,AlternateOrigin='https://d19bkp3wlr8r7k.cloudfront.net')
         stack=update(cf,'VirtualDataScientistV2Dev',root/'aws_backend/cloud-dev/template.json',changes)
         output['runtime_status']=stack['StackStatus']
+        output['outputs']={o['OutputKey']:o['OutputValue'] for o in stack['Outputs']}
+        if 'ImageUri' in changes:output['image_uri']=changes['ImageUri']
+        runtime_id=output['outputs']['RuntimeArn'].rsplit('/',1)[1]
+        runtime=session.client('bedrock-agentcore-control',config=cfg).get_agent_runtime(agentRuntimeId=runtime_id)
+        output['runtime_version']=runtime['agentRuntimeVersion']
     if args.gateway_zip or args.stream_zip or args.domain:
         core=cf.describe_stacks(StackName='VirtualDataScientistV2Dev')['Stacks'][0]
         core_outputs={o['OutputKey']:o['OutputValue'] for o in core['Outputs']}

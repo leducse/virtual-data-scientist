@@ -72,7 +72,7 @@ for i, figure in enumerate(figures, 1):
              'ingestion.py': Path(__file__).with_name('ingestion.py').read_text(),
              'executed-wrapper.py': result.get('executed_code', analysis),
              'requirements.txt': '\n'.join(f'{k}=={v}' for k, v in result.get('versions', {}).items()) + '\nplotly==5.22.0\nopenpyxl==3.1.5\n',
-             'README.md': '# Analysis reproduction\n\nSource data is excluded. Use your matching prepared `dataset.parquet` (see source hashes in result.json).\n'
+             'README.md': '# Analysis reproduction\n\nSource data is excluded. Download "Prepared data (Parquet)" from this run’s export controls and save it alongside this code as `dataset.parquet` (see source hashes in result.json).\n'
                  + f'Executed analytical Python version: {result.get("python_version", "not recorded for this older run")}. Use a compatible Python environment for the pinned requirements.\n'
                  +
                  'Install requirements.txt in an isolated environment, then run `python analysis.py` and `python visualization.py`, or open analysis.ipynb.\n'

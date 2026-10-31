@@ -81,6 +81,11 @@ def handle(handler, method, root):
             status = 202 if result["run"]["status"] in {"queued","running","reviewing"} else 200
         elif method == "GET" and re.fullmatch(r"/api/v2/runs/[a-f0-9]{32}",path):
             result = {"run": service.run(owner,path.rsplit("/",1)[-1])}
+        elif method == 'GET' and re.fullmatch(r'/api/v2/runs/[a-f0-9]{32}/(artifacts|prepared-data)',path) and hasattr(service,'artifacts'):
+            from urllib.parse import parse_qs
+            query=parse_qs(urlparse(handler.path).query)
+            run_id=path.split('/')[-2]
+            result=service.prepared_data(owner,run_id) if path.endswith('prepared-data') else service.artifacts(owner,run_id,query.get('palette',['decision'])[0])
         elif method == "POST" and re.fullmatch(r"/api/v2/runs/[a-f0-9]{32}/cancel",path):
             result = {"run": service.cancel(owner,path.split("/")[-2])}
         elif method == "POST" and re.fullmatch(r"/api/v2/datasets/[a-f0-9]{32}/delete",path):

@@ -46,6 +46,15 @@ class CloudServiceTests(unittest.TestCase):
         compact=self.service.store.workspace(self.owner,compact=True)['runs'][0]
         self.assertNotIn('evidence',compact['result'])
         self.assertIn('evidence',self.service.store.run(self.owner,r['id'])['result'])
+        with patch.object(self.service.store.s3,'generate_presigned_url',return_value='https://example.test/authorized') as sign:
+            data=self.service.dispatch({'owner':self.owner,'action':'prepared_data','payload':{'run_id':r['id']}})
+            self.assertEqual(data['expires_in'],120)
+            self.assertEqual(sign.call_args.kwargs['Params']['Key'],self.owner+'/'+d['id']+'/dataset.parquet')
+        with self.assertRaises(InputError):
+            self.service.dispatch({'owner':'b'*64,'action':'prepared_data','payload':{'run_id':r['id']}})
+        first=self.service.dispatch({'owner':self.owner,'action':'stream_ticket','payload':{'run_id':r['id']}})
+        self.assertEqual(first['expires_in'],60)
+        with self.assertRaises(InputError):self.service.dispatch({'owner':self.owner,'action':'stream_ticket','payload':{'run_id':r['id']}})
     def test_cancelled_job_does_not_invoke_a_model_or_publish(self):
         raw=(Path(__file__).parent/'fixtures/monthly_revenue.csv').read_bytes()
         d=self.service.upload(self.owner,{'name':'sales.csv','content_base64':base64.b64encode(raw).decode()})
@@ -53,6 +62,30 @@ class CloudServiceTests(unittest.TestCase):
         with patch('analysis_engine.cloud_service.TrackedAgent') as agent:
             self.service.work(self.owner,'cancelled',d,None,None)
             agent.assert_not_called()
+
+    def test_unknown_sandbox_outcome_retains_the_reservation(self):
+        from types import SimpleNamespace
+        raw=(Path(__file__).parent/'fixtures/monthly_revenue.csv').read_bytes()
+        d=self.service.upload(self.owner,{'name':'sales.csv','content_base64':base64.b64encode(raw).decode()})
+        plan=local_plan(d,{'question':'Forecast next three months'})
+        agent=Mock(return_value=SimpleNamespace(structured_output=plan))
+        with patch('analysis_engine.cloud_service.TrackedAgent',return_value=agent),patch('analysis_engine.cloud_service.run_forecast',side_effect=InputError('Unknown outcome.','outcome_unknown')):
+            r=self.service.submit(self.owner,{'dataset_id':d['id'],'question':'Forecast next three months','request_key':'unknown'})
+            self.service.pool.shutdown(wait=True)
+        run=self.service.store.run(self.owner,r['id'])
+        self.assertEqual(run['status'],'failed')
+        self.assertEqual(self.service.quotas.status({'owner':self.owner,'kind':'member'})['remaining'],19)
+
+    def test_unconfirmed_cleanup_retains_reservation_even_after_cancel_error(self):
+        from types import SimpleNamespace
+        raw=(Path(__file__).parent/'fixtures/monthly_revenue.csv').read_bytes()
+        d=self.service.upload(self.owner,{'name':'sales.csv','content_base64':base64.b64encode(raw).decode()})
+        plan=local_plan(d,{'question':'Forecast next three months'})
+        agent=Mock(return_value=SimpleNamespace(structured_output=plan))
+        with patch('analysis_engine.cloud_service.TrackedAgent',return_value=agent),patch('analysis_engine.cloud_service.CodeInterpreter',return_value=SimpleNamespace(cleanup_error='Stop not confirmed.')),patch('analysis_engine.cloud_service.run_forecast',side_effect=InputError('Cancelled.','cancelled')):
+            self.service.submit(self.owner,{'dataset_id':d['id'],'question':'Forecast next three months','request_key':'cleanup'})
+            self.service.pool.shutdown(wait=True)
+        self.assertEqual(self.service.quotas.status({'owner':self.owner,'kind':'member'})['remaining'],19)
 
     def test_staged_upload_is_owner_scoped_bounded_and_removed(self):
         raw=(Path(__file__).parent/'fixtures/monthly_revenue.csv').read_bytes()

@@ -29,6 +29,15 @@ class ExperienceTests(unittest.TestCase):
         gapped = self.table.take([i for i in range(self.table.num_rows) if i not in (2,3)])
         self.assertEqual(len(recommendations(gapped,self.profile)['suggestions']), 1)
 
+    def test_agent_tier_is_derived_without_weakening_task_validation(self):
+        from types import SimpleNamespace
+        from analysis_engine.planning import strands_plan
+        plan=local_plan(self.dataset,{'question':'Show monthly revenue'})
+        plan.tier='deep'
+        normalized=strands_plan(self.dataset,{'question':'How has monthly revenue changed?'},lambda *a,**kw:SimpleNamespace(structured_output=plan))
+        self.assertEqual(normalized.tier,'quick')
+        self.assertEqual(normalized.methods,['duckdb_monthly_sum'])
+
     def test_ambiguous_missing_nonadditive_and_duplicate_profiles(self):
         from copy import deepcopy
         profile=deepcopy(self.profile)

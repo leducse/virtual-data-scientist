@@ -1,9 +1,13 @@
 # Product experience v2 — Decision Layer analytics
 
 October 31, 2026. Mode: portfolio moving toward public-product readiness.
-Status: proposed delivery plan following the user's product direction. No domain,
-guest policy, speech service, chart-engine, streaming, learning, recommendation or
-monitoring-dashboard deployment is implied.
+Status: historical design proposal, retained alongside the delivery and validation records.
+Public guest admission and production launch remain separate release decisions.
+
+Implementation update: the core development experience has shipped. See
+[delivery record](product-experience-v2-delivery.md) and
+[current status](../implementation-status.md). Public guest admission/self-signup
+and production launch remain gated; the historical proposal below is retained.
 
 ## User direction
 
@@ -19,7 +23,7 @@ monitoring-dashboard deployment is implied.
   experience; suggest suitable analyses after automatic data profiling.
 - Plan logging, monitoring and an operational dashboard alongside product work.
 
-## Current verified implementation
+## Initial verified implementation before v2
 
 The browser uses custom SVG in static/workspace.js: one chart per result,
 native point-title hover labels, fixed colors and an exact-value table. The

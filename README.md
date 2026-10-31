@@ -7,22 +7,22 @@ forecasts run in AgentCore Code Interpreter, pass independent numerical checks,
 and receive a separate model review. Sources, typed Parquet, results and audit
 artifacts live in S3; job state lives in DynamoDB.
 
-![Workspace using the AWS development runtime](docs/workspace-hosted.png)
+![Workspace using the AWS development runtime](docs/workspace-v2-results.png)
 
 ## Deployed development environment
 
 The separate `VirtualDataScientistV2Dev` stack is deployed in `us-east-1`.
-Release `dev-20261031-08` uses an immutable ARM64 Docker image in ECR and
+Release `dev-20261031-15` uses an immutable ARM64 Docker image in ECR and
 `us.amazon.nova-pro-v1:0`. CSV and Excel chart/forecast tests passed against the
 real runtime. The original runtime and public website were not switched.
 
-[Deployment manifest](docs/deployment/2026-10-31-agentcore-dev.json) ·
+[Deployment manifest](docs/deployment/dev-20261031-15.json) ·
 [Live acceptance](docs/deployment/2026-10-31-live-acceptance.json) ·
 [Validation](docs/validation.md) · [Architecture and continuation](project_context.md)
 
 ## Open the hosted workspace
 
-Open [the restricted development workspace](https://d19bkp3wlr8r7k.cloudfront.net/).
+Open [the restricted development workspace](https://analyst.decision-layer.com/).
 Cognito sign-in and a hosted Lambda gateway derive ownership from verified access
 tokens. Static files, preparation, analysis and persistent state are all on AWS;
 no local process is required. Self-signup is disabled. An administrator must
@@ -41,6 +41,32 @@ next three months.” There are no required sheet/header/date/target/algorithm
 selectors. Preparation asks a short business clarification when necessary. Include
 the clarification in the question before another upload. Inferred definitions,
 units and analytical limits remain visible.
+
+## Interactive analysis experience
+
+After profiling, supported analysis suggestions explain why they fit the data.
+Results include reviewed methodology lessons, interactive Plotly figures, four
+palettes, exact values and real agent/tool activity. Forecasts include history,
+untouched test predictions and validation-only model comparison.
+
+Download PNG/SVG, self-contained chart HTML, figure JSON/Python, full evidence,
+or a ZIP with analysis code, support modules, notebook, SQL and result tables.
+Prepared Parquet is a separate explicit download. The downloaded analysis was
+executed in a fresh AgentCore Interpreter and reproduced the saved test metrics.
+
+English dictation records up to twenty seconds, then streams Amazon Transcribe
+results after Stop. Edit the transcript before submitting. Workflow streaming
+uses single-use tickets, persisted events and replay; it never starts another job.
+The private `vds-v2-development` CloudWatch dashboard covers outcomes, latency,
+quality gates, gateway health and measured role-level usage.
+
+The five-analysis guest trial and account-claim path are implemented and live-tested
+through a temporary IAM-only AWS endpoint. Anonymous access and self-signup remain
+off. Invited development accounts have a twenty-analysis allowance, with a shared
+cumulative twenty-admission guard and conservative token reservations. See
+[operations](docs/operations.md), [current verification](docs/deployment/dev-v2-verification.json),
+[trial acceptance](docs/deployment/dev-v2-trial-acceptance.json) and
+[export reproduction](docs/deployment/dev-v2-export-reproduction.json).
 
 ## Optional local developer bridge
 
@@ -81,8 +107,8 @@ workspace. Do not expose it or the legacy `/studio` and MCP APIs publicly.
 ## Bounds and lifecycle
 
 Uploads: 10 MiB source, 50 MiB expanded XLSX, 100 columns, 100,000 rows and one
-million cells. Formulas must be exported as values. Development allows ten
-versions and one hundred analyses per owner, one active analysis per owner and
+million cells. Formulas must be exported as values. Storage bounds allow ten
+versions and one hundred saved run records per owner, one active analysis per owner and
 two globally. Sandbox execution is bounded to 120 seconds. Runtime idle timeout
 is 60 seconds and maximum session lifetime 900 seconds.
 
@@ -114,10 +140,11 @@ node --check static/workspace.js
 The last two commands only describe actions. Their `--execute` forms perform
 billable cloud work; use them within an explicitly authorized scope.
 [Cloud operations](docs/cloud-trial.md) records the actual approval and commands.
-The 58-test suite includes mocked AWS state/lifecycle contracts; live cloud proof
-is recorded separately. The container scan still reports four high, nine medium
-and three low OS findings after available upgrades; public release is blocked
-pending remediation or an explicit reachability/risk decision.
+The 71-test Python suite and 12 Node tests include mocked AWS state, lifecycle,
+quota and browser contracts; live cloud proof is recorded separately. The final
+Amazon Linux image scan reports no critical/high findings and two medium OS
+findings. [Image review](docs/deployment/dev-v2-image-risk-review.md) and
+[operations](docs/operations.md) describe the remaining public-launch boundaries.
 
 Without `VDS_RUNTIME_ARN`, `server.py` runs the local verification backend with
 SQLite/fixed recipes. This fallback is useful for repeatable checks; the hosted HTTPS

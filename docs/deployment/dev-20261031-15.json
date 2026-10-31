@@ -1,0 +1,12 @@
+{
+  "release": "dev-20261031-15",
+  "runtime_status": "UPDATE_COMPLETE",
+  "outputs": {
+    "DataBucket": "virtualdatascientistv2dev-data-rq97bezpykb7",
+    "StateTable": "VirtualDataScientistV2Dev-State-1WS9FXC3D4GBA",
+    "ImageRepository": "441383083571.dkr.ecr.us-east-1.amazonaws.com/virtual-data-scientist-v2-dev",
+    "RuntimeArn": "arn:aws:bedrock-agentcore:us-east-1:441383083571:runtime/VirtualDataScientistV2Dev-Tr4IBoExJp"
+  },
+  "image_uri": "441383083571.dkr.ecr.us-east-1.amazonaws.com/virtual-data-scientist-v2-dev@sha256:dd88f551cb3dfe6a077b9d4eed1d553bb1a25d39e361beec83bd1203d38f974d",
+  "runtime_version": "14"
+}

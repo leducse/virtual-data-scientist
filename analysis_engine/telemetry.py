@@ -4,9 +4,15 @@ import logging
 import os
 import re
 import time
+import sys
 
 logger = logging.getLogger('vds.telemetry')
 logger.setLevel(logging.INFO)
+if not logger.handlers:
+    handler=logging.StreamHandler(sys.stdout)
+    handler.setFormatter(logging.Formatter('%(message)s'))
+    logger.addHandler(handler)
+logger.propagate=False
 ALLOWED = {'event', 'stage', 'status', 'attempt', 'duration_ms', 'run_id', 'sequence', 'error_code', 'input_tokens', 'output_tokens'}
 
 

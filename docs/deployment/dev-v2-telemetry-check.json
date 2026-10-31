@@ -1,0 +1,6 @@
+{
+  "workflow_and_usage_events_observed": true,
+  "known_synthetic_payload_and_signed_url_markers_in_runtime_logs": 0,
+  "scope": "Runtime log group during current hosted acceptance; not a universal secret audit.",
+  "notification_channels_configured": false
+}

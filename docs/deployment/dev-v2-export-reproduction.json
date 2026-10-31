@@ -1,0 +1,11 @@
+{
+  "downloaded_code_executed_in_fresh_agentcore_interpreter": true,
+  "source_checksum_matched": true,
+  "test_metrics_reproduced": true,
+  "result": {
+    "method": "linear_trend",
+    "mae": 304.17112299465106,
+    "python": "3.12.13"
+  },
+  "session_status": "TERMINATED"
+}

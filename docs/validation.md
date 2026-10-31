@@ -1,6 +1,60 @@
 # Validation record
 
-## Latest hosted development acceptance — release dev-20261031-08
+## Product experience v2 — release dev-20261031-15
+
+The branded development app is https://analyst.decision-layer.com/; runtime
+version 14 is READY and both stacks are UPDATE_COMPLETE. Final runtime health
+confirmed release dev-20261031-15. The browser exercised real analysis releases
+12/13; release 14 additionally fixes conservative handling of unknown execution
+reservations, covered by a dedicated regression case.
+
+- 71 Python tests and 12 Node tests passed, with source compilation, JS syntax,
+  dependency checks and whitespace checks. GitHub Actions also validates the branch.
+- Native browser Cognito login, automatically profiled Excel cover sheet/header
+  row three, 72 rows and USD, two eligible suggestions and zero mapping selectors.
+- A suggested question exposed an inconsistent model task/tier pair. Tier is now
+  derived deterministically from task; the same suggested question then passed.
+- Live forecast: three Plotly figures separating history, untouched test and
+  validation comparison; real tooltips; ocean palette preserved across reload and
+  exported figures. Six methodology lessons were available.
+- Real active-agent highlight observed. The private AWS transport probe received
+  an initial SSE event before a later state update; consumed tickets were rejected.
+  Polling remains a fallback; no stream request starts or replays analysis.
+- PNG, self-contained HTML, Python and code/notebook ZIP downloaded. A separate
+  prepared-Parquet download matched the saved checksum. Exported Python executed
+  in a new managed Interpreter, reproduced linear_trend and test MAE
+  304.17112299465106 on Python 3.12.13; the session was confirmed TERMINATED.
+- Synthetic microphone audio passed through the actual browser recording,
+  AudioWorklet/downsampling and native Transcribe proxy. Expected and observed:
+  “Show monthly revenue for the last year.” The editable transcript did not
+  create an analysis. Physical microphone hardware was not tested.
+- Private IAM-only guest acceptance: five completed summaries, sixth request 429,
+  verified login claim preserving both namespaces, member continuation and
+  cross-account denial. Synthetic accounts/function/data were removed; admission
+  accounting was retained. Public guest creation/self-signup stay disabled.
+- Desktop 1440 and mobile 390 pixels had no horizontal overflow. Screenshots were
+  inspected. App console: zero errors/warnings. Reload restored three saved run
+  records and the palette; logout hid the workspace.
+- Workflow/model-usage records were observed in CloudWatch. Known synthetic
+  source/filename and signed-URL markers had zero matches in recent runtime logs.
+  This is a scoped marker check, not a universal secret audit. Alarm notifications
+  were not sent or configured.
+- Final ECR basic scan: zero critical/high, two medium. The Amazon Linux base
+  replaced the previous Debian findings; see the dedicated image risk review.
+
+Evidence: [final verification](deployment/dev-v2-verification.json),
+[private trial](deployment/dev-v2-trial-acceptance.json),
+[export reproduction](deployment/dev-v2-export-reproduction.json),
+[telemetry check](deployment/dev-v2-telemetry-check.json),
+[current image review](deployment/dev-v2-image-risk-review.md).
+Screenshots: [three-figure result](workspace-v2-results.png),
+[mobile](workspace-v2-mobile.png).
+
+Current billed project spend is not fully reconciled. Public cost/abuse controls,
+notification delivery, continuous voice, durable job recovery and broader cloud
+ML/research remain outside this verified development release.
+
+## Earlier hosted acceptance — release dev-20261031-08
 
 The separate HTTPS workspace is live at
 https://d19bkp3wlr8r7k.cloudfront.net/. Both development stacks are UPDATE_COMPLETE;

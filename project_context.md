@@ -10,12 +10,13 @@ not configure technical columns or algorithms. Automatic preparation plus a
 checked Strands plan selects the appropriate supported tool.
 
 Separate AWS development stack `VirtualDataScientistV2Dev` is deployed in
-account `441383083571`, `us-east-1`, release `dev-20261031-08`. Actual CSV and Excel
+account `441383083571`, `us-east-1`, release `dev-20261031-15`. Actual CSV and Excel
 chart/forecast runs, narrative review, imports/plot transfer, stopped sessions,
-reconnect, owner isolation, cancellation and deletion passed. The image digest
-and outputs are in `docs/deployment/2026-10-31-agentcore-dev.json`.
+reconnect, owner isolation, cancellation and deletion passed. Current deployment outputs are in `docs/deployment/dev-20261031-15.json`;
+the earlier `2026-10-31-agentcore-dev.json` remains historical evidence.
 
-The actual HTTPS workspace is https://d19bkp3wlr8r7k.cloudfront.net/.
+The actual HTTPS workspace is https://analyst.decision-layer.com/.
+The original CloudFront URL remains a supported sign-in origin.
 A separate `VirtualDataScientistV2DevWeb` stack provides private static S3,
 CloudFront, Cognito code/PKCE sign-in and an IAM-only Lambda URL gateway.
 The gateway verifies access tokens and derives owner identity; open signup is
@@ -25,7 +26,7 @@ users were removed without sending invitations. The owner account is provisioned
 First sign-in/password change remains unconfirmed. The optional loopback bridge remains available.
 
 The consulting website and original runtime were preserved. No production
-cutover was performed. Changes are local/uncommitted. No additional chats or
+cutover was performed. Source is pushed on `feat/product-experience-v2`; no merge to main was performed. No additional chats or
 subagents were created.
 
 ## Architecture
@@ -36,6 +37,9 @@ flowchart LR
   B --> AUTH[Cognito code and PKCE]
   CDN --> W[Private static S3]
   CDN --> G[Lambda gateway: verified user ownership]
+  CDN --> STREAM[Native Node streaming and dictation]
+  STREAM --> STATE
+  STREAM --> TRANSCRIBE[Amazon Transcribe]
   G -->|IAM signed invocation| RUNTIME[AgentCore ARM64 container]
   RUNTIME --> P[Automatic profile and typed Parquet]
   P --> DATA[(Private data S3)]
@@ -57,33 +61,40 @@ gets the profile and previous brief, not unrestricted tools or arbitrary SQL.
 Business ambiguity returns a clarification; the natural question can supply
 sheet/date context for another upload.
 
-## Next product direction
+## Product experience v2 status
 
-The user requested a future decision-layer.com subdomain, a guest trial followed
-by sign-in, multiple interactive visuals, selectable palettes, a live agent/tool
-activity map, curated code/artifact downloads, speech input and streaming.
-The direction also includes optional methodology lessons, profile-driven analysis
-suggestions without technical field selection, and an operator monitoring dashboard.
-The proposed defaults, delivery slices and acceptance criteria are recorded in
-[product experience v2](docs/plans/product-experience-v2.md). Exact trial thresholds
-and the subdomain label remain product decisions; this is a plan, not a deployed
-feature claim. Recommended first slice: Plotly multi-figure results, themes,
-reproducible downloads, reviewed methodology explanations and capability-checked
-analysis suggestions. Real execution events, streaming and operator observability
-follow together, before anonymous access.
+Core experience changes are implemented and deployed in the existing development
+stacks. Source and acceptance are linked from `docs/implementation-status.md`.
 
-The root domain's public Route 53 zone was verified read-only. No DNS, certificate,
-public-access policy or additional speech/streaming service was changed. The
-current browser renderer remains custom SVG, and the hosted gateway still buffers
-responses. Guest ownership/quota enforcement must precede anonymous access.
+- Plotly.js 2.32.0 basic is self-hosted; forecasts return three checked figures.
+  Four palettes preserve numbers and apply to individual exports and code bundles.
+- Saved profiles drive deterministic capability/coverage/readiness suggestions;
+  no model call or analysis credit is needed to view suggestions or lessons.
+- Reviewed lessons cover aggregation, naive/damped Holt/linear trend, chronological
+  validation and MAE, with dataset-specific selection disposition.
+- Real stage/attempt events drive the active agent/tool map and authenticated SSE.
+  A native Node Lambda relays persisted events and checked results through the
+  same CloudFront distribution. The Python control gateway remains buffered.
+- Curated ZIP/code/notebook/SQL/CSV and explicit prepared-Parquet downloads use
+  owner authorization and short-lived S3 URLs. Actual exported Python was rerun
+  in a fresh managed Interpreter with matching test MAE and confirmed cleanup.
+- English dictation records up to twenty seconds, then sends bounded PCM to a
+  native Transcribe streaming proxy. Draft text is editable and never auto-submits.
+  Synthetic browser microphone audio passed; physical hardware was not tested.
+- Private CloudWatch dashboard/alarm, content-free logging, low-cardinality terminal
+  metrics and role usage records are deployed. No notification channel is wired.
+- Guest quotas, token reservations, global development admission and atomic account
+  claims passed private AWS acceptance: five completed analyses, sixth rejected,
+  member continuation and preserved old/account namespaces. Public guests and
+  self-signup remain disabled; anonymous launch needs broader cost/abuse review.
+- `analyst.decision-layer.com` has validated ACM TLS and Route 53 aliases, with
+  Cognito callbacks and S3 CORS supporting the new and original origins.
 
-The source review found saved preparation profiles and per-role usage/run evidence,
-but no upload suggestion catalog or application dashboard/alarms in the stack
-generators. Current run `trace_id` values are application run IDs, not distributed
-trace proof. The next plan reuses real workflow events for user progress and
-private CloudWatch/AgentCore monitoring; it includes runtime exception redaction,
-bounded telemetry cost and quality checks alongside reliability/latency/usage.
-These additions are documented only; no runtime or monitoring configuration changed.
+Execution tier is derived deterministically from the validated task after a live
+suggested question exposed an inconsistent model tier. Unknown sandbox outcomes
+retain conservative quota reservations. Retried stage events are deduplicated.
+Runtime logging has its own JSON stdout handler and excludes exception payloads.
+The application run ID remains a correlation ID, not an OTEL distributed trace.
 
 ## Key logic map
 
@@ -105,7 +116,9 @@ These additions are documented only; no runtime or monitoring configuration chan
 | `scripts/render_web_stack.py`, `build_web_gateway.py`, `publish_dev_site.py` | Separate hosted stack, minimal ARM64 package and static allowlist |
 | `scripts/hosted_acceptance.py`, `tests/auth.test.cjs` | Temporary-user live acceptance and browser authentication contracts |
 | `analysis_engine/cloud_proxy.py`, `workspace_http.py` | Optional loopback HTTP and IAM runtime invocation |
-| `static/index.html`, `workspace.js/css` | Upload/question workspace, charts, exact values and evidence |
+| `static/index.html`, `workspace.js/css`, `experience.js`, `speech.js` | Upload/questions, Plotly figures, themes, lessons, activity, dictation and exports |
+| `presentation.py`, `exports.py`, `quotas.py`, `telemetry.py` | Reviewed suggestions/lessons, immutable reproduction bundles, transactional usage and content-free events |
+| `aws_backend/streaming/`, `web_sessions.py` | Native SSE/Transcribe proxy and atomic guest/account namespace claims |
 | `scripts/cloud_acceptance.py`, `cloud_safety_acceptance.py`, `cloud_smoke.py` | Explicit live acceptance, lifecycle and library/PNG proof |
 | `workspace.py`, `local_worker.py`, `model_registry/` | Separate local verification and supervised examples |
 | `app/VirtualDataScientistAgent/`, older CDK/Lambda/MCP | Preserved legacy contracts, not the new cloud entrypoint |
@@ -174,7 +187,7 @@ these do not establish a temporal/grouped production contract.
 ## Validation and commands
 
 See `docs/validation.md` and `docs/deployment/` for exact evidence. Final suite:
-58 Python tests and four Node auth tests passed, plus compile/JS syntax/package
+71 Python tests and twelve Node tests passed, plus compile/JS syntax/package
 checks, actual image/CF deployment
 and live synthetic/browser acceptance. The managed interpreter libraries differ
 from the pinned container; cross-version numerical refits passed for the fixture.
@@ -183,7 +196,7 @@ from the pinned container; cross-version numerical refits passed for the fixture
 .venv/bin/python -m pip install -r requirements-test.txt
 .venv/bin/python -m unittest discover -s tests -v
 .venv/bin/python -m compileall -q analysis_engine scripts model_registry app/CloudDataScientist
-node --test tests/auth.test.cjs
+node --test tests/*.test.cjs tests/*.test.mjs
 node --check static/auth.js
 node --check static/workspace.js
 .venv/bin/python -m pip check
@@ -213,9 +226,10 @@ Marketplace agreement activation (`agreementAvailability: NOT_AVAILABLE`). No
 broad Marketplace permission was added to the runtime role.
 
 The plain CloudFormation deployment avoids the older CDK packaging failure and
-does not depend on the existing npm trees. The final container scan reports
-four high, nine medium and three low OS findings after available apt upgrades.
-Public release requires remediation or an explicit reachability/risk decision.
+does not depend on the existing npm trees. The runtime now uses a pinned, upgraded AWS Python 3.13 / Amazon Linux 2023
+base with its Lambda entrypoint cleared and UID 10001. The new image scan reports
+no critical/high findings and two medium OS findings. See the current scan and
+risk review; this is not comprehensive production security clearance.
 Older CDK dependencies also retain advisories recorded in validation.
 
 Next: confirm the owner's first sign-in, resolve image findings, harden MFA/revocation/

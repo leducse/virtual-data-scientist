@@ -166,11 +166,11 @@ class Gateway:
         if match and ((method == 'GET' and not match[2]) or (method == 'POST' and match[2])):
             if self.sessions:owner=self.sessions.locate(owners,'run',match[1])
             return self.call(owner, 'cancel' if match[2] else 'run', {'run_id': match[1]})
-        match = re.fullmatch(r'/api/v2/runs/([a-f0-9]{32})/(artifacts|events)', path)
+        match = re.fullmatch(r'/api/v2/runs/([a-f0-9]{32})/(artifacts|events|prepared-data)', path)
         if method == 'GET' and match:
             if self.sessions:owner=self.sessions.locate(owners,'run',match[1])
             query=event.get('queryStringParameters') or {}
-            return self.call(owner, match[2], {'run_id':match[1], 'after':query.get('after',0),'palette':query.get('palette','decision')})
+            return self.call(owner, match[2].replace('-','_'), {'run_id':match[1], 'after':query.get('after',0),'palette':query.get('palette','decision')})
         match = re.fullmatch(r'/api/v2/datasets/([a-f0-9]{32})/delete', path)
         if method == 'POST' and match:
             if self.sessions:owner=self.sessions.locate(owners,'dataset',match[1])

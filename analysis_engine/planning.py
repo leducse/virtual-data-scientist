@@ -108,5 +108,7 @@ def strands_plan(dataset, payload, agent):
     dates = [c["name"] for c in dataset["profile"]["columns"] if c["role"] == "time"]
     if plan.time_column is None and len(dates) == 1 and plan.task in {"monthly_summary", "forecast"}:
         plan.time_column = dates[0]
+    # Execution tier is a property of the supported task, not another model choice.
+    plan.tier = 'quick' if plan.task == 'monthly_summary' else 'deep'
     plan.planner = "strands"
     return check_plan(plan, dataset)

@@ -64,6 +64,7 @@ window.vdsSpeech=(()=>{
     api=request;notice=showNotice;
     el('speech-record').addEventListener('click',async()=>{
       if(!enabled || recording)return;
+      notice('');
       const session={chunks:[],base:el('question').value.trim(),controller:new AbortController()};recording=session;buttons(true);
       try{
         session.stream=await navigator.mediaDevices.getUserMedia({audio:{channelCount:1,echoCancellation:true},video:false});

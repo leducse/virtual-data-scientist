@@ -92,7 +92,7 @@ class CloudService:
             now=int(time.time())
             try:
                 from boto3.dynamodb.conditions import Attr
-                self.store.table.put_item(Item={'pk':owner,'sk':'stream-admission','expires_at':now+20},
+                self.store.table.put_item(Item={'pk':owner,'sk':'stream-admission#'+run['id'],'expires_at':now+20},
                     ConditionExpression=Attr('pk').not_exists() | Attr('expires_at').lt(now))
             except self.store.table.meta.client.exceptions.ConditionalCheckFailedException as exc:
                 raise InputError('Progress is reconnecting. Saved state remains available.', 'capacity_exceeded') from exc
@@ -127,6 +127,12 @@ class CloudService:
             self.store.put_blob(owner,key,themed_bundle(self.store.blob(owner,run['bundle_key']),palette),'application/zip')
             url=self.store.s3.generate_presigned_url('get_object',Params={'Bucket':self.store.bucket,
                 'Key':f'{owner}/{key}', 'ResponseContentDisposition':f'attachment; filename="analysis-{run["id"][:8]}.zip"'},ExpiresIn=120)
+            return {'url':url,'expires_in':120}
+        if action=='prepared_data':
+            run=self.store.run(owner,payload.get('run_id'))
+            dataset=self.store.dataset(owner,run['dataset_id'])
+            url=self.store.s3.generate_presigned_url('get_object',Params={'Bucket':self.store.bucket,
+                'Key':f'{owner}/{dataset["id"]}/dataset.parquet','ResponseContentDisposition':'attachment; filename="dataset.parquet"'},ExpiresIn=120)
             return {'url':url,'expires_in':120}
         if action=='cancel':
             self.store.run(owner,payload.get('run_id'))
@@ -212,6 +218,7 @@ class CloudService:
         principal=None
         succeeded=False
         unknown_execution=False
+        runner=None
         complete=threading.Event()
         cancelled=threading.Event()
         try:
@@ -289,7 +296,7 @@ class CloudService:
             self.store.event(owner,run_id,'analysis','completed',duration_ms=(time.time()-run['created_at'])*1000)
             succeeded=self.store.update_run(owner,run_id,status='succeeded',stage='Analysis and evidence checks complete',result_key=result_key,bundle_key=bundle_key,model_usage=usage)
         except Exception as exc:
-            unknown_execution=getattr(exc,'code','') in {'execution_unknown','cleanup_unconfirmed','unknown_execution'}
+            unknown_execution=getattr(exc,'code','') in {'execution_unknown','cleanup_unconfirmed','unknown_execution','outcome_unknown'} or bool(runner and runner.cleanup_error)
             self.store.update_run(owner,run_id,status='needs_clarification' if getattr(exc,'code','')=='clarification_required' else 'failed',stage='A business clarification is needed' if getattr(exc,'code','')=='clarification_required' else 'Analysis could not finish',model_usage=usage,
                                   error={'code':getattr(exc,'code','analysis_failed'),'message':str(exc)[:600] if isinstance(exc,InputError) else 'The cloud dependency could not complete this analysis. See the run trace.'})
             safe_error(exc,run_id)

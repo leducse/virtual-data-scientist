@@ -31,5 +31,7 @@ class CloudProxy:
     def submit(self,owner,payload):
         return self.call(owner,'submit',{key:payload[key] for key in ['dataset_id','request_key','question']})['run']
     def run(self,owner,run_id):return self.call(owner,'run',{'run_id':run_id})['run']
+    def artifacts(self,owner,run_id,palette='decision'):return self.call(owner,'artifacts',{'run_id':run_id,'palette':palette})
+    def prepared_data(self,owner,run_id):return self.call(owner,'prepared_data',{'run_id':run_id})
     def cancel(self,owner,run_id):return self.call(owner,'cancel',{'run_id':run_id})['run']
     def delete(self,owner,dataset_id):return self.call(owner,'delete',{'dataset_id':dataset_id})

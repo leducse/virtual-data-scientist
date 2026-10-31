@@ -47,13 +47,13 @@ def template():
         {'type':'text','x':0,'y':0,'width':24,'height':2,'properties':{'markdown':'# VDS development operations\nPrivate operator view. Low-volume rates need sample counts. No traffic is not a successful analysis. Usage is not reconciled billing. Logs exclude analysis content.'}},
         {'type':'metric','x':0,'y':2,'width':12,'height':6,'properties':{'title':'Terminal analysis events','region':{'Ref':'AWS::Region'},'period':300,'stat':'Sum','metrics':[metric_base+[s,{'label':s}] for s in ['completed','failed','cancelled']]}},
         {'type':'metric','x':12,'y':2,'width':12,'height':6,'properties':{'title':'Completed analysis duration (milliseconds)','region':{'Ref':'AWS::Region'},'period':300,
-            'metrics':[['DecisionLayer/VDS','duration_ms','environment','development','stage','analysis','status','completed',{'stat':stat,'label':stat}] for stat in ['p50','p95','SampleCount']]}},
+            'metrics':[['DecisionLayer/VDS','duration_ms','environment','development','stage','analysis','status','completed',{'stat':stat,'label':stat,'yAxis':'right' if stat=='SampleCount' else 'left'}] for stat in ['p50','p95','SampleCount']]}},
         {'type':'metric','x':0,'y':8,'width':12,'height':6,'properties':{'title':'Web gateway errors and throttles','region':{'Ref':'AWS::Region'},'period':300,'stat':'Sum',
             'metrics':[['AWS/Lambda',name,'FunctionName','vds-v2-dev-web'] for name in ['Errors','Throttles']]}},
         {'type':'metric','x':12,'y':8,'width':12,'height':6,'properties':{'title':'Web gateway duration','region':{'Ref':'AWS::Region'},'period':300,'stat':'p95',
             'metrics':[['AWS/Lambda','Duration','FunctionName','vds-v2-dev-web']]}},
         {'type':'log','x':0,'y':14,'width':24,'height':7,'properties':{'title':'Stage durations and quality gate outcomes (content-free)','region':{'Ref':'AWS::Region'},'view':'table',
-            'query':"SOURCE logGroups(namePrefix: ['/aws/bedrock-agentcore/runtimes/VirtualDataScientistV2Dev']) | filter service = 'vds' | stats count(*) as events, pct(duration_ms, 95) as p95_ms by stage, status | sort stage asc"}},
+            'query':"SOURCE logGroups(namePrefix: ['/aws/bedrock-agentcore/runtimes/VirtualDataScientistV2Dev']) | filter event = 'workflow_stage' | stats count(*) as events, pct(duration_ms, 95) as p95_ms by stage, status | sort stage asc"}},
         {'type':'log','x':0,'y':21,'width':24,'height':6,'properties':{'title':'Recent operational errors','region':{'Ref':'AWS::Region'},'view':'table',
             'query':"SOURCE logGroups(namePrefix: ['/aws/bedrock-agentcore/runtimes/VirtualDataScientistV2Dev']) | filter event = 'dependency_error' | fields @timestamp, run_id, stage, error_code | sort @timestamp desc | limit 30"}}
     ]

@@ -27,6 +27,7 @@ def main():
         outputs={o['OutputKey']:o['OutputValue'] for o in stack['Outputs']}
     client = boto3.client('s3', region_name='us-east-1', config=Config(connect_timeout=5, read_timeout=30, retries={'total_max_attempts': 2}))
     root = Path(__file__).resolve().parents[1]
+    index=assets.pop('index.html');assets['index.html']=index
     for key, (source, kind) in assets.items():
         client.put_object(Bucket=outputs['SiteBucket'], Key=key, Body=(root / source).read_bytes(),
                           ContentType=kind, CacheControl='public,max-age=60', ServerSideEncryption='AES256')
@@ -34,6 +35,8 @@ def main():
     assert set(config) == {'client_id', 'domain','guest_enabled'}
     client.put_object(Bucket=outputs['SiteBucket'], Key='config.json', Body=json.dumps(config).encode(),
                       ContentType='application/json', CacheControl='no-store', ServerSideEncryption='AES256')
+    boto3.client('cloudfront',region_name='us-east-1').create_invalidation(DistributionId=outputs['DistributionId'],
+        InvalidationBatch={'CallerReference':__import__('uuid').uuid4().hex,'Paths':{'Quantity':4,'Items':['/','/index.html','/config.json','/static/*']}})
     print('Published development workspace: ' + outputs['WebUrl'])
 
 
