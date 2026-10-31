@@ -26,3 +26,18 @@ Three.js is a general 3D graphics engine. Current questions are monthly trends a
 Relevant primary references: [SVG/canvas tradeoffs](https://echarts.apache.org/handbook/en/best-practices/canvas-vs-svg/), [ARIA/decal guidance](https://echarts.apache.org/handbook/en/best-practices/aria/), [D3 API](https://d3js.org/api).
 
 The exact bundle hashes, package integrity values and observed dependency audit are recorded in `static/vendor/manifest.json`.
+
+## Subsequent workflow decision — React Flow
+
+After reviewing the requested [React Flow site](https://reactflow.dev/), its
+[custom node API](https://reactflow.dev/learn/customization/custom-nodes) and
+[accessibility guidance](https://reactflow.dev/learn/advanced-use/accessibility),
+the workflow viewer now uses React Flow 12.12.0. This supersedes the D3 choice
+for the agent map above; ECharts remains the analytical engine. Core React Flow
+is MIT licensed. The implementation uses original custom node UI and the open
+core library, with its attribution and bundled license notices retained.
+
+It provides measured node/edge layout, pan/zoom, controls and accessible React
+components. The app adds event-derived statuses and inspection, a compact mobile
+route, reduced motion and root/viewport preservation. Dependencies are pinned in
+`frontend/workflow/package-lock.json`; the audit reports zero vulnerabilities.

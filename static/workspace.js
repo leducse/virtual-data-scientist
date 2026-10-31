@@ -22,6 +22,10 @@ function choose(id) {
   state.focusRun=null;
   render();
 }
+function disposeRun(node){
+  node.querySelectorAll('.plot').forEach(experience.dispose);
+  node.querySelectorAll('.workflow-map').forEach(experience.disposeWorkflow);
+}
 function render() {
   const d=selected();
   if(d && !state.drawerInitialized){$(".data-drawer").open=false;state.drawerInitialized=true;}
@@ -41,16 +45,20 @@ function render() {
   renderConversation(history);
   const runs=history.filter(r=>r.id===(state.focusRun || history[0]?.id));
   const container=$("#runs");
-  if(!runs.length){container.querySelectorAll(".plot").forEach(experience.dispose);container.innerHTML='<p class="muted">Your results, methods, and checks will appear here.</p>';}
+  if(!runs.length){container.querySelectorAll("article.run").forEach(disposeRun);container.innerHTML='<p class="muted">Your results, methods, and checks will appear here.</p>';}
   else {
     if(!container.querySelector("article"))container.replaceChildren();
     const ids=new Set(runs.map(r=>r.id));
-    container.querySelectorAll("article.run").forEach(node=>{if(!ids.has(node.dataset.run)){node.querySelectorAll(".plot").forEach(experience.dispose);node.remove();}});
+    container.querySelectorAll("article.run").forEach(node=>{if(!ids.has(node.dataset.run)){disposeRun(node);node.remove();}});
     for(const [index,r] of runs.entries()){
       const html=renderRun(r), old=container.querySelector(`[data-run="${r.id}"]`);
       if(old?.dataset.rendered===html)continue;
       const holder=document.createElement("div");holder.innerHTML=html;const node=holder.firstElementChild;node.dataset.rendered=html;
-      if(old){old.querySelectorAll(".plot").forEach(experience.dispose);old.replaceWith(node);}else container.insertBefore(node,container.children[index] || null);
+      if(old){
+        const previousFlow=old.querySelector('.workflow-map'),nextFlow=node.querySelector('.workflow-map');
+        if(previousFlow && nextFlow)nextFlow.replaceWith(previousFlow);
+        disposeRun(old);old.replaceWith(node);
+      }else container.insertBefore(node,container.children[index] || null);
       renderPlots(r,node);experience.workflow(r,node.querySelector(".workflow-map"));
     }
   }
@@ -81,10 +89,7 @@ async function renderPlots(run,node) {
 }
 function activity(run) {
   const events=run.events || [];
-  if(!events.length)return "";
-  const latest=new Map(events.map(e=>[e.stage,e]));
-  const stages=run.plan?.tier==="quick" ? [["planner","Orchestrator","agent"],["query","Data query","tool"],["numerical_checks","Numerical checks","check"],["publication","Results","output"]] : [["planner","Orchestrator","agent"],["analyst","Analyst","agent"],["interpreter","Code Interpreter","tool"],["numerical_checks","Numerical checks","check"],["reviewer","Reviewer","agent"],["publication","Results","output"]];
-  return `<div class="activity" aria-label="Analysis activity"><div class="workflow-map"></div><ol class="flow-nodes sr-only">${stages.map(([key,label,kind])=>{const e=latest.get(key), status=e?.status || (active(run) ? "queued" : "skipped");return `<li class="flow-node ${status}" aria-current="${status==="started" ? "step" : "false"}"><small>${kind}</small><strong>${label}</strong><span>${status==="started" ? "Working" : status}${e?.duration_ms!==undefined ? ` · ${format(e.duration_ms/1000)}s` : ""}</span></li>`;}).join("")}</ol><details><summary>Activity timeline</summary><ol class="timeline">${events.map(e=>`<li>${new Date(e.timestamp*1000).toLocaleTimeString()} · ${escape(e.stage.replaceAll("_"," "))} · ${escape(e.status)}${e.attempt>1 ? ` · attempt ${e.attempt}` : ""}</li>`).join("")}</ol></details></div>`;
+  return `<div class="activity" aria-label="Analysis activity"><div class="workflow-map"></div><details><summary>Activity timeline</summary><ol class="timeline">${events.map(e=>`<li>${new Date(e.timestamp*1000).toLocaleTimeString()} · ${escape(e.stage.replaceAll("_"," "))} · ${escape(e.status)}${e.attempt>1 ? ` · attempt ${e.attempt}` : ""}</li>`).join("")}</ol></details></div>`;
 }
 function renderRun(r) {
   const result=r.result;

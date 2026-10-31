@@ -1,0 +1,695 @@
+{
+  "id": "21c401435039d47e83a086bf4e93726d",
+  "dataset_id": "a6c5ef858ca24a138e9c19bc43a42c69",
+  "question": "Now forecast the next three months",
+  "status": "succeeded",
+  "plan": {
+    "tier": "deep"
+  },
+  "created_at": 1793489141.6416311,
+  "events": [
+    {
+      "sequence": 1,
+      "id": "21c401435039d47e83a086bf4e93726d:1",
+      "run_id": "21c401435039d47e83a086bf4e93726d",
+      "stage": "planner",
+      "status": "started",
+      "attempt": 1,
+      "timestamp": 1793489141.7779512
+    },
+    {
+      "sequence": 2,
+      "id": "21c401435039d47e83a086bf4e93726d:2",
+      "run_id": "21c401435039d47e83a086bf4e93726d",
+      "stage": "planner",
+      "status": "completed",
+      "attempt": 1,
+      "timestamp": 1793489144.985127,
+      "duration_ms": 3198.03
+    },
+    {
+      "sequence": 3,
+      "id": "21c401435039d47e83a086bf4e93726d:3",
+      "run_id": "21c401435039d47e83a086bf4e93726d",
+      "stage": "analyst",
+      "status": "started",
+      "attempt": 1,
+      "timestamp": 1793489145.1754856
+    },
+    {
+      "sequence": 4,
+      "id": "21c401435039d47e83a086bf4e93726d:4",
+      "run_id": "21c401435039d47e83a086bf4e93726d",
+      "stage": "analyst",
+      "status": "completed",
+      "attempt": 1,
+      "timestamp": 1793489146.890568,
+      "duration_ms": 1704.99
+    },
+    {
+      "sequence": 5,
+      "id": "21c401435039d47e83a086bf4e93726d:5",
+      "run_id": "21c401435039d47e83a086bf4e93726d",
+      "stage": "interpreter",
+      "status": "started",
+      "attempt": 1,
+      "timestamp": 1793489146.9010391
+    },
+    {
+      "sequence": 6,
+      "id": "21c401435039d47e83a086bf4e93726d:6",
+      "run_id": "21c401435039d47e83a086bf4e93726d",
+      "stage": "interpreter",
+      "status": "completed",
+      "attempt": 1,
+      "timestamp": 1793489151.2165527,
+      "duration_ms": 4306.65
+    },
+    {
+      "sequence": 7,
+      "id": "21c401435039d47e83a086bf4e93726d:7",
+      "run_id": "21c401435039d47e83a086bf4e93726d",
+      "stage": "cleanup",
+      "status": "completed",
+      "attempt": 1,
+      "timestamp": 1793489151.225402
+    },
+    {
+      "sequence": 8,
+      "id": "21c401435039d47e83a086bf4e93726d:8",
+      "run_id": "21c401435039d47e83a086bf4e93726d",
+      "stage": "numerical_checks",
+      "status": "started",
+      "attempt": 1,
+      "timestamp": 1793489151.236014
+    },
+    {
+      "sequence": 9,
+      "id": "21c401435039d47e83a086bf4e93726d:9",
+      "run_id": "21c401435039d47e83a086bf4e93726d",
+      "stage": "numerical_checks",
+      "status": "completed",
+      "attempt": 1,
+      "timestamp": 1793489151.9831667,
+      "duration_ms": 737.98
+    },
+    {
+      "sequence": 10,
+      "id": "21c401435039d47e83a086bf4e93726d:10",
+      "run_id": "21c401435039d47e83a086bf4e93726d",
+      "stage": "reviewer",
+      "status": "started",
+      "attempt": 1,
+      "timestamp": 1793489151.992565
+    },
+    {
+      "sequence": 11,
+      "id": "21c401435039d47e83a086bf4e93726d:11",
+      "run_id": "21c401435039d47e83a086bf4e93726d",
+      "stage": "reviewer",
+      "status": "completed",
+      "attempt": 1,
+      "timestamp": 1793489153.9502296,
+      "duration_ms": 1948.34
+    },
+    {
+      "sequence": 12,
+      "id": "21c401435039d47e83a086bf4e93726d:12",
+      "run_id": "21c401435039d47e83a086bf4e93726d",
+      "stage": "publication",
+      "status": "started",
+      "attempt": 1,
+      "timestamp": 1793489153.9642735
+    },
+    {
+      "sequence": 13,
+      "id": "21c401435039d47e83a086bf4e93726d:13",
+      "run_id": "21c401435039d47e83a086bf4e93726d",
+      "stage": "publication",
+      "status": "completed",
+      "attempt": 1,
+      "timestamp": 1793489154.042876
+    },
+    {
+      "sequence": 14,
+      "id": "21c401435039d47e83a086bf4e93726d:14",
+      "run_id": "21c401435039d47e83a086bf4e93726d",
+      "stage": "analysis",
+      "status": "completed",
+      "attempt": 1,
+      "timestamp": 1793489154.0525625,
+      "duration_ms": 12407.21
+    }
+  ],
+  "result": {
+    "task": "forecast",
+    "series": [
+      {
+        "month": "2023-01",
+        "value": 9520.0,
+        "records": 2
+      },
+      {
+        "month": "2023-02",
+        "value": 9950.0,
+        "records": 2
+      },
+      {
+        "month": "2023-03",
+        "value": 10380.0,
+        "records": 2
+      },
+      {
+        "month": "2023-04",
+        "value": 10810.0,
+        "records": 2
+      },
+      {
+        "month": "2023-05",
+        "value": 11240.0,
+        "records": 2
+      },
+      {
+        "month": "2023-06",
+        "value": 11670.0,
+        "records": 2
+      },
+      {
+        "month": "2023-07",
+        "value": 12100.0,
+        "records": 2
+      },
+      {
+        "month": "2023-08",
+        "value": 12530.0,
+        "records": 2
+      },
+      {
+        "month": "2023-09",
+        "value": 12960.0,
+        "records": 2
+      },
+      {
+        "month": "2023-10",
+        "value": 13390.0,
+        "records": 2
+      },
+      {
+        "month": "2023-11",
+        "value": 13820.0,
+        "records": 2
+      },
+      {
+        "month": "2023-12",
+        "value": 14250.0,
+        "records": 2
+      },
+      {
+        "month": "2024-01",
+        "value": 13720.0,
+        "records": 2
+      },
+      {
+        "month": "2024-02",
+        "value": 14150.0,
+        "records": 2
+      },
+      {
+        "month": "2024-03",
+        "value": 14580.0,
+        "records": 2
+      },
+      {
+        "month": "2024-04",
+        "value": 15010.0,
+        "records": 2
+      },
+      {
+        "month": "2024-05",
+        "value": 15440.0,
+        "records": 2
+      },
+      {
+        "month": "2024-06",
+        "value": 15870.0,
+        "records": 2
+      },
+      {
+        "month": "2024-07",
+        "value": 16300.0,
+        "records": 2
+      },
+      {
+        "month": "2024-08",
+        "value": 16730.0,
+        "records": 2
+      },
+      {
+        "month": "2024-09",
+        "value": 17160.0,
+        "records": 2
+      },
+      {
+        "month": "2024-10",
+        "value": 17590.0,
+        "records": 2
+      },
+      {
+        "month": "2024-11",
+        "value": 18020.0,
+        "records": 2
+      },
+      {
+        "month": "2024-12",
+        "value": 18450.0,
+        "records": 2
+      },
+      {
+        "month": "2025-01",
+        "value": 17920.0,
+        "records": 2
+      },
+      {
+        "month": "2025-02",
+        "value": 18350.0,
+        "records": 2
+      },
+      {
+        "month": "2025-03",
+        "value": 18780.0,
+        "records": 2
+      },
+      {
+        "month": "2025-04",
+        "value": 19210.0,
+        "records": 2
+      },
+      {
+        "month": "2025-05",
+        "value": 19640.0,
+        "records": 2
+      },
+      {
+        "month": "2025-06",
+        "value": 20070.0,
+        "records": 2
+      },
+      {
+        "month": "2025-07",
+        "value": 20500.0,
+        "records": 2
+      },
+      {
+        "month": "2025-08",
+        "value": 20930.0,
+        "records": 2
+      },
+      {
+        "month": "2025-09",
+        "value": 21360.0,
+        "records": 2
+      },
+      {
+        "month": "2025-10",
+        "value": 21790.0,
+        "records": 2
+      },
+      {
+        "month": "2025-11",
+        "value": 22220.0,
+        "records": 2
+      },
+      {
+        "month": "2025-12",
+        "value": 22650.0,
+        "records": 2
+      }
+    ],
+    "forecast": [
+      {
+        "month": "2026-01",
+        "value": 22723.42857142858
+      },
+      {
+        "month": "2026-02",
+        "value": 23082.262548262555
+      },
+      {
+        "month": "2026-03",
+        "value": 23441.09652509653
+      }
+    ],
+    "test": {
+      "actual": [
+        21790.0,
+        22220.0,
+        22650.0
+      ],
+      "predictions": [
+        21560.909090909092,
+        21915.828877005348,
+        22270.748663101607
+      ],
+      "mae": 304.17112299465106,
+      "baseline_predictions": [
+        21360.0,
+        21360.0,
+        21360.0
+      ],
+      "baseline_mae": 860.0
+    },
+    "summary": "linear_trend selected on validation MAE. Final test MAE 304 source units (unconfirmed); naive baseline 860. Forecast 3 future months.",
+    "warnings": [
+      "No causal interpretation or calibrated prediction interval. Seasonal patterns are not modeled in this bounded recipe.",
+      "Final month is treated as complete; remove partial months before forecasting.",
+      "Sum of the selected measure; each row contributes once."
+    ],
+    "execution": "agentcore_code_interpreter",
+    "timing_ms": {
+      "analysis": 1694.35,
+      "end_to_end": 12318.59
+    },
+    "review": {
+      "passed": true,
+      "kind": "independent_deterministic",
+      "checks": [
+        "source_aggregation",
+        "chronological_partitions",
+        "validation_selection",
+        "recomputed_mae",
+        "naive_baseline",
+        "trusted_refit_at_cutoffs",
+        "finite_forecast"
+      ],
+      "limitations": "Independent numerical checks completed; the separate narrative review is recorded below."
+    },
+    "independent_review": {
+      "decision": "accept",
+      "explanation": "The selected method 'linear_trend' has a test MAE of 304.17, which is significantly lower than the baseline MAE of 860.0. All independent deterministic checks have passed. However, the source units are unconfirmed, which is a limitation.",
+      "test_mae": 304.17,
+      "baseline_mae": 860.0,
+      "limitations": [
+        "Source units are unconfirmed."
+      ]
+    },
+    "visuals": [
+      {
+        "id": "history",
+        "title": "History and forecast",
+        "purpose": "See the observed business measure over time. Forecasts have no calibrated interval.",
+        "split": "observed",
+        "dataset_version": "a6c5ef858ca24a138e9c19bc43a42c69",
+        "units": "source units (unconfirmed)",
+        "figure": {
+          "data": [
+            {
+              "type": "scatter",
+              "mode": "lines+markers",
+              "name": "Observed",
+              "x": [
+                "2023-01",
+                "2023-02",
+                "2023-03",
+                "2023-04",
+                "2023-05",
+                "2023-06",
+                "2023-07",
+                "2023-08",
+                "2023-09",
+                "2023-10",
+                "2023-11",
+                "2023-12",
+                "2024-01",
+                "2024-02",
+                "2024-03",
+                "2024-04",
+                "2024-05",
+                "2024-06",
+                "2024-07",
+                "2024-08",
+                "2024-09",
+                "2024-10",
+                "2024-11",
+                "2024-12",
+                "2025-01",
+                "2025-02",
+                "2025-03",
+                "2025-04",
+                "2025-05",
+                "2025-06",
+                "2025-07",
+                "2025-08",
+                "2025-09",
+                "2025-10",
+                "2025-11",
+                "2025-12"
+              ],
+              "y": [
+                9520.0,
+                9950.0,
+                10380.0,
+                10810.0,
+                11240.0,
+                11670.0,
+                12100.0,
+                12530.0,
+                12960.0,
+                13390.0,
+                13820.0,
+                14250.0,
+                13720.0,
+                14150.0,
+                14580.0,
+                15010.0,
+                15440.0,
+                15870.0,
+                16300.0,
+                16730.0,
+                17160.0,
+                17590.0,
+                18020.0,
+                18450.0,
+                17920.0,
+                18350.0,
+                18780.0,
+                19210.0,
+                19640.0,
+                20070.0,
+                20500.0,
+                20930.0,
+                21360.0,
+                21790.0,
+                22220.0,
+                22650.0
+              ]
+            },
+            {
+              "type": "scatter",
+              "mode": "lines+markers",
+              "name": "Forecast",
+              "x": [
+                "2025-12",
+                "2026-01",
+                "2026-02",
+                "2026-03"
+              ],
+              "y": [
+                22650.0,
+                22723.42857142858,
+                23082.262548262555,
+                23441.09652509653
+              ],
+              "line": {
+                "dash": "dash"
+              }
+            }
+          ],
+          "layout": {
+            "xaxis": {
+              "title": "Month",
+              "type": "category"
+            },
+            "yaxis": {
+              "title": "source units (unconfirmed)"
+            },
+            "hovermode": "x unified"
+          }
+        }
+      },
+      {
+        "id": "holdout",
+        "title": "Predictions on untouched test months",
+        "purpose": "Compare actuals with predictions made using only earlier observations.",
+        "split": "test",
+        "dataset_version": "a6c5ef858ca24a138e9c19bc43a42c69",
+        "units": "source units (unconfirmed)",
+        "figure": {
+          "data": [
+            {
+              "type": "scatter",
+              "mode": "lines+markers",
+              "name": "Actual",
+              "x": [
+                "2025-10",
+                "2025-11",
+                "2025-12"
+              ],
+              "y": [
+                21790.0,
+                22220.0,
+                22650.0
+              ]
+            },
+            {
+              "type": "scatter",
+              "mode": "lines+markers",
+              "name": "Selected model",
+              "x": [
+                "2025-10",
+                "2025-11",
+                "2025-12"
+              ],
+              "y": [
+                21560.909090909092,
+                21915.828877005348,
+                22270.748663101607
+              ]
+            },
+            {
+              "type": "scatter",
+              "mode": "lines+markers",
+              "name": "Naive baseline",
+              "x": [
+                "2025-10",
+                "2025-11",
+                "2025-12"
+              ],
+              "y": [
+                21360.0,
+                21360.0,
+                21360.0
+              ]
+            }
+          ],
+          "layout": {
+            "xaxis": {
+              "title": "Month",
+              "type": "category"
+            },
+            "yaxis": {
+              "title": "source units (unconfirmed)"
+            },
+            "hovermode": "x unified"
+          }
+        }
+      },
+      {
+        "id": "validation",
+        "title": "How the method was selected",
+        "purpose": "Lower validation MAE is better. Final test results were not used for selection.",
+        "split": "validation",
+        "dataset_version": "a6c5ef858ca24a138e9c19bc43a42c69",
+        "units": "source units (unconfirmed)",
+        "figure": {
+          "data": [
+            {
+              "type": "bar",
+              "name": "Validation MAE",
+              "x": [
+                "naive",
+                "holt",
+                "linear_trend"
+              ],
+              "y": [
+                860.0,
+                243.7907232676868,
+                116.60956618464964
+              ]
+            }
+          ],
+          "layout": {
+            "xaxis": {
+              "title": "Candidate method",
+              "type": "category"
+            },
+            "yaxis": {
+              "title": "MAE (source units (unconfirmed))"
+            },
+            "hovermode": "x unified"
+          }
+        }
+      }
+    ],
+    "methodology": [
+      {
+        "id": "monthly_sum",
+        "version": "2026-10-31.1",
+        "title": "Monthly aggregation",
+        "what": "Adds the selected business measure within each calendar month to describe historical activity.",
+        "when": "Use for additive amounts such as revenue, costs or units sold when each row contributes once.",
+        "avoid": "Do not sum percentages, prices, averages or account balances without a suitable business definition.",
+        "example": "Illustrative example: two sales of $40 and $60 in January give a January total of $100.",
+        "checks": "The total is recomputed independently from the prepared source. Missing selected dates or amounts stop publication.",
+        "reference": "https://duckdb.org/docs/stable/sql/functions/aggregates.html"
+      },
+      {
+        "id": "naive",
+        "version": "2026-10-31.1",
+        "title": "Naive forecast",
+        "what": "Uses the last observed monthly value for each future month.",
+        "when": "Use as a transparent persistence baseline; more complex models should earn their place against it.",
+        "avoid": "It does not model a trend, seasonality or a change in business conditions.",
+        "example": "Illustrative example: if the latest month was $100, the next three predictions are each $100.",
+        "checks": "Compare forecast error on exactly the same held-out months as competing models.",
+        "reference": "https://otexts.com/fpp3/simple-methods.html",
+        "disposition": "Compared on validation MAE; not selected"
+      },
+      {
+        "id": "holt",
+        "version": "2026-10-31.1",
+        "title": "Damped Holt trend",
+        "what": "Smooths the level and trend, gradually reducing the extrapolated trend farther into the future.",
+        "when": "Consider when a regularly spaced monthly history has a changing level and a trend.",
+        "avoid": "This recipe has no seasonal component. Structural changes or a short history can make extrapolation unreliable.",
+        "example": "Illustrative example: recent steady growth can continue, with smaller trend contributions farther ahead.",
+        "checks": "Fit only earlier months, compare validation MAE, and assess the chosen method on a later untouched test window.",
+        "reference": "https://www.statsmodels.org/stable/generated/statsmodels.tsa.holtwinters.Holt.html",
+        "disposition": "Compared on validation MAE; not selected"
+      },
+      {
+        "id": "linear_trend",
+        "version": "2026-10-31.1",
+        "title": "Linear trend",
+        "what": "Fits a straight line to the measure over time and extends that line.",
+        "when": "Consider for an approximately steady increase or decrease over the observed period.",
+        "avoid": "A straight line can miss seasonality, turning points and limits on growth. It does not explain causes.",
+        "example": "Illustrative example: a fitted increase of $10 per month extends that change into each future month.",
+        "checks": "Select on earlier validation observations; report performance on the separate final test observations.",
+        "reference": "https://numpy.org/doc/stable/reference/generated/numpy.polyfit.html",
+        "disposition": "Selected on validation MAE"
+      },
+      {
+        "id": "chronological_validation",
+        "version": "2026-10-31.1",
+        "title": "Chronological validation and test",
+        "what": "Uses earlier months to fit, the next months to choose a method, and the final months to evaluate it.",
+        "when": "Use for forecasts where future information must not influence a prediction of the past.",
+        "avoid": "Do not use the final test error to keep selecting models. A single holdout does not establish performance across all seasons.",
+        "example": "Illustrative example: train on months 1\u201318, select on 19\u201321 and test on 22\u201324. Actual cutoffs depend on this run.",
+        "checks": "Source dates, non-overlapping cutoffs and trusted model refits are checked independently.",
+        "reference": "https://otexts.com/fpp3/tscv.html"
+      },
+      {
+        "id": "mae",
+        "version": "2026-10-31.1",
+        "title": "Mean absolute error (MAE)",
+        "what": "The average distance between actual values and predictions, in the original measure\u2019s units.",
+        "when": "Use to compare prediction errors on the same observations. Smaller is better.",
+        "avoid": "MAE is not a percentage or a probability. Comparing unrelated datasets with different scales is misleading.",
+        "example": "Illustrative example: errors of $10 and $30 have an MAE of $20.",
+        "checks": "MAE is recomputed from the actual and predicted values, including the naive baseline.",
+        "reference": "https://otexts.com/fpp3/accuracy.html"
+      }
+    ]
+  }
+}

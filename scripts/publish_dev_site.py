@@ -15,7 +15,7 @@ def main():
     args = parser.parse_args()
     assets = {'index.html': ('static/index.html', 'text/html; charset=utf-8')}
     for name, kind in [('workspace.js', 'application/javascript'), ('experience.js', 'application/javascript'),
-                       ('drafts.js','application/javascript'),('vendor/echarts-6.1.0.min.js','application/javascript'),('vendor/echarts-6.1.0-LICENSE.txt','text/plain'),('vendor/echarts-6.1.0-NOTICE.txt','text/plain'),('vendor/d3-7.9.0-LICENSE.txt','text/plain'),('vendor/d3-7.9.0.min.js','application/javascript'),('speech.js','application/javascript'),('pcm-worklet.js','application/javascript'),
+                       ('drafts.js','application/javascript'),('vendor/echarts-6.1.0.min.js','application/javascript'),('vendor/echarts-6.1.0-LICENSE.txt','text/plain'),('vendor/echarts-6.1.0-NOTICE.txt','text/plain'),('workflow.js','application/javascript'),('workflow.css','text/css'),('workflow-LICENSE.txt','text/plain'),('speech.js','application/javascript'),('pcm-worklet.js','application/javascript'),
                        ('auth.js', 'application/javascript'),
                        ('workspace.css', 'text/css'), ('favicon.svg', 'image/svg+xml'), ('monthly_revenue.csv', 'text/csv')]:
         assets['static/' + name] = ('static/' + name, kind)

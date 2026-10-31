@@ -22,6 +22,9 @@ jobs:
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:
           node-version: "22"
+      - run: npm ci --ignore-scripts --no-fund && npm run build && npm audit --omit=dev
+        working-directory: frontend/workflow
+      - run: git diff --exit-code -- static/workflow.js static/workflow.css static/workflow-LICENSE.txt
       - run: python -m pip install -r requirements-test.txt
       - run: python -m unittest discover -s tests -v
       - run: node --test tests/*.test.cjs tests/*.test.mjs

@@ -66,21 +66,10 @@ window.vdsExperience = (() => {
   }
   function dispose(element){element.vdsResize?.disconnect();window.echarts?.getInstanceByDom(element)?.dispose();}
   function workflow(run,element){
-    const d3=window.d3;if(!d3 || !element)return;
-    const keys=run.plan?.tier==="quick" ? [["query","Data query"],["numerical_checks","Checks"],["publication","Results"]] :
-      [["analyst","Analyst"],["interpreter","Code Interpreter"],["numerical_checks","Checks"],["reviewer","Reviewer"],["publication","Results"]];
-    const latest=new Map((run.events || []).map(e=>[e.stage,e]));
-    const nodes=[["planner","Orchestrator"],...keys].map(([id,label],i)=>({id,label,x:i===0 ? 330:65+(i-1)*530/Math.max(1,keys.length-1),y:i===0 ? 35:130,
-      status:latest.get(id)?.status || (["queued","running","reviewing"].includes(run.status) ? "queued":"skipped")}));
-    const svg=d3.select(element).append("svg").attr("viewBox","0 0 660 175").attr("class","agent-graph").attr("role","img").attr("aria-label","Orchestrator and analysis agents; activity is based on recorded events.");
-    svg.append("title").text(nodes.map(n=>n.label+": "+n.status).join(". "));
-    const links=nodes.slice(1).map((n,i)=>({source:i===0 ? nodes[0]:nodes[i],target:n}));
-    svg.selectAll("path").data(links).join("path").attr("class","edge").attr("d",d3.linkVertical().x(n=>n.x).y(n=>n.y));
-    const groups=svg.selectAll("g.node").data(nodes).join("g").attr("class",n=>"node "+n.status).attr("transform",n=>`translate(${n.x},${n.y})`);
-    groups.append("rect").attr("x",-60).attr("y",-24).attr("width",120).attr("height",48).attr("rx",8);
-    groups.append("text").attr("text-anchor","middle").attr("y",-2).text(n=>n.label);
-    groups.append("text").attr("class","state").attr("text-anchor","middle").attr("y",14).text(n=>n.status==="started" ? "Working":n.status);
+    if(window.vdsWorkflow)window.vdsWorkflow.render(run,element);
+    else if(element)element.textContent='Recorded progress is available in the activity timeline.';
   }
+  function disposeWorkflow(element){window.vdsWorkflow?.dispose(element);}
   async function exportFigure(visual,palette,kind,element) {
     const fig=styled(visual,palette),options=option(visual,palette),name=visual.id.replace(/[^a-z0-9_-]/gi,"_");
     if(kind==="svg" || kind==="png"){
@@ -110,5 +99,5 @@ window.vdsExperience = (() => {
       save(name+".html",`<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>Saved analytical figure</title><div id="chart" style="width:100%;height:80vh;min-height:400px"></div><script>${library}</script><script>const chart=echarts.init(document.getElementById('chart'),null,{renderer:'svg'});chart.setOption(${payload});new ResizeObserver(()=>chart.resize()).observe(chart.getDom());</script><!-- Apache ECharts license and NOTICE\n${license}\n--></html>`,"text/html");
     }
   }
-  return {palettes,figures,styled,option,render,dispose,workflow,save,exportFigure};
+  return {palettes,figures,styled,option,render,dispose,workflow,disposeWorkflow,save,exportFigure};
 })();

@@ -66,7 +66,7 @@ sheet/date context for another upload.
 Core experience changes are implemented and deployed in the existing development
 stacks. Source and acceptance are linked from `docs/implementation-status.md`.
 
-- Apache ECharts 6.1.0 renders checked browser figures; D3.js 7.9.0 draws activity.
+- Apache ECharts 6.1.0 renders checked browser figures; React Flow 12.12.0 draws activity.
   Plotly manifests/Python exports remain compatible. The left chat selects the
   evidence view on the right; forecast follow-ups retain prior-plan context.
   Four palettes preserve numbers and apply to individual exports and code bundles.
@@ -118,7 +118,7 @@ The application run ID remains a correlation ID, not an OTEL distributed trace.
 | `scripts/render_web_stack.py`, `build_web_gateway.py`, `publish_dev_site.py` | Separate hosted stack, minimal ARM64 package and static allowlist |
 | `scripts/hosted_acceptance.py`, `tests/auth.test.cjs` | Temporary-user live acceptance and browser authentication contracts |
 | `analysis_engine/cloud_proxy.py`, `workspace_http.py` | Optional loopback HTTP and IAM runtime invocation |
-| `static/index.html`, `workspace.js/css`, `experience.js`, `speech.js` | Left chat, ECharts figures, D3 activity, themes, lessons, dictation and exports |
+| `static/index.html`, `workspace.js/css`, `experience.js`, `speech.js` | Left chat, ECharts figures, React Flow activity, themes, lessons, dictation and exports |
 | `presentation.py`, `exports.py`, `quotas.py`, `telemetry.py` | Reviewed suggestions/lessons, immutable reproduction bundles, transactional usage and content-free events |
 | `aws_backend/streaming/`, `web_sessions.py` | Native SSE/Transcribe proxy and atomic guest/account namespace claims |
 | `scripts/cloud_acceptance.py`, `cloud_safety_acceptance.py`, `cloud_smoke.py` | Explicit live acceptance, lifecycle and library/PNG proof |
@@ -193,7 +193,7 @@ these do not establish a temporal/grouped production contract.
 ## Validation and commands
 
 See `docs/validation.md` and `docs/deployment/` for exact evidence. Final suite:
-79 Python tests and seventeen Node tests passed, plus compile/JS syntax/package
+79 Python tests and twenty-three Node tests passed, plus compile/JS syntax/package
 checks, actual image/CF deployment
 and live synthetic/browser acceptance. The managed interpreter libraries differ
 from the pinned container; cross-version numerical refits passed for the fixture.
@@ -313,3 +313,42 @@ request returning the same job. Synthetic data/results were deleted. This
 raised development admissions to 15/20. Both final image scans have no critical
 or high findings and the same two medium findings documented in the prior risk
 review. Frontend npm dependency audit: zero reported vulnerabilities.
+
+## React Flow activity viewer — October 31 update
+
+The hosted frontend now uses React Flow 12.12.0 + React/ReactDOM 19.3.1 for the
+execution canvas. ECharts remains responsible for analytical charts; the direct
+D3 map is superseded. The backend stays release 17 / runtime version 16.
+
+- `frontend/workflow/model.mjs`: pure projection of the selected plan and actual
+  stage events, ordered by sequence and repair attempt. Unknown paths expose
+  only the orchestrator; missing terminal telemetry is "Not recorded".
+- `frontend/workflow/view.jsx` + `view.css`: custom role cards, active paths,
+  inspector, responsive routing, pan/zoom/Fit, larger view, keyboard buttons
+  and reduced motion. A layout-fit component waits for measured nodes and real
+  viewport dimensions. This prevents clipping when changing canvas size.
+- `frontend/workflow/build.mjs` and pinned lockfile: reproducible production
+  bundle, CSS and third-party licenses. CI rebuilds and compares the shipped
+  artifacts and audits dependencies. `npm run build --prefix frontend/workflow`.
+- `static/workspace.js` preserves the same flow element/root across stage
+  updates and disposes it on result change or deletion, retaining manual node
+  selection and viewport. `experience.js` delegates flow rendering to the island.
+
+Live forecast `f44d676dda903049d74dd76ca53d1f01` passed numerical checks and
+independent review, used 4,568 measured tokens, and its Interpreter was confirmed
+TERMINATED. Browser observation captured working orchestrator, analyst,
+Interpreter and reviewer plus animated handoffs, preserved viewport/selection,
+six completed nodes, three charts, reload and mobile. Synthetic data/results
+and temporary users were deleted. Global admissions were observed at 18/20;
+the ledger was not reset. Current frontend evidence: `docs/deployment/react-flow-hosted-acceptance.json`.
+
+Principal engineer: a React island projects persisted events into a controlled,
+read-only graph. Topology changes refit measured node bounds; event-only changes
+preserve viewport and selection. Cleanup explicitly unmounts the retained root.
+
+Undergraduate: the server records which step started or finished. The browser
+turns those records into cards and connecting paths. Zooming or selecting a card
+changes only the view; a later server update keeps that view intact.
+
+Non-technical: you can watch the analysis team work, zoom in and inspect each
+step without interrupting the analysis.

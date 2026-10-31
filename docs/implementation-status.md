@@ -19,7 +19,7 @@ correction. Source plans in `docs/plans/` describe the larger target.
 | Cancellation and cleanup | Application terminal-state/no-late-result check; direct live sandbox cancel and normal sessions confirmed TERMINATED |
 | Ownership/idempotency/deletion | Live wrong-owner reads/deletes denied, key conflict rejected, deleted run inaccessible and S3 prefix empty |
 | Frontend and verified-user gateway | Hosted CloudFront/Cognito/Lambda path passed Excel upload/chart/forecast/reload/download/logout; optional local bridge retained |
-| ECharts, D3 and palettes | Three complementary forecast figures; hover, four palettes, exact tables, PNG/SVG/HTML/JavaScript/Python downloads, linked time views and mobile layout verified |
+| ECharts, React Flow and palettes | Three complementary forecast figures; hover, four palettes, exact tables, PNG/SVG/HTML/JavaScript/Python downloads, linked time views and mobile layout verified |
 | Chat and login continuity | Left conversation / right selected evidence; actual Back, question/file preservation, one automatic job after sign-in, reload without repeat submission, and logout revocation verified |
 | Learning and suggestions | Reviewed method catalog and profile-driven eligible questions; no technical mapping or automatic paid analysis |
 | Agent activity and streaming | Real ordered stage events, active highlights, persisted replay and single-use tickets; native Lambda SSE through CloudFront verified |
@@ -33,7 +33,7 @@ correction. Source plans in `docs/plans/` describe the larger target.
 
 `docs/deployment/` contains sanitized actual acceptance/scan/cleanup records.
 Detailed generated run evidence remains under ignored `data/` and in S3 subject
-to development retention. The suite has 79 passing Python tests and seventeen passing Node tests. See validation
+to development retention. The suite has 79 passing Python tests and twenty-three passing Node tests. See validation
 for exact commands, earlier local proof and unverified boundaries.
 
 ## Shortcuts and upgrade conditions
@@ -60,3 +60,8 @@ two medium findings; see `deployment/dev-v2-image-risk-review.md`. Existing
 CDK dependency advisories remain separate. The consulting website's earlier auth/503 behavior,
 production load, real customer-data accuracy and general cloud ML/research are
 not claimed verified.
+
+React Flow replaces the D3 activity map in the latest frontend. Real hosted
+forecast stage highlights, animated handoffs, node inspection, state preservation,
+responsive layout, resize fitting, cleanup and unchanged analytical charts passed.
+See `deployment/react-flow-hosted-acceptance.json` and `plans/react-flow-activity.md`.

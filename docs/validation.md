@@ -1,5 +1,28 @@
 # Validation record
 
+## React Flow viewer — current frontend
+
+- 79 Python tests and 23 Node tests pass. The frontend build and full dependency
+  audit pass; CI rebuilds the self-hosted JS/CSS/licenses for reproducibility.
+- Local replay uses `tests/fixtures/workflow-forecast.json`, a sanitized earlier
+  hosted forecast. It is explicitly a replay, separate from the new live check.
+- Live hosted forecast `f44d676dda903049d74dd76ca53d1f01` succeeded in unchanged
+  backend release 17. Working orchestrator/analyst/Interpreter/reviewer and active
+  handoffs were observed through actual persisted SSE events. Six graph nodes
+  completed and three analytical charts rendered. Independent review accepted;
+  MAE 304.17112299465106; Interpreter TERMINATED; measured model tokens 4,568.
+- Node inspection, keyboard activation, zoom, same-canvas/viewport/selection
+  preservation, reduced motion, repeated larger/compact fitting, mobile, reload
+  and disposal on dataset deletion passed. There was no horizontal overflow at
+  390px. Synthetic data/results and temporary users were removed.
+- Global admissions were 18/20 at this check and were never reset. No runtime,
+  Cognito or infrastructure deployment was needed; only static assets changed.
+- [Hosted evidence](deployment/react-flow-hosted-acceptance.json),
+  [canvas screenshot](agent-flow-react-flow.png),
+  [plan/source boundaries](plans/react-flow-activity.md).
+
+
+
 ## Chat / preview releases 16–17 — current evidence
 
 - 79 Python tests and 17 Node tests; source compilation, JS syntax, pip check and

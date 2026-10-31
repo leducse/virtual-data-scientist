@@ -56,7 +56,7 @@ After profiling, supported analysis suggestions explain why they fit the data.
 Chat sits on the left; selected evidence sits on the right. Follow-up analysis
 questions preserve the previous plan context. Results include reviewed
 methodology lessons, interactive Apache ECharts figures, four
-palettes, exact values and a D3.js map driven by real agent/tool activity. Forecasts include history,
+palettes, exact values and a React Flow canvas driven by real agent/tool activity. Forecasts include history,
 untouched test predictions and validation-only model comparison.
 
 Download PNG/SVG, self-contained chart HTML, ECharts JSON/JavaScript and Python/Plotly, full evidence,
@@ -150,7 +150,7 @@ node --check static/workspace.js
 The last two commands only describe actions. Their `--execute` forms perform
 billable cloud work; use them within an explicitly authorized scope.
 [Cloud operations](docs/cloud-trial.md) records the actual approval and commands.
-The 79-test Python suite and 17 Node tests include mocked AWS state, lifecycle,
+The 79-test Python suite and 23 Node tests include mocked AWS state, lifecycle,
 quota and browser contracts; live cloud proof is recorded separately. The final
 Amazon Linux image scan reports no critical/high findings and two medium OS
 findings. [Image review](docs/deployment/dev-v2-image-risk-review.md) and
@@ -160,3 +160,25 @@ Without `VDS_RUNTIME_ARN`, `server.py` runs the local verification backend with
 SQLite/fixed recipes. This fallback is useful for repeatable checks; the hosted HTTPS
 workspace is the deployed development product. [Historical workbench](docs/legacy-workbench.md)
 and [source plans](docs/plans/implementation-plan.md) retain older context.
+
+## Build the agent flow viewer
+
+The activity canvas uses React Flow 12.12.0 as a small React island inside the
+existing workspace. It supports custom role cards, actual working/completed
+states, animated active handoffs, node inspection, pan/zoom/Fit, larger view,
+compact mobile routing and reduced motion. Manual inspection and viewport state
+survive streamed events. ECharts remains the analytical chart engine.
+
+```bash
+npm ci --ignore-scripts --prefix frontend/workflow
+npm run build --prefix frontend/workflow
+node --test tests/workflow.test.mjs
+```
+
+Sources and the pinned lockfile are in `frontend/workflow/`. The build produces
+self-hosted `static/workflow.js`, CSS and third-party license notices; CI verifies
+they reproduce exactly. No React migration of the rest of the app is required.
+[Flow acceptance](docs/deployment/react-flow-hosted-acceptance.json) ·
+[Implementation plan](docs/plans/react-flow-activity.md)
+
+![Agent flow on the hosted workspace](docs/agent-flow-react-flow.png)
