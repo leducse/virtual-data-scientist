@@ -2563,6 +2563,11 @@ class POCHandler(BaseHTTPRequestHandler):
         parsed = urlparse(self.path)
         path = unquote(parsed.path)
 
+        if path.startswith("/api/v2/"):
+            from analysis_engine.workspace_http import handle
+            handle(self, "GET", DATA_DIR)
+            return
+
         if path == "/api/health":
             return self.send_json({"ok": True, "time": utc_now()})
         if path == "/api/config/status":
@@ -2596,6 +2601,8 @@ class POCHandler(BaseHTTPRequestHandler):
             return self.send_json({"ok": False, "error": "Report not found."}, 404)
         if path.startswith("/published/"):
             return self.serve_static("published.html")
+        if path == "/studio":
+            return self.serve_static("studio.html")
         if path == "/":
             return self.serve_static("index.html")
         if path.startswith("/static/"):
@@ -2606,6 +2613,11 @@ class POCHandler(BaseHTTPRequestHandler):
     def do_POST(self) -> None:  # noqa: N802
         parsed = urlparse(self.path)
         path = parsed.path
+
+        if path.startswith("/api/v2/"):
+            from analysis_engine.workspace_http import handle
+            handle(self, "POST", DATA_DIR)
+            return
 
         try:
             payload = self.read_json()

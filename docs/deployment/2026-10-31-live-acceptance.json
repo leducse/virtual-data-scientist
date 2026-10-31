@@ -1,0 +1,642 @@
+[
+  {
+    "source": "data/cloud-csv-acceptance-04.json",
+    "dataset_id": "8e7575c978b8456c9b167f3a4d8a8f1a",
+    "name": "synthetic_revenue.csv",
+    "profile": {
+      "rows": 72,
+      "columns": [
+        {
+          "name": "date",
+          "type": "date32[day]",
+          "missing": 0,
+          "role": "time",
+          "units": null,
+          "distinct": 36,
+          "min": "2023-01-01",
+          "max": "2025-12-01"
+        },
+        {
+          "name": "revenue",
+          "type": "double",
+          "missing": 0,
+          "role": "measure",
+          "units": null,
+          "distinct": 72,
+          "min": 3808.0,
+          "max": 13590.0
+        },
+        {
+          "name": "region",
+          "type": "string",
+          "missing": 0,
+          "role": "category",
+          "units": null,
+          "distinct": 2
+        }
+      ],
+      "sheet": null,
+      "header_row": 1,
+      "duplicates": 0,
+      "preparation": "automatic-v2",
+      "warnings": [
+        "Calendar-month aggregation; inferred business meaning is recorded in the analysis plan."
+      ]
+    },
+    "reconnect_passed": true,
+    "owner_isolation_passed": true,
+    "runs": [
+      {
+        "id": "47c252d2767dc327974a0c0a2e3cceb6",
+        "status": "succeeded",
+        "question": "Show monthly revenue",
+        "plan": {
+          "dataset_version": "8e7575c978b8456c9b167f3a4d8a8f1a",
+          "revision": 1,
+          "question": "Show monthly revenue",
+          "tier": "quick",
+          "task": "monthly_summary",
+          "metric": "revenue",
+          "clarification": null,
+          "time_column": "date",
+          "features": [],
+          "horizon": 3,
+          "units": "source units (unconfirmed)",
+          "definition": "Sum of the revenue for each calendar month.",
+          "calendar": "calendar_month",
+          "validation": "exact_aggregation",
+          "methods": [
+            "duckdb_monthly_sum"
+          ],
+          "max_seconds": 120,
+          "max_candidates": 2,
+          "research_requirement": "none",
+          "reason": "To provide a monthly summary of the revenue.",
+          "planner": "strands",
+          "release": "tabular-local-v1"
+        },
+        "execution": "trusted_duckdb",
+        "total": 579060.0,
+        "observed_months": 36,
+        "forecast": null,
+        "selected_method": null,
+        "test": null,
+        "review": {
+          "passed": true,
+          "checks": [
+            "independent_total",
+            "complete_selected_columns"
+          ],
+          "kind": "deterministic"
+        },
+        "independent_review": null,
+        "timing_ms": {
+          "query": 53.84,
+          "end_to_end": 3077.6
+        },
+        "versions": {
+          "pyarrow": "23.0.1",
+          "duckdb": "1.5.6"
+        },
+        "sandbox_session": null,
+        "model_usage": [
+          {
+            "role": "You are the task orchestrator for a tabu",
+            "usage": {
+              "inputTokens": 1781,
+              "outputTokens": 293,
+              "totalTokens": 2074
+            },
+            "model_id": "us.amazon.nova-pro-v1:0"
+          }
+        ],
+        "evidence": {
+          "dataset_version": "8e7575c978b8456c9b167f3a4d8a8f1a",
+          "source_sha256": "b8e414fe9e8572ae77d6284b85a9695e1b169d62f0b9f756b23798be2aad510e",
+          "parquet_sha256": "ce9cb0557731c38ee90738e6beed42f07c01cc5e56c8e904c8420bb1c67d5c83",
+          "plan": {
+            "dataset_version": "8e7575c978b8456c9b167f3a4d8a8f1a",
+            "revision": 1,
+            "question": "Show monthly revenue",
+            "tier": "quick",
+            "task": "monthly_summary",
+            "metric": "revenue",
+            "clarification": null,
+            "time_column": "date",
+            "features": [],
+            "horizon": 3,
+            "units": "source units (unconfirmed)",
+            "definition": "Sum of the revenue for each calendar month.",
+            "calendar": "calendar_month",
+            "validation": "exact_aggregation",
+            "methods": [
+              "duckdb_monthly_sum"
+            ],
+            "max_seconds": 120,
+            "max_candidates": 2,
+            "research_requirement": "none",
+            "reason": "To provide a monthly summary of the revenue.",
+            "planner": "strands",
+            "release": "tabular-local-v1"
+          },
+          "runtime": "agentcore_container",
+          "release": "dev-20261031-04",
+          "model_id": "us.amazon.nova-pro-v1:0",
+          "owner_scope": "IAM-authenticated development gateway"
+        }
+      },
+      {
+        "id": "ff569340b53b397185a4c8be468bce40",
+        "status": "succeeded",
+        "question": "Forecast the next three months",
+        "plan": {
+          "dataset_version": "8e7575c978b8456c9b167f3a4d8a8f1a",
+          "revision": 2,
+          "question": "Forecast the next three months",
+          "tier": "deep",
+          "task": "forecast",
+          "metric": "revenue",
+          "clarification": null,
+          "time_column": "date",
+          "features": [],
+          "horizon": 3,
+          "units": "source units (unconfirmed)",
+          "definition": "Sum of the revenue for each calendar month.",
+          "calendar": "calendar_month",
+          "validation": "chronological_train_validation_test",
+          "methods": [
+            "naive",
+            "holt",
+            "linear_trend"
+          ],
+          "max_seconds": 120,
+          "max_candidates": 2,
+          "research_requirement": "none",
+          "reason": "To forecast the next three months of revenue.",
+          "planner": "strands",
+          "release": "tabular-local-v1"
+        },
+        "execution": "agentcore_code_interpreter",
+        "total": null,
+        "observed_months": 36,
+        "forecast": [
+          {
+            "month": "2026-01",
+            "value": 22723.42857142858
+          },
+          {
+            "month": "2026-02",
+            "value": 23082.262548262555
+          },
+          {
+            "month": "2026-03",
+            "value": 23441.09652509653
+          }
+        ],
+        "selected_method": "linear_trend",
+        "test": {
+          "actual": [
+            21790.0,
+            22220.0,
+            22650.0
+          ],
+          "predictions": [
+            21560.909090909092,
+            21915.828877005348,
+            22270.748663101607
+          ],
+          "mae": 304.17112299465106,
+          "baseline_predictions": [
+            21360.0,
+            21360.0,
+            21360.0
+          ],
+          "baseline_mae": 860.0
+        },
+        "review": {
+          "passed": true,
+          "kind": "independent_deterministic",
+          "checks": [
+            "source_aggregation",
+            "chronological_partitions",
+            "validation_selection",
+            "recomputed_mae",
+            "naive_baseline",
+            "trusted_refit_at_cutoffs",
+            "finite_forecast"
+          ],
+          "limitations": "Independent numerical checks completed; the separate narrative review is recorded below."
+        },
+        "independent_review": {
+          "decision": "accept",
+          "explanation": "The test MAE of 304.17 is significantly lower than the baseline MAE of 860.0, indicating that the linear trend method performs better than the naive baseline. All independent deterministic checks have passed.",
+          "test_mae": 304.17,
+          "baseline_mae": 860.0,
+          "limitations": [
+            "Source units are unconfirmed.",
+            "Narrative review is separate from numerical checks."
+          ]
+        },
+        "timing_ms": {
+          "analysis": 2615.79,
+          "end_to_end": 15201.61
+        },
+        "versions": {
+          "pyarrow": "17.0.0",
+          "duckdb": "1.3.2",
+          "numpy": "1.26.4",
+          "pandas": "2.3.1",
+          "scipy": "1.16.0",
+          "scikit-learn": "1.5.0",
+          "statsmodels": "0.14.5"
+        },
+        "sandbox_session": "01M69E8HVG4S3JZA65A56QXWE7",
+        "model_usage": [
+          {
+            "role": "You are the task orchestrator for a tabu",
+            "usage": {
+              "inputTokens": 1989,
+              "outputTokens": 362,
+              "totalTokens": 2351
+            },
+            "model_id": "us.amazon.nova-pro-v1:0"
+          },
+          {
+            "role": "Return an AnalystProgram for the approve",
+            "usage": {
+              "inputTokens": 1067,
+              "outputTokens": 266,
+              "totalTokens": 1333
+            },
+            "model_id": "us.amazon.nova-pro-v1:0"
+          },
+          {
+            "role": "Independently assess checked analytical ",
+            "usage": {
+              "inputTokens": 849,
+              "outputTokens": 276,
+              "totalTokens": 1125
+            },
+            "model_id": "us.amazon.nova-pro-v1:0"
+          }
+        ],
+        "evidence": {
+          "dataset_version": "8e7575c978b8456c9b167f3a4d8a8f1a",
+          "source_sha256": "b8e414fe9e8572ae77d6284b85a9695e1b169d62f0b9f756b23798be2aad510e",
+          "parquet_sha256": "ce9cb0557731c38ee90738e6beed42f07c01cc5e56c8e904c8420bb1c67d5c83",
+          "plan": {
+            "dataset_version": "8e7575c978b8456c9b167f3a4d8a8f1a",
+            "revision": 2,
+            "question": "Forecast the next three months",
+            "tier": "deep",
+            "task": "forecast",
+            "metric": "revenue",
+            "clarification": null,
+            "time_column": "date",
+            "features": [],
+            "horizon": 3,
+            "units": "source units (unconfirmed)",
+            "definition": "Sum of the revenue for each calendar month.",
+            "calendar": "calendar_month",
+            "validation": "chronological_train_validation_test",
+            "methods": [
+              "naive",
+              "holt",
+              "linear_trend"
+            ],
+            "max_seconds": 120,
+            "max_candidates": 2,
+            "research_requirement": "none",
+            "reason": "To forecast the next three months of revenue.",
+            "planner": "strands",
+            "release": "tabular-local-v1"
+          },
+          "runtime": "agentcore_container",
+          "release": "dev-20261031-04",
+          "model_id": "us.amazon.nova-pro-v1:0",
+          "owner_scope": "IAM-authenticated development gateway"
+        }
+      }
+    ]
+  },
+  {
+    "source": "data/cloud-xlsx-acceptance-05.json",
+    "dataset_id": "f2214ce5b8264ba89d3c19e4cdd0e7cd",
+    "name": "synthetic_business.xlsx",
+    "profile": {
+      "rows": 72,
+      "columns": [
+        {
+          "name": "When Sold",
+          "type": "date32[day]",
+          "missing": 0,
+          "role": "time",
+          "units": null,
+          "distinct": 36,
+          "min": "2023-01-01",
+          "max": "2025-12-01"
+        },
+        {
+          "name": "Net Sales",
+          "type": "double",
+          "missing": 0,
+          "role": "measure",
+          "units": null,
+          "distinct": 72,
+          "min": 3808.0,
+          "max": 13590.0
+        },
+        {
+          "name": "Business Unit",
+          "type": "string",
+          "missing": 0,
+          "role": "category",
+          "units": null,
+          "distinct": 2
+        }
+      ],
+      "sheet": "Transactions",
+      "header_row": 2,
+      "duplicates": 0,
+      "preparation": "automatic-v2",
+      "warnings": [
+        "Calendar-month aggregation; inferred business meaning is recorded in the analysis plan."
+      ]
+    },
+    "reconnect_passed": true,
+    "owner_isolation_passed": true,
+    "runs": [
+      {
+        "id": "ca241719ffd3ba17bfe691900d2bd700",
+        "status": "succeeded",
+        "question": "Show monthly revenue",
+        "plan": {
+          "dataset_version": "f2214ce5b8264ba89d3c19e4cdd0e7cd",
+          "revision": 1,
+          "question": "Show monthly revenue",
+          "tier": "quick",
+          "task": "monthly_summary",
+          "metric": "Net Sales",
+          "clarification": null,
+          "time_column": "When Sold",
+          "features": [],
+          "horizon": 3,
+          "units": "source units (unconfirmed)",
+          "definition": "Sum of the selected measure; each row contributes once.",
+          "calendar": "calendar_month",
+          "validation": "exact_aggregation",
+          "methods": [
+            "duckdb_monthly_sum"
+          ],
+          "max_seconds": 120,
+          "max_candidates": 2,
+          "research_requirement": "none",
+          "reason": "User requested to show monthly revenue.",
+          "planner": "strands",
+          "release": "tabular-local-v1"
+        },
+        "execution": "trusted_duckdb",
+        "total": 579060.0,
+        "observed_months": 36,
+        "forecast": null,
+        "selected_method": null,
+        "test": null,
+        "review": {
+          "passed": true,
+          "checks": [
+            "independent_total",
+            "complete_selected_columns"
+          ],
+          "kind": "deterministic"
+        },
+        "independent_review": null,
+        "timing_ms": {
+          "query": 54.49,
+          "end_to_end": 3143.71
+        },
+        "versions": {
+          "pyarrow": "23.0.1",
+          "duckdb": "1.5.6"
+        },
+        "sandbox_session": null,
+        "model_usage": [
+          {
+            "role": "You are the task orchestrator for a tabu",
+            "usage": {
+              "inputTokens": 1782,
+              "outputTokens": 235,
+              "totalTokens": 2017
+            },
+            "model_id": "us.amazon.nova-pro-v1:0"
+          }
+        ],
+        "evidence": {
+          "dataset_version": "f2214ce5b8264ba89d3c19e4cdd0e7cd",
+          "source_sha256": "e98670a4a97362b43b64d7df7295f565d45bf0b342eee0f257ffd322bd15ad13",
+          "parquet_sha256": "70cfaed8d6dbeff141d55faf9378130ffcc5b72fe82b2b11a2dbf27e6bebef66",
+          "plan": {
+            "dataset_version": "f2214ce5b8264ba89d3c19e4cdd0e7cd",
+            "revision": 1,
+            "question": "Show monthly revenue",
+            "tier": "quick",
+            "task": "monthly_summary",
+            "metric": "Net Sales",
+            "clarification": null,
+            "time_column": "When Sold",
+            "features": [],
+            "horizon": 3,
+            "units": "source units (unconfirmed)",
+            "definition": "Sum of the selected measure; each row contributes once.",
+            "calendar": "calendar_month",
+            "validation": "exact_aggregation",
+            "methods": [
+              "duckdb_monthly_sum"
+            ],
+            "max_seconds": 120,
+            "max_candidates": 2,
+            "research_requirement": "none",
+            "reason": "User requested to show monthly revenue.",
+            "planner": "strands",
+            "release": "tabular-local-v1"
+          },
+          "runtime": "agentcore_container",
+          "release": "dev-20261031-05",
+          "model_id": "us.amazon.nova-pro-v1:0",
+          "owner_scope": "IAM-authenticated development gateway"
+        }
+      },
+      {
+        "id": "c17b9ead260fe1b1f30ed4d72e77dad9",
+        "status": "succeeded",
+        "question": "Forecast the next three months",
+        "plan": {
+          "dataset_version": "f2214ce5b8264ba89d3c19e4cdd0e7cd",
+          "revision": 2,
+          "question": "Forecast the next three months",
+          "tier": "deep",
+          "task": "forecast",
+          "metric": "Net Sales",
+          "clarification": null,
+          "time_column": "When Sold",
+          "features": [],
+          "horizon": 3,
+          "units": "source units (unconfirmed)",
+          "definition": "Sum of the selected measure; each row contributes once.",
+          "calendar": "calendar_month",
+          "validation": "chronological_train_validation_test",
+          "methods": [
+            "naive",
+            "holt",
+            "linear_trend"
+          ],
+          "max_seconds": 120,
+          "max_candidates": 2,
+          "research_requirement": "none",
+          "reason": "Predict future sales based on historical data.",
+          "planner": "strands",
+          "release": "tabular-local-v1"
+        },
+        "execution": "agentcore_code_interpreter",
+        "total": null,
+        "observed_months": 36,
+        "forecast": [
+          {
+            "month": "2026-01",
+            "value": 22723.42857142858
+          },
+          {
+            "month": "2026-02",
+            "value": 23082.262548262555
+          },
+          {
+            "month": "2026-03",
+            "value": 23441.09652509653
+          }
+        ],
+        "selected_method": "linear_trend",
+        "test": {
+          "actual": [
+            21790.0,
+            22220.0,
+            22650.0
+          ],
+          "predictions": [
+            21560.909090909092,
+            21915.828877005348,
+            22270.748663101607
+          ],
+          "mae": 304.17112299465106,
+          "baseline_predictions": [
+            21360.0,
+            21360.0,
+            21360.0
+          ],
+          "baseline_mae": 860.0
+        },
+        "review": {
+          "passed": true,
+          "kind": "independent_deterministic",
+          "checks": [
+            "source_aggregation",
+            "chronological_partitions",
+            "validation_selection",
+            "recomputed_mae",
+            "naive_baseline",
+            "trusted_refit_at_cutoffs",
+            "finite_forecast"
+          ],
+          "limitations": "Independent numerical checks completed; the separate narrative review is recorded below."
+        },
+        "independent_review": {
+          "decision": "accept",
+          "explanation": "The linear trend method shows a test MAE of 304.17, which is significantly lower than the baseline MAE of 860.0, indicating better performance. All independent deterministic checks have passed.",
+          "test_mae": 304.17,
+          "baseline_mae": 860.0,
+          "limitations": [
+            "Source units are unconfirmed.",
+            "Narrative review is separate from numerical checks."
+          ]
+        },
+        "timing_ms": {
+          "analysis": 1704.15,
+          "end_to_end": 13264.04
+        },
+        "versions": {
+          "pyarrow": "17.0.0",
+          "duckdb": "1.3.2",
+          "numpy": "1.26.4",
+          "pandas": "2.3.1",
+          "scipy": "1.16.0",
+          "scikit-learn": "1.5.0",
+          "statsmodels": "0.14.5"
+        },
+        "sandbox_session": "01M69EK8BMDZSRJ9WZ2TMK5KX2",
+        "model_usage": [
+          {
+            "role": "You are the task orchestrator for a tabu",
+            "usage": {
+              "inputTokens": 1988,
+              "outputTokens": 400,
+              "totalTokens": 2388
+            },
+            "model_id": "us.amazon.nova-pro-v1:0"
+          },
+          {
+            "role": "Return an AnalystProgram for the approve",
+            "usage": {
+              "inputTokens": 1154,
+              "outputTokens": 160,
+              "totalTokens": 1314
+            },
+            "model_id": "us.amazon.nova-pro-v1:0"
+          },
+          {
+            "role": "Independently assess checked analytical ",
+            "usage": {
+              "inputTokens": 849,
+              "outputTokens": 271,
+              "totalTokens": 1120
+            },
+            "model_id": "us.amazon.nova-pro-v1:0"
+          }
+        ],
+        "evidence": {
+          "dataset_version": "f2214ce5b8264ba89d3c19e4cdd0e7cd",
+          "source_sha256": "e98670a4a97362b43b64d7df7295f565d45bf0b342eee0f257ffd322bd15ad13",
+          "parquet_sha256": "70cfaed8d6dbeff141d55faf9378130ffcc5b72fe82b2b11a2dbf27e6bebef66",
+          "plan": {
+            "dataset_version": "f2214ce5b8264ba89d3c19e4cdd0e7cd",
+            "revision": 2,
+            "question": "Forecast the next three months",
+            "tier": "deep",
+            "task": "forecast",
+            "metric": "Net Sales",
+            "clarification": null,
+            "time_column": "When Sold",
+            "features": [],
+            "horizon": 3,
+            "units": "source units (unconfirmed)",
+            "definition": "Sum of the selected measure; each row contributes once.",
+            "calendar": "calendar_month",
+            "validation": "chronological_train_validation_test",
+            "methods": [
+              "naive",
+              "holt",
+              "linear_trend"
+            ],
+            "max_seconds": 120,
+            "max_candidates": 2,
+            "research_requirement": "none",
+            "reason": "Predict future sales based on historical data.",
+            "planner": "strands",
+            "release": "tabular-local-v1"
+          },
+          "runtime": "agentcore_container",
+          "release": "dev-20261031-05",
+          "model_id": "us.amazon.nova-pro-v1:0",
+          "owner_scope": "IAM-authenticated development gateway"
+        }
+      }
+    ]
+  }
+]

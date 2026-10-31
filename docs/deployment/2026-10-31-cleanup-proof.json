@@ -1,0 +1,22 @@
+[
+  {
+    "evidence": "data/cloud-csv-acceptance-04.json",
+    "session_id": "01M69E8HVG4S3JZA65A56QXWE7",
+    "status": "TERMINATED"
+  },
+  {
+    "evidence": "data/cloud-xlsx-acceptance-05.json",
+    "session_id": "01M69EK8BMDZSRJ9WZ2TMK5KX2",
+    "status": "TERMINATED"
+  },
+  {
+    "evidence": "data/cloud-import-plot-smoke.json",
+    "session_id": "01M69EAD0R53X2H430RJ3G25MG",
+    "status": "TERMINATED"
+  },
+  {
+    "evidence": "data/cloud-live-cancellation.json",
+    "session_id": "01M69EF2AQYGC8RQ3QS5Q93M53",
+    "status": "TERMINATED"
+  }
+]

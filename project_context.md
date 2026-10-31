@@ -1,166 +1,250 @@
-# Virtual Data Scientist Project Context
+# Virtual Data Scientist project context
 
-## Purpose And Current Status
+Updated October 31, 2026. Mode: portfolio, advancing production readiness.
+Canonical repository: `/Users/scottleduc/Projects/virtual-data-scientist`.
 
-Virtual Data Scientist is an agentic analytics product that helps a user upload
-or connect data, get a quick first-pass analysis, and hand heavier analytical
-work to an AWS AgentCore runtime. The product is meant to solve the common
-workforce gap where people have data and questions but do not know which
-statistical or machine-learning technique fits the problem.
+## Purpose and verified status
 
-Project mode: portfolio with a productionization path.
+The primary experience is upload + natural-language business question. Users do
+not configure technical columns or algorithms. Automatic preparation plus a
+checked Strands plan selects the appropriate supported tool.
 
-Current status:
+Separate AWS development stack `VirtualDataScientistV2Dev` is deployed in
+account `441383083571`, `us-east-1`, release `dev-20261031-08`. Actual CSV and Excel
+chart/forecast runs, narrative review, imports/plot transfer, stopped sessions,
+reconnect, owner isolation, cancellation and deletion passed. The image digest
+and outputs are in `docs/deployment/2026-10-31-agentcore-dev.json`.
 
-- Local backend and development UI run from `server.py`.
-- Analysis engine supports light analysis, method recommendation, and
-  dependency-light deep-analysis diagnostics.
-- MCP stdio facade exists in `mcp_server/`.
-- AgentCore runtime entrypoint exists in `app/VirtualDataScientistAgent/`.
-- AWS backend Lambda/CDK exists in `aws_backend/`.
-- AgentCore runtime config/CDK wrapper exists in `agentcore/`.
-- The consulting website route can host the public demo, but its current
-  Amplify SSR API bridge is blocked on runtime AWS credential availability.
+The actual HTTPS workspace is https://d19bkp3wlr8r7k.cloudfront.net/.
+A separate `VirtualDataScientistV2DevWeb` stack provides private static S3,
+CloudFront, Cognito code/PKCE sign-in and an IAM-only Lambda URL gateway.
+The gateway verifies access tokens and derives owner identity; open signup is
+disabled. Hosted Excel upload/chart/forecast, a full 10 MiB upload, identity/origin
+isolation, reload/reconnect, evidence download and logout passed. Temporary test
+users were removed without sending invitations. The owner account is provisioned and Cognito accepted its email invitation.
+First sign-in/password change remains unconfirmed. The optional loopback bridge remains available.
 
-## Architecture Map
+The consulting website and original runtime were preserved. No production
+cutover was performed. Changes are local/uncommitted. No additional chats or
+subagents were created.
 
-```text
-Browser or LLM client
-  -> Website/API client
-  -> MCP/API facade
-  -> Light analysis engine
-  -> Deep analysis queue/runtime path
-  -> AgentCore runtime
-  -> Authenticated AWS backend
-  -> App state store and artifact store
+## Architecture
+
+```mermaid
+flowchart LR
+  B[Browser: upload and question] --> CDN[CloudFront HTTPS]
+  B --> AUTH[Cognito code and PKCE]
+  CDN --> W[Private static S3]
+  CDN --> G[Lambda gateway: verified user ownership]
+  G -->|IAM signed invocation| RUNTIME[AgentCore ARM64 container]
+  RUNTIME --> P[Automatic profile and typed Parquet]
+  P --> DATA[(Private data S3)]
+  RUNTIME --> STATE[(DynamoDB job state and leases)]
+  RUNTIME --> PLAN[Strands task planner / Nova Pro]
+  PLAN --> Q[Quick: trusted DuckDB]
+  PLAN --> A[Forecast: analyst and code policy]
+  A --> CI[Fresh AgentCore Code Interpreter]
+  CI --> V[Source-based numerical checks]
+  V --> REVIEW[Independent Nova Pro reviewer]
+  REVIEW --> DATA
+  Q --> DATA
 ```
 
-Primary architecture asset:
+Preparation executes inside the runtime, before analysis. Deterministic readers
+choose a data-bearing sheet/header, infer types/format/roles, preserve identifiers,
+and write Parquet. The profile is saved once per immutable upload. The planner
+gets the profile and previous brief, not unrestricted tools or arbitrary SQL.
+Business ambiguity returns a clarification; the natural question can supply
+sheet/date context for another upload.
 
-- `docs/architecture/virtual-data-scientist-architecture.svg`
-- `docs/architecture/virtual-data-scientist-architecture.mmd`
+## Next product direction
 
-## Key Logic Map
+The user requested a future decision-layer.com subdomain, a guest trial followed
+by sign-in, multiple interactive visuals, selectable palettes, a live agent/tool
+activity map, curated code/artifact downloads, speech input and streaming.
+The direction also includes optional methodology lessons, profile-driven analysis
+suggestions without technical field selection, and an operator monitoring dashboard.
+The proposed defaults, delivery slices and acceptance criteria are recorded in
+[product experience v2](docs/plans/product-experience-v2.md). Exact trial thresholds
+and the subdomain label remain product decisions; this is a plan, not a deployed
+feature claim. Recommended first slice: Plotly multi-figure results, themes,
+reproducible downloads, reviewed methodology explanations and capability-checked
+analysis suggestions. Real execution events, streaming and operator observability
+follow together, before anonymous access.
 
-- `server.py`: local HTTP app, demo warehouse, CSV upload, report routes,
-  analysis-session routes, and local development UI endpoints.
-- `analysis_engine/method_catalog.py`: problem-type and method recommendation
-  logic.
-- `analysis_engine/deep_worker.py`: asynchronous local deep-analysis worker and
-  diagnostic artifact generation.
-- `mcp_server/server.py`: JSON-RPC stdio MCP server.
-- `mcp_server/tools.py`: MCP tool wrappers over the local app API.
-- `app/VirtualDataScientistAgent/main.py`: AgentCore HTTP/WebSocket entrypoint.
-- `app/VirtualDataScientistAgent/runtime_tools.py`: runtime-local wrappers for
-  the authenticated backend.
-- `aws_backend/lambda_handler.py`: Lambda Function URL adapter for the analysis
-  API.
-- `aws_backend/cdk/`: CDK stack for Lambda, IAM, and S3-backed state.
-- `agentcore/agentcore.json`: AgentCore runtime config.
-- `agentcore/runtime-contract.md`: request/response contract shared by website
-  bridge and AgentCore runtime.
-- `tests/`: focused local tests for analysis, persistence, MCP, and AgentCore
-  contract behavior.
+The root domain's public Route 53 zone was verified read-only. No DNS, certificate,
+public-access policy or additional speech/streaming service was changed. The
+current browser renderer remains custom SVG, and the hosted gateway still buffers
+responses. Guest ownership/quota enforcement must precede anonymous access.
 
-## Data Flow
+The source review found saved preparation profiles and per-role usage/run evidence,
+but no upload suggestion catalog or application dashboard/alarms in the stack
+generators. Current run `trace_id` values are application run IDs, not distributed
+trace proof. The next plan reuses real workflow events for user progress and
+private CloudWatch/AgentCore monitoring; it includes runtime exception redaction,
+bounded telemetry cost and quality checks alongside reliability/latency/usage.
+These additions are documented only; no runtime or monitoring configuration changed.
 
-1. User uploads or selects a dataset.
-2. Backend registers a dataset and stores metadata.
-3. Light analysis profiles shape, types, missingness, cardinality, candidate
-   methods, warnings, report artifacts, and reproduction code.
-4. Deep analysis receives session id, dataset id, user question, light-analysis
-   artifacts, and constraints.
-5. AgentCore runtime or the local worker performs longer-running diagnostics.
-6. Generated reports, code, and metadata are persisted as artifacts.
-7. The user can resume the same session later and continue with the saved
-   context.
+## Key logic map
 
-## External Dependencies
+| Source | Responsibility |
+|---|---|
+| `analysis_engine/ingestion.py` | Bounded automatic CSV/XLSX preparation, formats/types, readiness profile |
+| `analysis_engine/planning.py` | Structured plan validation, exact field normalization, fixed method/split contracts |
+| `analysis_engine/cloud_service.py` | Hosted actions, usage tracking, background tasks, workflow and audit persistence |
+| `analysis_engine/cloud_store.py` | S3 blobs, conditional DynamoDB state, owner scope, leases, idempotency support, deletion |
+| `analysis_engine/agent_workflow.py` | Analyst code/repair, execution, trusted checks, independent narrative decision |
+| `analysis_engine/code_policy.py` | AST allowlist for the bounded forecast recipe wrapper |
+| `analysis_engine/cloud_execution.py` | Sandbox transfer, output bounds, deadline/cancel, stop and unknown outcomes |
+| `analysis_engine/tabular.py` | Trusted aggregation, forecast/refits, local supervised recipes and numerical verification |
+| `app/CloudDataScientist/main.py` | Actual container entrypoint: `/ping`, `/invocations`, async SDK task tracking |
+| `Dockerfile`, `.dockerignore` | Nonroot ARM64 runtime image and source allowlist |
+| `scripts/render_cloud_stack.py`, `aws_backend/cloud-dev/template.json` | Reproducible plain CloudFormation stack |
+| `scripts/push_ecr.py` | OCI layer upload through IAM APIs without registry-token files |
+| `aws_backend/web_gateway.py`, `static/auth.js` | Verified Cognito identity, PKCE, hosted routes and staged upload policies |
+| `scripts/render_web_stack.py`, `build_web_gateway.py`, `publish_dev_site.py` | Separate hosted stack, minimal ARM64 package and static allowlist |
+| `scripts/hosted_acceptance.py`, `tests/auth.test.cjs` | Temporary-user live acceptance and browser authentication contracts |
+| `analysis_engine/cloud_proxy.py`, `workspace_http.py` | Optional loopback HTTP and IAM runtime invocation |
+| `static/index.html`, `workspace.js/css` | Upload/question workspace, charts, exact values and evidence |
+| `scripts/cloud_acceptance.py`, `cloud_safety_acceptance.py`, `cloud_smoke.py` | Explicit live acceptance, lifecycle and library/PNG proof |
+| `workspace.py`, `local_worker.py`, `model_registry/` | Separate local verification and supervised examples |
+| `app/VirtualDataScientistAgent/`, older CDK/Lambda/MCP | Preserved legacy contracts, not the new cloud entrypoint |
 
-- Python 3.13 for the current local/runtime package.
-- Optional `boto3` for Bedrock/S3 integrations.
-- Optional `psycopg` for Postgres data sources.
-- AWS AgentCore for deployed async runtime.
-- AWS Lambda Function URL for the deployed authenticated backend.
-- S3 for deployed analysis state and uploaded CSVs.
-- CDK/Node for infrastructure synthesis.
+## Data, state and ownership
 
-## Validation Commands
+S3 keys are owner/dataset-version scoped; each upload preserves source and
+checksummed Parquet. Results and stage audit documents carry plan/code, recipe
+hash, exact metrics, versions, timings, sandbox identifiers and model usage.
+DynamoDB records are separate entities with conditional terminal-state protection.
+There is no shared mutable S3 state file in this new path.
+
+The hosted gateway verifies Cognito RS256 signature, issuer, expiry, access-token
+purpose and client ID, then derives SHA256(issuer + separator + opaque subject).
+Request-supplied owner/bucket/key controls are ignored. CloudFront signs the IAM
+Lambda origin, and the API uses a separate user-token header; API caching is off.
+Browser uploads use five-minute, exact-size/owner-key S3 POST policies. The runtime
+bounds reads and automatically prepares the staged object before deleting it.
+
+The runtime itself remains IAM-authenticated and trusts internal callers to
+supply the verified owner. The optional loopback bridge hashes its local cookie;
+that demo namespace and legacy routes are separate from hosted Cognito users.
+Never expose the local server publicly. Hosted tokens remain in memory; reload
+requires provider sign-in. Revocation is bounded by fifteen-minute access-token
+expiry, and development MFA is off. Source data/evidence expire after seven days
+asynchronously; Cognito accounts have a separate administrator-managed lifecycle.
+
+Request keys are idempotent within an owner; changing the question with the same
+key conflicts. Follow-ups preserve plan revision and prior-run link. Conditional
+leases allow one active analysis per owner and two globally. SDK async tracking
+keeps AgentCore healthy/busy while work continues after submission. Leases last
+420 seconds; interrupted jobs are surfaced, never automatically replayed. A
+production durable queue/scheduler remains future work.
+
+Cancellation/terminal status prevent late publication. Deletion tombstones data
+before purging S3 and linked runs; inaccessible late artifacts can remain until
+lifecycle expiry. S3 lifecycle and DynamoDB TTL are seven days, asynchronous.
+CloudWatch retention is seven days. ECR images are retained.
+
+## Method and trust contracts
+
+Monthly sums include each source row once. Units are inferred from formatting
+when supported; otherwise they are explicitly unconfirmed. Selected null dates
+or measures fail readiness. Missing periods are not silently imputed.
+
+Forecasts use consecutive history, a naive baseline, Holt and linear trend;
+chronological validation selects the method and a later test period evaluates it.
+The trusted checker independently rebuilds source aggregates and refits models
+at permitted cutoffs, then checks the future predictions. No causal or calibrated
+interval claims are made, seasonality is not modeled and the final month is
+assumed complete. The separate model reviewer receives checked facts only;
+false metrics or unsupported quantitative claims reject publication.
+
+Generated analyst code executes only in a fresh Code Interpreter session. The
+AST policy allows the approved recipe wrapper, not arbitrary analysis. There
+are at most two analyst attempts before one sandbox execution. No model or
+sandbox call is blindly retried after an unknown result. The system interpreter
+has no execution role or mounts and restrictive default networking; it does not
+receive the container's S3 credentials. Runtime networking itself is PUBLIC for
+AWS API access. A custom private-network deployment would require separate work.
+
+Cloud regression/classification and researcher tools are not enabled. Local
+supervised recipes use training-only preprocessing and independent-row splits;
+these do not establish a temporal/grouped production contract.
+
+## Validation and commands
+
+See `docs/validation.md` and `docs/deployment/` for exact evidence. Final suite:
+58 Python tests and four Node auth tests passed, plus compile/JS syntax/package
+checks, actual image/CF deployment
+and live synthetic/browser acceptance. The managed interpreter libraries differ
+from the pinned container; cross-version numerical refits passed for the fixture.
 
 ```bash
-python3 -m unittest \
-  tests.test_analysis_method_selection \
-  tests.test_analysis_persistence \
-  tests.test_deep_worker_diagnostics \
-  tests.test_mcp_stdio_contract \
-  tests.test_virtual_data_scientist_agent
+.venv/bin/python -m pip install -r requirements-test.txt
+.venv/bin/python -m unittest discover -s tests -v
+.venv/bin/python -m compileall -q analysis_engine scripts model_registry app/CloudDataScientist
+node --test tests/auth.test.cjs
+node --check static/auth.js
+node --check static/workspace.js
+.venv/bin/python -m pip check
 ```
 
-```bash
-python3 -m py_compile \
-  server.py \
-  analysis_engine/method_catalog.py \
-  analysis_engine/deep_worker.py \
-  mcp_server/server.py \
-  mcp_server/tools.py \
-  app/VirtualDataScientistAgent/main.py \
-  app/VirtualDataScientistAgent/runtime_tools.py \
-  aws_backend/lambda_handler.py
-```
+Open the hosted HTTPS workspace from the README. The `VDS_RUNTIME_ARN` command
+starts the optional loopback developer bridge. Unsetting
+it selects the local verification backend. Cloud acceptance scripts default to
+review-only and require `--execute` for authorized live work.
 
-```bash
-cd aws_backend/cdk && npm run build && npx cdk synth
-```
+Hosted transport bounds each published result/evidence to 2 MiB. Compact polling
+budgets result bodies to 2 MiB and leaves older results individually retrievable.
+Downloads fetch full evidence. Model reviewer prose is retained in evidence; the
+primary display uses the checked metrics and verified reviewer disposition to
+avoid presenting unsupported narrative claims.
 
-```bash
-cd agentcore/cdk && npm run build && npx cdk synth
-```
+## Decisions, costs and release gaps
 
-## Architecture Decisions And Tradeoffs
+The user explicitly approved a $10 initial AWS development/test allowance in the
+existing account/us-east-1. This is an operational allowance, not an AWS hard cap.
+No always-on VM/NAT/database instance was added. Measured model usage is saved
+per successful call; failed responses can lack token accounting. Current billed
+cost has not been reconciled and must not be represented as an exact total.
 
-- Keep MCP/API tools small and stable rather than exposing every internal
-  helper as a public tool.
-- Split light analysis from deep analysis so the user gets quick value before a
-  long-running agent job.
-- Keep app-owned state and artifacts as the source of truth. AgentCore Memory is
-  for continuity, not audit or artifact persistence.
-- Keep local mode dependency-light so the demo runs without AWS credentials.
-- Use AWS IAM for deployed backend calls instead of exposing a public unauthenticated
-  analysis backend.
-- Treat the consulting website as a client/demo surface, not the product repo.
+Nova Pro is used because Claude Sonnet 4.6 initially responded but then failed
+Marketplace agreement activation (`agreementAvailability: NOT_AVAILABLE`). No
+broad Marketplace permission was added to the runtime role.
 
-## Known Risks And Next Iterations
+The plain CloudFormation deployment avoids the older CDK packaging failure and
+does not depend on the existing npm trees. The final container scan reports
+four high, nine medium and three low OS findings after available apt upgrades.
+Public release requires remediation or an explicit reachability/risk decision.
+Older CDK dependencies also retain advisories recorded in validation.
 
-- The public website bridge currently needs a better AWS credential/signing
-  boundary.
-- Auth, tenant isolation, per-user ownership, quotas, upload controls, and
-  artifact access checks are not production-ready yet.
-- Deep analysis currently uses dependency-light diagnostics, not full
-  package-backed model training.
-- AgentCore Memory and Gateway should wait until app-owned persistence and
-  tenant boundaries are ready.
-- Public copy should avoid implying production readiness until access controls
-  and reliability work are complete.
+Next: confirm the owner's first sign-in, resolve image findings, harden MFA/revocation/
+request-rate policy and deployment-artifact retention, integrate the website in a
+reviewable change, then add broader cloud recipes/research and durable recovery.
+No additional AWS credentials/account configuration are needed; the owner login is provisioned and awaits its first sign-in/password change.
 
-## Principal Engineer Explanation
+## Principal engineer explanation
 
-This repo separates the analytical control plane from the website shell. The app
-owns sessions, datasets, runs, artifacts, and audit state. MCP exposes a narrow
-facade over that application contract. Light analysis is synchronous and bounded;
-deep analysis is asynchronous and can run through AgentCore. Reproducibility
-comes from persisted artifacts and generated code, not from model memory.
+A model proposes a typed analytical plan while deterministic gates control data
+lineage, capabilities, numerical validity and publication. The runtime is a
+stateless execution host over owner-scoped S3/DynamoDB state; async tracking and
+conditional leases bound background work without claiming crash-resumable queue
+semantics. An isolated analyst and an independent narrative reviewer operate on
+distinct trust boundaries. IAM caller identity terminates at a trusted gateway that derives the tenant from
+verified Cognito claims. Production MFA/revocation/rate policy and operational
+release readiness remain separate gaps.
 
-## Undergraduate Explanation
+## Undergraduate explanation
 
-The app looks at a dataset, gives a fast summary, suggests useful analysis
-methods, and can run a more detailed analysis later. It saves the results and
-the code it used so someone can come back to the same analysis and keep working.
-The MCP layer is the tool interface, and AgentCore is the cloud runtime for
-longer agent work.
+The upload becomes a typed Parquet table and a reusable profile in AWS. A model
+matches the question to the right date and measure. DuckDB computes trends;
+a sandbox fits forecasts using earlier, middle and later time sections for
+training, selection and testing. Separate checks and a reviewer approve the
+numbers, then AWS storage keeps the evidence across sessions.
 
-## Non-Technical Explanation
+## Non-technical explanation
 
-This is a virtual data scientist. A user gives it data and a question, and it
-helps decide what kind of analysis makes sense. It starts with quick insights,
-then can do deeper work in the background and keep the results organized for
-later follow-up.
+Upload a spreadsheet and ask a question. The system prepares the data itself,
+uses AWS agents to analyze and check it, and saves the answer and evidence.
+The hosted development interface now includes private-account sign-in. The
+consulting website and production release still need a separate integration.

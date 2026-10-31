@@ -1,0 +1,11 @@
+# The quick path needs ingestion/query libraries; ML imports stay inside deep jobs.
+pyarrow>=19,<24
+duckdb>=1.2,<2
+openpyxl>=3.1,<4
+pandas>=2.2,<3
+numpy>=2,<3
+scipy>=1.14,<2
+scikit-learn>=1.6,<2
+statsmodels>=0.14,<0.15
+matplotlib>=3.9,<4
+pydantic>=2,<3

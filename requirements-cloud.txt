@@ -1,0 +1,4 @@
+-r requirements-local.txt
+boto3>=1.35,<2
+strands-agents>=1.63,<2
+bedrock-agentcore>=1.9.1,<2

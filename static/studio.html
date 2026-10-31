@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Virtual Data Scientist POC</title>
+    <link rel="stylesheet" href="/static/styles.css">
+  </head>
+  <body data-view="builder">
+    <div class="app-shell">
+      <aside class="sidebar">
+        <div class="brand-block">
+          <div class="brand-mark">BI</div>
+          <div>
+            <h1>Report Studio</h1>
+            <p>POC workspace</p>
+          </div>
+        </div>
+
+        <section class="side-section">
+          <div class="section-title-row">
+            <h2>Data Sources</h2>
+            <span class="status-dot"></span>
+          </div>
+          <select id="data-source-select" aria-label="Data source"></select>
+          <button id="reload-schema-button" class="button secondary" type="button">Load Schema</button>
+          <div id="data-source-list" class="data-source-list"></div>
+        </section>
+
+        <section class="side-section">
+          <h2>Postgres</h2>
+          <div class="connection-grid">
+            <input id="pg-name" type="text" placeholder="Name" value="Postgres Source">
+            <input id="pg-host" type="text" placeholder="Host">
+            <input id="pg-port" type="number" placeholder="Port" value="5432">
+            <input id="pg-database" type="text" placeholder="Database">
+            <input id="pg-user" type="text" placeholder="User">
+            <input id="pg-password" type="password" placeholder="Password">
+            <select id="pg-sslmode" aria-label="SSL mode">
+              <option value="prefer">prefer</option>
+              <option value="require">require</option>
+              <option value="disable">disable</option>
+            </select>
+          </div>
+          <div class="inline-actions">
+            <button id="test-postgres-button" class="button secondary" type="button">Test</button>
+            <button id="save-postgres-button" class="button secondary" type="button">Save</button>
+          </div>
+          <div id="postgres-status" class="service-note">Not connected</div>
+        </section>
+
+        <section class="side-section">
+          <h2>CSV Upload</h2>
+          <label class="file-drop">
+            <input id="csv-file" type="file" accept=".csv,text/csv">
+            <span id="csv-file-label">Choose CSV</span>
+          </label>
+          <button id="upload-csv-button" class="button secondary" type="button">Upload</button>
+        </section>
+
+        <section class="side-section schema-panel">
+          <h2>Schema</h2>
+          <div id="schema-list" class="schema-list"></div>
+        </section>
+
+        <section class="side-section">
+          <h2>Services</h2>
+          <div id="service-status-list" class="service-status-list"></div>
+        </section>
+      </aside>
+
+      <main class="workbench">
+        <header class="topbar">
+          <div>
+            <p class="eyebrow">AI-native BI report platform</p>
+            <h2 id="workspace-title">Draft report</h2>
+          </div>
+          <div class="topbar-actions">
+            <a id="published-link" class="published-link hidden" href="#">Published URL</a>
+            <button id="publish-button" class="button primary" type="button">Publish</button>
+          </div>
+        </header>
+
+        <div class="workbench-grid">
+          <section class="agent-panel panel">
+            <div class="panel-header">
+              <h3>Agent</h3>
+              <span id="agent-state" class="pill">Ready</span>
+            </div>
+            <div id="chat-feed" class="chat-feed"></div>
+            <div class="prompt-box">
+              <textarea id="prompt-input" rows="6">Build me an executive sales performance report with revenue trend, top regions, product mix, margin risk, and a brief summary. Use the executive summary template.</textarea>
+              <button id="generate-button" class="button primary" type="button">Generate Draft</button>
+            </div>
+            <div class="analysis-box">
+              <div class="analysis-box-header">
+                <div>
+                  <h4>Virtual Data Scientist</h4>
+                  <p>Light analysis now, deep analysis as an async handoff.</p>
+                </div>
+                <span id="analysis-session-pill" class="pill muted">No session</span>
+              </div>
+              <div class="analysis-controls">
+                <label class="field">
+                  <span>Table Scope</span>
+                  <select id="analysis-table-select" aria-label="Analysis table"></select>
+                </label>
+                <label class="field">
+                  <span>Question</span>
+                  <textarea id="analysis-question" rows="4">What useful analysis techniques fit this dataset, and what should I look at first?</textarea>
+                </label>
+                <div class="inline-actions">
+                  <button id="light-analysis-button" class="button secondary" type="button">Run Light</button>
+                  <button id="deep-analysis-button" class="button secondary" type="button">Request Deep</button>
+                </div>
+              </div>
+              <div id="analysis-output" class="analysis-output empty-state">
+                <p>Run light analysis to create a profile, code artifact, and method suggestions.</p>
+              </div>
+            </div>
+          </section>
+
+          <section class="report-panel panel">
+            <div class="panel-header">
+              <h3>Preview</h3>
+              <span id="preview-state" class="pill muted">No draft</span>
+            </div>
+            <div id="report-preview" class="report-preview empty-state">
+              <div>
+                <h3>No report draft yet</h3>
+                <p>Create a draft from the agent panel.</p>
+              </div>
+            </div>
+          </section>
+
+          <section class="sql-panel panel">
+            <div class="panel-header">
+              <h3>SQL Blocks</h3>
+              <span id="block-count" class="pill muted">0</span>
+            </div>
+            <div id="parameter-controls" class="parameter-controls"></div>
+            <div id="block-editor-list" class="block-editor-list"></div>
+          </section>
+        </div>
+      </main>
+    </div>
+
+    <div id="toast" class="toast hidden"></div>
+    <script src="/static/app.js"></script>
+  </body>
+</html>

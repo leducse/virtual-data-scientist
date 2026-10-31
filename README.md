@@ -1,184 +1,125 @@
 # Virtual Data Scientist
 
-Virtual Data Scientist is a portfolio-grade agentic analytics app for helping
-business users decide what analysis to run, execute a fast first pass, and hand
-off heavier work to an AWS AgentCore runtime while preserving code, artifacts,
-and session context.
+Upload CSV or Excel and ask a business question. Automatic preparation identifies
+the table, header, types and analytical fields, then Strands plans the work in
+AWS AgentCore. Monthly charts run through DuckDB in the hosted container;
+forecasts run in AgentCore Code Interpreter, pass independent numerical checks,
+and receive a separate model review. Sources, typed Parquet, results and audit
+artifacts live in S3; job state lives in DynamoDB.
 
-The core product loop is:
+![Workspace using the AWS development runtime](docs/workspace-hosted.png)
 
-```text
-upload or connect data -> run light analysis -> request deep analysis
--> persist code/artifacts/context -> continue the analysis later
-```
+## Deployed development environment
 
-![Virtual Data Scientist architecture](docs/architecture/virtual-data-scientist-architecture.svg)
+The separate `VirtualDataScientistV2Dev` stack is deployed in `us-east-1`.
+Release `dev-20261031-08` uses an immutable ARM64 Docker image in ECR and
+`us.amazon.nova-pro-v1:0`. CSV and Excel chart/forecast tests passed against the
+real runtime. The original runtime and public website were not switched.
 
-## What This Repo Contains
+[Deployment manifest](docs/deployment/2026-10-31-agentcore-dev.json) ·
+[Live acceptance](docs/deployment/2026-10-31-live-acceptance.json) ·
+[Validation](docs/validation.md) · [Architecture and continuation](project_context.md)
 
-- `server.py`: local standard-library HTTP app with demo warehouse, CSV upload,
-  report routes, and analysis APIs.
-- `analysis_engine/`: method selection, light-analysis profiling, and
-  dependency-light deep-analysis diagnostics.
-- `mcp_server/`: stdio MCP facade for sessions, upload, light analysis, deep
-  analysis, status, artifacts, and continuation.
-- `app/VirtualDataScientistAgent/`: AWS AgentCore runtime entrypoint and
-  runtime-local backend tools.
-- `aws_backend/`: IAM-protected Lambda Function URL backend plus CDK stack for
-  S3-backed analysis state.
-- `agentcore/`: AgentCore runtime config, example AWS target config, generated
-  CDK wrapper, and runtime contract docs.
-- `static/`: local development UI.
-- `tests/`: focused unit and contract tests for analysis behavior, persistence,
-  MCP, and AgentCore response shape.
+## Open the hosted workspace
 
-## Current Status
+Open [the restricted development workspace](https://d19bkp3wlr8r7k.cloudfront.net/).
+Cognito sign-in and a hosted Lambda gateway derive ownership from verified access
+tokens. Static files, preparation, analysis and persistent state are all on AWS;
+no local process is required. Self-signup is disabled. An administrator must
+create a development account before a user can sign in. No invitation is sent
+by the test scripts.
 
-Working locally:
+The browser uses authorization code + S256 PKCE and keeps access tokens in memory.
+After reload, sign in again through the provider session to retrieve saved work.
+Datasets/evidence expire through asynchronous seven-day lifecycle/TTL policies;
+login accounts have a separate administrator-managed lifecycle.
+[Hosted architecture and operating limits](docs/hosted-development-access.md) ·
+[Hosted acceptance](docs/deployment/2026-10-31-hosted-acceptance.json)
 
-- SQLite demo warehouse.
-- CSV upload into queryable local tables.
-- Light analysis with schema/profile summaries, candidate method selection,
-  warnings, report artifacts, and generated reproduction code.
-- Deep-analysis request flow with a local async worker, method-selection report,
-  quality gates, baseline diagnostics, and generated code artifacts.
-- Stdio MCP tool facade.
-- AgentCore runtime entrypoint contract tests.
+Upload the sample from the sidebar, ask “Show monthly revenue,” then “Forecast the
+next three months.” There are no required sheet/header/date/target/algorithm
+selectors. Preparation asks a short business clarification when necessary. Include
+the clarification in the question before another upload. Inferred definitions,
+units and analytical limits remain visible.
 
-Already deployed once in AWS:
+## Optional local developer bridge
 
-- AgentCore runtime: `VirtualDataScientistAgent`
-- Authenticated Lambda backend: `virtual-data-scientist-backend-dev`
-- S3-backed analysis state bucket
-
-Known current blocker:
-
-- The consulting website demo page is live, but its Next.js API routes on
-  Amplify SSR are not receiving usable AWS credentials, so they cannot sign
-  calls to AgentCore or the IAM-protected Lambda Function URL yet. The next
-  clean fix is either resolving Amplify SSR credential access or moving the
-  signing bridge into a small Lambda/API Gateway proxy with its own execution
-  role.
-
-## Run Locally
-
-```bash
-python3 server.py
-```
-
-Open:
-
-```text
-http://127.0.0.1:8765
-```
-
-The local app works without cloud credentials. Optional integrations are enabled
-only when their environment variables and dependencies are configured.
-
-## Validate
-
-Current validation status is tracked in `docs/validation.md`.
-
-```bash
-python3 -m unittest \
-  tests.test_analysis_method_selection \
-  tests.test_analysis_persistence \
-  tests.test_deep_worker_diagnostics \
-  tests.test_mcp_stdio_contract \
-  tests.test_virtual_data_scientist_agent
-```
-
-```bash
-python3 -m py_compile \
-  server.py \
-  analysis_engine/method_catalog.py \
-  analysis_engine/deep_worker.py \
-  mcp_server/server.py \
-  mcp_server/tools.py \
-  app/VirtualDataScientistAgent/main.py \
-  app/VirtualDataScientistAgent/runtime_tools.py \
-  aws_backend/lambda_handler.py
-```
-
-CDK validation:
-
-```bash
-cd aws_backend/cdk
-npm install
-npm run build
-npx cdk synth
-```
-
-```bash
-cd agentcore/cdk
-npm install
-npm run build
-npx cdk synth
-```
-
-## MCP Smoke Test
-
-```bash
-printf '{"jsonrpc":"2.0","id":1,"method":"tools/list","params":{}}\n' \
-  | python3 -m mcp_server.server
-```
-
-## Optional Real-Service Setup
-
-Install optional dependencies:
+Python 3.13+ and an authorized AWS SDK session:
 
 ```bash
 python3 -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
-python3 server.py
+.venv/bin/python -m pip install -r requirements-demo.lock.txt
+export VDS_RUNTIME_ARN=arn:aws:bedrock-agentcore:us-east-1:441383083571:runtime/VirtualDataScientistV2Dev-Tr4IBoExJp
+PORT=8876 .venv/bin/python server.py
 ```
 
-Optional Bedrock report generation:
+This loopback bridge at http://127.0.0.1:8876 is useful for development and retains
+its cookie-based demo identity. It is separate from the verified-user hosted
+workspace. Do not expose it or the legacy `/studio` and MCP APIs publicly.
+
+## Implemented analytical scope
+
+- Automatic CSV delimiter/table/header and Excel sheet/header detection;
+  dates, currency, percentages, missingness, duplicates, time coverage and
+  leading-zero identifiers; immutable source/Parquet hashes and saved profile.
+- A model planner infers the question's business fields from the profile and
+  previous brief. Deterministic validation checks actual names/types and recipes.
+- Calendar-month sums and charts with source-based total checks. The hosted
+  quick path invokes the planner once and performs aggregation in DuckDB.
+- Forecasts compare naive, Holt and linear trend using chronological validation,
+  then evaluate once on a later test period and refit for the future horizon.
+  Trusted refits and source/metric checks precede independent narrative review.
+- Analyst code is restricted to an approved recipe wrapper. At most one repair
+  of rejected code is allowed before execution. Each accepted analysis gets a
+  fresh sandbox; uncertain execution is never blindly replayed.
+- Conditional per-run state, idempotency, plan revisions, admission leases,
+  cancellation, deletion, saved evidence and cross-session reconnect.
+- Fixed regression/classification recipes and a synthetic deal-risk registry
+  remain locally tested examples. They are not enabled in the new cloud path.
+  External research is not configured; required research fails explicitly.
+
+## Bounds and lifecycle
+
+Uploads: 10 MiB source, 50 MiB expanded XLSX, 100 columns, 100,000 rows and one
+million cells. Formulas must be exported as values. Development allows ten
+versions and one hundred analyses per owner, one active analysis per owner and
+two globally. Sandbox execution is bounded to 120 seconds. Runtime idle timeout
+is 60 seconds and maximum session lifetime 900 seconds.
+
+Seven-day S3 lifecycle and DynamoDB TTL are configured. Expiry is asynchronous,
+not guaranteed deletion at precisely seven days. Explicit deletion revokes
+access first and purges the dataset prefix. A late cancelled worker can leave an
+inaccessible artifact until lifecycle cleanup. Downloaded copies are outside the
+application's deletion boundary. ECR images are retained and incur storage.
+
+Runtime jobs execute in tracked background tasks with DynamoDB leases. An
+interrupted container does not resume/replay a job; after lease expiry, the
+user sees an interrupted state and can submit a new request. This is not a
+durable queue with automatic recovery.
+
+## Reproduce checks
 
 ```bash
-export AGENT_MODE=auto
-export AWS_REGION=us-east-1
-export BEDROCK_MODEL_ID="your-bedrock-model-or-inference-profile-id"
+.venv/bin/python -m pip install -r requirements-test.txt
+.venv/bin/python -m unittest discover -s tests -v
+.venv/bin/python -m compileall -q analysis_engine scripts model_registry app/CloudDataScientist
+node --test tests/auth.test.cjs
+node --check static/auth.js
+node --check static/workspace.js
+.venv/bin/python -m pip check
+.venv/bin/python scripts/cloud_acceptance.py --runtime-arn "$VDS_RUNTIME_ARN"
+.venv/bin/python scripts/cloud_safety_acceptance.py --runtime-arn "$VDS_RUNTIME_ARN"
 ```
 
-Optional Postgres source:
+The last two commands only describe actions. Their `--execute` forms perform
+billable cloud work; use them within an explicitly authorized scope.
+[Cloud operations](docs/cloud-trial.md) records the actual approval and commands.
+The 58-test suite includes mocked AWS state/lifecycle contracts; live cloud proof
+is recorded separately. The container scan still reports four high, nine medium
+and three low OS findings after available upgrades; public release is blocked
+pending remediation or an explicit reachability/risk decision.
 
-```bash
-export POSTGRES_NAME="Warehouse Postgres"
-export POSTGRES_HOST="example.cluster.region.rds.amazonaws.com"
-export POSTGRES_PORT=5432
-export POSTGRES_DATABASE="analytics"
-export POSTGRES_USER="readonly_report_user"
-export POSTGRES_PASSWORD="..."
-export POSTGRES_SSLMODE=require
-```
-
-Optional S3 CSV upload:
-
-```bash
-export CSV_STORAGE=s3
-export S3_UPLOAD_BUCKET="your-bucket"
-export S3_UPLOAD_PREFIX="virtual-data-scientist/uploads"
-```
-
-## Safety Boundaries
-
-- Do not commit `.env`, AWS credentials, raw user datasets, analysis artifacts,
-  generated AgentCore zip packages, CDK `dist/`, `cdk.out/`, or `node_modules/`.
-- Treat deployed AWS commands as explicit-approval operations.
-- Keep application storage as the source of truth for analytical artifacts.
-  AgentCore Memory should improve continuity, not replace durable audit state.
-- Keep the public demo route demo-safe until auth, tenant isolation, quotas,
-  upload controls, and artifact access checks are implemented.
-
-## Next Steps
-
-1. Move the website signing bridge out of Amplify SSR if SSR role credentials
-   remain unavailable.
-2. Add auth and per-user analysis-session ownership.
-3. Add quotas, upload size/type limits, and artifact access controls.
-4. Expand deep analysis from dependency-light diagnostics to optional
-   package-backed model baselines.
-5. Add AgentCore Memory/Gateway once tenant boundaries and artifact persistence
-   are production-ready.
+Without `VDS_RUNTIME_ARN`, `server.py` runs the local verification backend with
+SQLite/fixed recipes. This fallback is useful for repeatable checks; the hosted HTTPS
+workspace is the deployed development product. [Historical workbench](docs/legacy-workbench.md)
+and [source plans](docs/plans/implementation-plan.md) retain older context.

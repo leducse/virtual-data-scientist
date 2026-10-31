@@ -1,0 +1,44 @@
+{
+  "date": "2026-10-31",
+  "environment": "local macOS / Python 3.13.7",
+  "fixture": {
+    "rows": 72,
+    "months": 36,
+    "total": 579060
+  },
+  "upload_profile_ms": 122.82,
+  "first_query_in_process_ms": 39.9,
+  "subsequent_query_ms": {
+    "n": 5,
+    "observations": [
+      6.59,
+      7.4,
+      6.46,
+      6.29,
+      6.74
+    ],
+    "median": 6.59
+  },
+  "query_after_deep_admission_ms": {
+    "n": 3,
+    "observations": [
+      7.89,
+      7.39,
+      6.72
+    ],
+    "median": 7.39
+  },
+  "deep_fresh_process_ms": 747.67,
+  "test_mae": 304.17112299465833,
+  "naive_test_mae": 860.0,
+  "versions": {
+    "pyarrow": "23.0.1",
+    "duckdb": "1.5.6",
+    "numpy": "2.5.4",
+    "pandas": "2.3.3",
+    "scipy": "1.18.1",
+    "scikit-learn": "1.9.1",
+    "statsmodels": "0.14.6"
+  },
+  "limits": "Tiny synthetic fixture; no HTTP overhead, production load, p95/p99 or cloud latency inference."
+}
