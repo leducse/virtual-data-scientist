@@ -46,12 +46,12 @@ def check_plan(plan, dataset):
         plan.units = columns[plan.metric].get("units") or "source units (unconfirmed)"
     if plan.task in {"monthly_summary", "forecast"}:
         if plan.time_column not in columns or columns[plan.time_column]["role"] != "time":
-            raise InputError("Choose a typed date column.", "clarification_required")
+            raise InputError("Which business event should determine the timing of this analysis?", "clarification_required")
         if columns[plan.metric]["role"] != "measure":
-            raise InputError("Choose a numeric measure.", "clarification_required")
+            raise InputError("Which business outcome should this analysis describe?", "clarification_required")
     if plan.task in {"regression", "classification"}:
         if not plan.features or any(f not in columns for f in plan.features):
-            raise InputError("Choose known predictor columns.", "clarification_required")
+            raise InputError("What information would be available before the outcome you want to predict?", "clarification_required")
         if plan.metric in plan.features or any(re.search(r"(^id$|_id$|final_|actual_|outcome|target|label|post_)", f, re.I) for f in plan.features):
             raise InputError("Predictors include identifiers, targets or possible post-outcome leakage.", "leakage_rejected")
     expected_tier = "quick" if plan.task == "monthly_summary" else "deep"
@@ -78,7 +78,7 @@ def local_plan(dataset, payload):
         measures = [c["name"] for c in cols if c["role"] == "measure"]
         metric = (exact or measures)[0] if len(exact or measures) == 1 else None
     if not metric:
-        raise InputError("Choose the measure or target; the business meaning is ambiguous.", "clarification_required")
+        raise InputError("Which business outcome should this analysis describe?", "clarification_required")
     if not time_column:
         dates = [c["name"] for c in cols if c["role"] == "time"]
         time_column = dates[0] if len(dates) == 1 else None

@@ -5,7 +5,7 @@ const vm = require("node:vm");
 const {webcrypto} = require("node:crypto");
 const source = fs.readFileSync("static/auth.js", "utf8");
 
-function context({search="", transaction=null, local=false}={}) {
+function context({search="", transaction=null, local=false, guest=false}={}) {
   const elements = new Map(), stored = new Map(transaction ? [["vds_pkce", JSON.stringify(transaction)]] : []), requests = [];
   const element = (selector) => {
     if (!elements.has(selector)) elements.set(selector, {hidden:false, inert:false, disabled:false, listeners:{}, addEventListener(name,callback){this.listeners[name]=callback;}});
@@ -19,7 +19,7 @@ function context({search="", transaction=null, local=false}={}) {
     localStorage:{removeItem(){}},
     fetch:async (url,options={}) => {
       requests.push({url,options});
-      return {ok:true,status:200,json:async()=>url==="/config.json" ? {domain:"https://vds-example.auth.us-east-1.amazoncognito.com",client_id:"client123"} : {access_token:"synthetic-test-token",expires_in:900}};
+      return {ok:true,status:200,json:async()=>url==="/config.json" ? {domain:"https://vds-example.auth.us-east-1.amazoncognito.com",client_id:"client123",guest_enabled:guest} : {access_token:"synthetic-test-token",expires_in:900}};
     }
   };
   vm.runInNewContext(source, globals);
@@ -59,4 +59,12 @@ test("valid callback uses memory token and body hash, logout clears access",asyn
   c.element("#sign-out").listeners.click();
   await assert.rejects(c.auth.request("workspace"),/Sign in/);
   assert.equal(new URL(c.location.assigned).pathname,"/logout");
+});
+
+test("guest mode uses the server cookie and never invents a client owner",async()=>{
+  const c=context({guest:true});assert.equal(await c.auth.ready,true);assert.equal(c.auth.isGuest(),true);
+  assert.equal(c.requests[1].url,'/api/v2/session');
+  await c.auth.request('workspace');
+  assert.equal(c.requests.at(-1).options.headers['x-vds-token'],undefined);
+  assert.equal(c.stored.size,0);
 });

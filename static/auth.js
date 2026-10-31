@@ -66,7 +66,7 @@ window.vdsAuth = (() => {
           const tokens = await response.json();
           if (!tokens.access_token || !(tokens.expires_in > 0)) throw new Error("Sign-in did not return access.");
           accessToken = tokens.access_token; expiresAt = Date.now() + tokens.expires_in * 1000;
-          if(config.guest_enabled){
+          {
             const claimBody="{}";
             const claimed=await fetch('/api/v2/session/claim',{method:'POST',headers:{'Content-Type':'application/json','x-vds-token':accessToken,
               'x-amz-content-sha256':[...await digest(claimBody)].map(b=>b.toString(16).padStart(2,'0')).join('')},body:claimBody,cache:'no-store'});
