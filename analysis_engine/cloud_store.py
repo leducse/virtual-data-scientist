@@ -65,6 +65,28 @@ class CloudStore:
                 continue
         raise InputError('Analysis state changed concurrently; reconnect to see its current status.','state_conflict')
 
+    def event(self, owner, run_id, stage, status, attempt=1, duration_ms=None):
+        from analysis_engine.telemetry import emit
+        for _ in range(5):
+            run = self.get(owner, 'run', run_id)
+            version = run.get('version_counter', 0)
+            events = run.setdefault('events', [])
+            if len(events) >= 80:
+                raise InputError('Analysis event limit reached.', 'output_limit')
+            event = {'sequence': len(events) + 1, 'id': f'{run_id}:{len(events)+1}',
+                     'run_id': run_id, 'stage': stage, 'status': status, 'attempt': attempt, 'timestamp': time.time()}
+            if duration_ms is not None:
+                event['duration_ms'] = round(duration_ms, 2)
+            events.append(event)
+            run['version_counter'] = version + 1
+            try:
+                self.put(owner, 'run', run_id, run, condition=Attr('version').eq(version))
+                emit(event='workflow_stage', **{k: v for k, v in event.items() if k not in {'id', 'timestamp'}})
+                return event
+            except self.table.meta.client.exceptions.ConditionalCheckFailedException:
+                continue
+        raise InputError('Analysis event state changed concurrently.', 'state_conflict')
+
     def acquire(self,owner,run_id):
         now=int(time.time())
         claimed=[]

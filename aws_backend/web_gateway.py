@@ -110,6 +110,9 @@ class Gateway:
         match = re.fullmatch(r'/api/v2/runs/([a-f0-9]{32})(/cancel)?', path)
         if match and ((method == 'GET' and not match[2]) or (method == 'POST' and match[2])):
             return self.call(owner, 'cancel' if match[2] else 'run', {'run_id': match[1]})
+        match = re.fullmatch(r'/api/v2/runs/([a-f0-9]{32})/(artifacts|events)', path)
+        if method == 'GET' and match:
+            return self.call(owner, match[2], {'run_id':match[1], 'after':(event.get('queryStringParameters') or {}).get('after',0)})
         match = re.fullmatch(r'/api/v2/datasets/([a-f0-9]{32})/delete', path)
         if method == 'POST' and match:
             return self.call(owner, 'delete', {'dataset_id': match[1]})

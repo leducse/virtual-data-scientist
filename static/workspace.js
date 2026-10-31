@@ -1,7 +1,8 @@
 "use strict";
 const $ = (s) => document.querySelector(s);
 const escape = (v) => String(v ?? "").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#39;");
-const state = {datasets:[],runs:[],selected:localStorage.getItem("vds_dataset"),timer:null,busy:false};
+const state = {datasets:[],runs:[],selected:localStorage.getItem("vds_dataset"),timer:null,busy:false,palette:localStorage.getItem("vds_palette") || "decision"};
+const experience=window.vdsExperience;
 const active = (r) => ["queued","running","reviewing"].includes(r.status);
 const format = (v) => typeof v === "number" ? new Intl.NumberFormat("en-US",{maximumFractionDigits:3}).format(v) : String(v ?? "");
 async function api(path, body) {
@@ -24,25 +25,54 @@ function render() {
   $("#datasets").innerHTML=state.datasets.map(d=>`<div class="dataset"><button type="button" class="${d.id===state.selected ? "selected" : ""}" data-select="${d.id}" aria-pressed="${d.id===state.selected}">${escape(d.name)}<small>${d.profile.rows.toLocaleString()} rows · ${d.profile.columns.length} columns · ${d.id.slice(0,8)}</small></button><button type="button" class="delete" data-delete="${d.id}" aria-label="Delete ${escape(d.name)} and its analyses">×</button></div>`).join("");
   const date = d?.profile.columns.find(c=>c.role==="time");
   $("#profile").innerHTML=d ? `<strong>${escape(d.name)}</strong> · ${d.profile.rows.toLocaleString()} records ready for analysis<p class="muted" style="margin-top:8px">${date?.min ? `Observed dates: ${escape(date.min)} to ${escape(date.max)}. ` : ""}Data preparation and field detection completed automatically.</p><details><summary>Data preparation notes</summary><div class="chips">${d.profile.columns.map(c=>`<span class="chip">${escape(c.name)} · ${escape(c.type)}${c.missing ? ` · ${c.missing} missing` : ""}</span>`).join("")}</div><p class="muted" style="margin-top:8px">Version ${d.id.slice(0,8)} · source preserved · preparation ${format(d.timing_ms.ingestion)} ms</p></details>` : "<p>Upload a business dataset and ask your question. Its structure will be detected automatically.</p>";
+  const suggestions=d?.experience;
+  $("#recommendations").hidden=!suggestions;
+  $("#recommendations").innerHTML=suggestions ? `<h2>Good questions for this data</h2><p class="muted">Based on the profile. Choose a question to edit it; analysis starts only when you press Run.</p><div class="suggestion-grid">${suggestions.suggestions.map(s=>`<article><span class="eyebrow">${escape(s.effort)}</span><h3>${escape(s.question)}</h3><p>${escape(s.why)}</p><button class="secondary" type="button" data-suggestion="${escape(s.id)}">Use this question →</button>${learning(s.methods)}</article>`).join("")}</div>${suggestions.notes.map(n=>`<p class="warning">${escape(n)}</p>`).join("")}` : "";
   $("#analyze").disabled=!d || state.busy;
   const runs=state.runs.filter(r=>r.dataset_id===state.selected);
-  $("#runs").innerHTML=runs.length ? runs.map(renderRun).join("") : '<p class="muted">Your results, methods, and checks will appear here.</p>';
+  const container=$("#runs");
+  if(!runs.length)container.innerHTML='<p class="muted">Your results, methods, and checks will appear here.</p>';
+  else {
+    if(!container.querySelector("article"))container.replaceChildren();
+    const ids=new Set(runs.map(r=>r.id));
+    container.querySelectorAll("article.run").forEach(node=>{if(!ids.has(node.dataset.run))node.remove();});
+    for(const [index,r] of runs.entries()){
+      const html=renderRun(r), old=container.querySelector(`[data-run="${r.id}"]`);
+      if(old?.dataset.rendered===html)continue;
+      const holder=document.createElement("div");holder.innerHTML=html;const node=holder.firstElementChild;node.dataset.rendered=html;
+      if(old)old.replaceWith(node);else container.insertBefore(node,container.children[index] || null);
+      renderPlots(r,node);
+    }
+  }
   updateRoute();
 }
+function learning(methods) {
+  if(!methods?.length)return "";
+  return `<details class="learning"><summary>How this works · learn the methods</summary>${methods.map(m=>`<section><h4>${escape(m.title)}</h4>${m.disposition ? `<p class="method-choice">${escape(m.disposition)}</p>` : ""}<p>${escape(m.what)}</p><dl><dt>When to use</dt><dd>${escape(m.when)}</dd><dt>Limitations</dt><dd>${escape(m.avoid)}</dd><dt>How we check it</dt><dd>${escape(m.checks)}</dd></dl><p class="muted">${escape(m.example)}</p><a href="${escape(m.reference)}" target="_blank" rel="noopener noreferrer">Technical reference ↗</a></section>`).join("")}</details>`;
+}
 function chart(result,id) {
-  if(!result.series?.length) return "";
-  const historical=result.series, future=result.forecast || [];
-  const all=[...historical,...future];
-  const values=all.map(r=>r.value), lo=Math.min(0,...values), hi=Math.max(...values), range=hi-lo || 1;
-  const x=(i)=>65+i*625/Math.max(1,all.length-1), y=(v)=>218-(v-lo)*178/range;
-  const points=(rows,offset)=>rows.map((r,i)=>`${x(i+offset).toFixed(2)},${y(r.value).toFixed(2)}`).join(" ");
-  const forecast=future.length ? [historical.at(-1),...future] : [];
-  const labels=[...new Set([0,Math.floor((all.length-1)/2),all.length-1])];
-  return `<svg class="chart" viewBox="0 0 720 265" role="img" aria-labelledby="chart-${id}"><title id="chart-${id}">Monthly ${escape(result.chart?.units)}. Solid line: observed values. Dashed line: forecast. Exact values in the table below.</title>${[0,.5,1].map(f=>{const v=lo+f*range;return `<line x1="65" x2="690" y1="${y(v)}" y2="${y(v)}" stroke="#e8eee6"/><text x="55" y="${y(v)+4}" text-anchor="end" font-size="10" fill="#617366">${escape(format(v))}</text>`;}).join("")}<polyline points="${points(historical,0)}" fill="none" stroke="#146659" stroke-width="2.5"/>${forecast.length ? `<polyline points="${points(forecast,historical.length-1)}" fill="none" stroke="#be8635" stroke-width="2.5" stroke-dasharray="6 4"/>` : ""}${all.map((r,i)=>`<circle cx="${x(i)}" cy="${y(r.value)}" r="3" fill="${i<historical.length ? "#146659" : "#be8635"}"><title>${escape(r.month)}: ${escape(format(r.value))}</title></circle>`).join("")}${labels.map(i=>`<text x="${x(i)}" y="245" text-anchor="middle" font-size="10" fill="#617366">${escape(all[i].month)}</text>`).join("")}</svg><div class="legend"><span>Observed</span>${future.length ? '<span class="forecast">Forecast · no calibrated interval</span>' : ""}</div><details><summary>Exact values</summary><div class="table-wrap"><table><thead><tr><th scope="col">Month</th><th scope="col">Value</th><th scope="col">Kind</th></tr></thead><tbody>${all.map((r,i)=>`<tr><td>${escape(r.month)}</td><td>${escape(format(r.value))}</td><td>${i<historical.length ? "Observed" : "Forecast"}</td></tr>`).join("")}</tbody></table></div></details>`;
+  const visuals=experience.figures(result);
+  return visuals.map((v,i)=>`<section class="visual"><h4>${escape(v.title)}</h4><p class="muted">${escape(v.purpose)}${v.split ? ` · ${escape(v.split)} data` : ""}</p><div class="plot" id="plot-${id}-${i}" aria-label="${escape(v.title)}"></div><div class="figure-actions">${["png","svg","html","json","python"].map(kind=>`<button class="secondary" data-figure-run="${id}" data-figure-index="${i}" data-figure-kind="${kind}" type="button">${{png:"PNG",svg:"SVG",html:"Interactive HTML",json:"Figure JSON",python:"Python code"}[kind]}</button>`).join("")}</div><details><summary>Exact chart values</summary><div class="table-wrap"><table><thead><tr><th>Series</th><th>Period / method</th><th>Value</th></tr></thead><tbody>${v.figure.data.flatMap(t=>t.x.map((x,j)=>`<tr><td>${escape(t.name)}</td><td>${escape(x)}</td><td>${escape(format(t.y[j]))}</td></tr>`)).join("")}</tbody></table></div></details></section>`).join("");
+}
+async function renderPlots(run,node) {
+  if(!run.result)return;
+  try{
+    for(const [i,v] of experience.figures(run.result).entries()){
+      const fig=experience.styled(v,state.palette), element=node.querySelector(`#plot-${run.id}-${i}`);
+      await window.Plotly.react(element,fig.data,fig.layout,{responsive:true,displaylogo:false,scrollZoom:false,toImageButtonOptions:{format:"png",filename:v.id,width:1200,height:650,scale:2}});
+    }
+  }catch(error){notice("A chart could not render. Its exact values and evidence remain available.",true);}
+}
+function activity(run) {
+  const events=run.events || [];
+  if(!events.length)return "";
+  const latest=new Map(events.map(e=>[e.stage,e]));
+  const stages=run.plan?.tier==="quick" ? [["planner","Orchestrator","agent"],["query","Data query","tool"],["numerical_checks","Numerical checks","check"],["publication","Results","output"]] : [["planner","Orchestrator","agent"],["analyst","Analyst","agent"],["interpreter","Code Interpreter","tool"],["numerical_checks","Numerical checks","check"],["reviewer","Reviewer","agent"],["publication","Results","output"]];
+  return `<div class="activity" aria-label="Analysis activity"><ol class="flow-nodes">${stages.map(([key,label,kind])=>{const e=latest.get(key), status=e?.status || (active(run) ? "queued" : "skipped");return `<li class="flow-node ${status}" aria-current="${status==="started" ? "step" : "false"}"><small>${kind}</small><strong>${label}</strong><span>${status==="started" ? "Working" : status}${e?.duration_ms!==undefined ? ` · ${format(e.duration_ms/1000)}s` : ""}</span></li>`;}).join("")}</ol><details><summary>Activity timeline</summary><ol class="timeline">${events.map(e=>`<li>${new Date(e.timestamp*1000).toLocaleTimeString()} · ${escape(e.stage.replaceAll("_"," "))} · ${escape(e.status)}${e.attempt>1 ? ` · attempt ${e.attempt}` : ""}</li>`).join("")}</ol></details></div>`;
 }
 function renderRun(r) {
   const result=r.result;
-  return `<article class="run"><div class="run-heading"><h3>${escape(r.question)}</h3><span class="status ${escape(r.status)}">${escape(r.status)}</span></div><p class="meta">${escape(r.plan?.tier || "planning")} · version ${r.dataset_id.slice(0,8)} · ${new Date(r.created_at*1000).toLocaleString()} · trace ${r.id.slice(0,8)}</p>${result ? `<p>${escape(result.summary)}</p>${result.independent_review ? `<p class="muted">Independent review: ${result.independent_review.decision === "accept" ? "accepted the checked result" : escape(result.independent_review.decision)}.</p>` : ""}${chart(result,r.id)}<p class="muted">${escape(result.execution)} · ${escape(format(result.timing_ms?.end_to_end))} ms end to end · numerical review ${result.review?.passed ? "passed" : "pending"}</p>${(result.warnings || []).map(w=>`<p class="warning">${escape(w)}</p>`).join("")}<div class="evidence-actions"><button class="secondary" data-download="${r.id}">Download evidence</button></div><details><summary>Plan, methods & numerical checks</summary><pre>${escape(JSON.stringify({plan:r.plan,review:result.review,independent_review:result.independent_review,candidates:result.candidates,test:result.test,sql:result.sql,versions:result.versions},null,2))}</pre></details>` : `<p>${escape(r.error?.message || r.stage)}</p>${r.result_available ? `<button class="secondary" data-open="${r.id}">Open saved result</button>` : ""}${active(r) ? `<button class="secondary" data-cancel="${r.id}">Cancel job</button>` : ""}`}</article>`;
+  return `<article class="run" data-run="${r.id}"><div class="run-heading"><h3>${escape(r.question)}</h3><span class="status ${escape(r.status)}">${escape(r.status)}</span></div><p class="meta">${escape(r.plan?.tier || "planning")} · version ${r.dataset_id.slice(0,8)} · ${new Date(r.created_at*1000).toLocaleString()} · trace ${r.id.slice(0,8)}</p>${activity(r)}${result ? `<p>${escape(result.summary)}</p>${result.independent_review ? `<p class="muted">Independent review: ${result.independent_review.decision === "accept" ? "accepted the checked result" : escape(result.independent_review.decision)}.</p>` : ""}${chart(result,r.id)}${learning(result.methodology)}<p class="muted">${escape(result.execution)} · ${escape(format(result.timing_ms?.end_to_end))} ms end to end · numerical review ${result.review?.passed ? "passed" : "pending"}</p>${(result.warnings || []).map(w=>`<p class="warning">${escape(w)}</p>`).join("")}<div class="evidence-actions"><button class="secondary" data-download="${r.id}">Full evidence JSON</button>${r.bundle_key ? `<button class="secondary" data-bundle="${r.id}">Download code, notebook & data tables ↓</button>` : ""}</div><details><summary>Plan, methods & numerical checks</summary><pre>${escape(JSON.stringify({plan:r.plan,review:result.review,independent_review:result.independent_review,candidates:result.candidates,test:result.test,sql:result.sql,versions:result.versions},null,2))}</pre></details>` : `<p>${escape(r.error?.message || r.stage)}</p>${r.result_available ? `<button class="secondary" data-open="${r.id}">Open saved result</button>` : ""}${active(r) ? `<button class="secondary" data-cancel="${r.id}">Cancel job</button>` : ""}`}</article>`;
 }
 function updateRoute(){$("#route-note").textContent=state.cloud ? "AgentCore chooses and executes the analysis" : "Automatically inferred from your data and question";}
 async function refresh(initial=false){
@@ -90,6 +120,10 @@ $("#datasets").addEventListener("click",async e=>{
   try{await api(`datasets/${del.dataset.delete}/delete`,{});await refresh(true);notice("Dataset and its linked results deleted.");}catch(e){notice(e.message,true);}
 });
 $("#runs").addEventListener("click",async e=>{
+  const figure=e.target.closest("[data-figure-run]");
+  if(figure){try{const run=state.runs.find(r=>r.id===figure.dataset.figureRun), i=Number(figure.dataset.figureIndex);await experience.exportFigure(experience.figures(run.result)[i],state.palette,figure.dataset.figureKind,$(`#plot-${run.id}-${i}`));}catch(error){notice(error.message,true);}return;}
+  const bundle=e.target.closest("[data-bundle]");
+  if(bundle){try{const result=await api(`runs/${bundle.dataset.bundle}/artifacts`);const a=document.createElement("a");a.href=result.url;a.rel="noreferrer";a.click();}catch(error){notice(error.message,true);}return;}
   const open=e.target.closest("[data-open]");
   if(open){try {const run=(await api(`runs/${open.dataset.open}`)).run;state.runs=state.runs.map(r=>r.id===run.id ? run : r);render();} catch(error){notice(error.message,true);}return;}
   const cancel=e.target.closest("[data-cancel]");
@@ -99,5 +133,7 @@ $("#runs").addEventListener("click",async e=>{
   try {run=(await api(`runs/${download.dataset.download}`)).run;} catch(error) {notice(error.message,true);return;}
   const url=URL.createObjectURL(new Blob([JSON.stringify(run,null,2)],{type:"application/json"}));const a=document.createElement("a");a.href=url;a.download=`analysis-${run.id.slice(0,8)}.json`;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
 });
-document.querySelectorAll("[data-question]").forEach(button=>button.addEventListener("click",()=>{$("#question").value=button.dataset.question;$("#question").focus();}));
+$("#recommendations").addEventListener("click",e=>{const button=e.target.closest("[data-suggestion]");if(!button)return;const suggestion=selected()?.experience?.suggestions.find(s=>s.id===button.dataset.suggestion);if(suggestion){$("#question").value=suggestion.question;$("#question").focus();}});
+$("#palette").value=state.palette in experience.palettes ? state.palette : "decision";
+$("#palette").addEventListener("change",async e=>{state.palette=e.target.value;localStorage.setItem("vds_palette",state.palette);for(const r of state.runs.filter(r=>r.dataset_id===state.selected && r.result))await renderPlots(r,$(`[data-run="${r.id}"]`));});
 window.vdsAuth.ready.then(signedIn=>signedIn && refresh(true)).catch(e=>notice(e.message,true));

@@ -27,9 +27,9 @@ async def invoke(payload,context=None):
         return await asyncio.to_thread(dispatch,payload)
     except InputError as exc:
         return {'ok':False,'error':{'code':exc.code,'message':str(exc),'details':exc.details}}
-    except Exception:
-        import logging
-        logging.getLogger(__name__).exception('Invocation failed')
+    except Exception as exc:
+        from analysis_engine.telemetry import safe_error
+        safe_error(exc)
         return {'ok':False,'error':{'code':'dependency_failure','message':'The cloud service could not complete this request.'}}
 
 

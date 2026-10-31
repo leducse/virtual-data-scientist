@@ -25,13 +25,14 @@
 <section class="intro"><p class="eyebrow">FROM A QUESTION TO CHECKABLE EVIDENCE</p><h1>What would you like to learn?</h1><p>Start with a trend. Go deeper when the question calls for it.</p></section>
 <div id="notice" role="status" aria-live="polite"></div>
 <section id="profile" class="profile" aria-label="Dataset profile"><p>Choose a CSV or Excel workbook to begin, or try the sample dataset.</p></section>
+<section id="recommendations" class="recommendations" aria-label="Suggested analyses" hidden></section>
 <form id="analysis-form" class="analysis-form">
 <label for="question">Your question</label><textarea id="question" rows="2" placeholder="Show monthly revenue" required maxlength="2000"></textarea>
-<div class="suggestions"><button type="button" data-question="Show monthly revenue" data-task="monthly_summary">Show monthly revenue</button><button type="button" data-question="Forecast the next three months" data-task="forecast">Forecast three months</button></div>
+<p class="muted">Ask in your own words, or start with a suggestion based on your uploaded data.</p>
 <div class="submit-row"><span id="route-note">The data scientist chooses the analytical path.</span><button id="analyze" type="submit" disabled>Run analysis <span aria-hidden="true">→</span></button></div>
 </form>
-<section class="results" aria-label="Saved analyses"><div class="section-heading"><h2>Analyses & evidence</h2><span>Saved automatically</span></div><div id="runs"><p class="muted">Your results, methods, and checks will appear here.</p></div></section>
+<section class="results" aria-label="Saved analyses"><div class="section-heading"><h2>Analyses & evidence</h2><label class="palette-label" for="palette">Chart colors<select id="palette"><option value="decision">Teal & gold</option><option value="ocean">Ocean</option><option value="plum">Plum & amber</option><option value="accessible">Blue & orange</option></select></label></div><div id="runs"><p class="muted">Your results, methods, and checks will appear here.</p></div></section>
 </main>
 </div>
-<script src="/static/auth.js" defer></script><script src="/static/workspace.js" defer></script>
+<script src="/static/vendor/plotly-basic-2.32.0.min.js" defer></script><script src="/static/experience.js" defer></script><script src="/static/auth.js" defer></script><script src="/static/workspace.js" defer></script>
 </body></html>

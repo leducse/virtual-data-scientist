@@ -33,6 +33,13 @@ class CloudServiceTests(unittest.TestCase):
         result=self.service.store.run(self.owner,r['id'])
         self.assertEqual(result['status'],'succeeded',result)
         self.assertEqual(result['result']['total'],579060)
+        self.assertEqual(result['events'][-1]['status'],'completed')
+        self.assertEqual([e['sequence'] for e in result['events']],list(range(1,len(result['events'])+1)))
+        self.assertTrue(result['bundle_key'].endswith('/analysis.zip'))
+        self.assertTrue(result['result']['visuals'])
+        self.assertEqual(len(d['experience']['suggestions']),2)
+        with self.assertRaises(InputError):
+            self.service.dispatch({'owner':'b'*64,'action':'artifacts','payload':{'run_id':r['id']}})
         self.assertEqual(self.service.submit(self.owner,{'dataset_id':d['id'],'question':'Show monthly revenue','request_key':'test'})['id'],r['id'])
         with self.assertRaises(InputError):self.service.submit(self.owner,{'dataset_id':d['id'],'question':'Different','request_key':'test'})
         self.assertEqual(self.service.store.workspace('b'*64)['datasets'],[])

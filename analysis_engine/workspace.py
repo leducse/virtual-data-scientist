@@ -84,6 +84,8 @@ class Workspace:
                    "created_at": time.time(), "profile": profile, "ready": True, "ingestion_version": "csv-xlsx-v1",
                    "parquet_sha256": hashlib.sha256((folder / "dataset.parquet").read_bytes()).hexdigest(),
                    "timing_ms": {"ingestion": round((time.monotonic()-started)*1000, 2)}, "storage": "local_immutable_parquet"}
+            from analysis_engine.presentation import recommendations
+            doc['experience'] = recommendations(table, profile)
             with self.connect() as con:
                 con.execute("BEGIN IMMEDIATE")
                 count = con.execute("SELECT count(*) FROM datasets WHERE owner=? AND json_extract(doc,'$.deleted') IS NULL", (owner,)).fetchone()[0]
@@ -165,6 +167,9 @@ class Workspace:
 
     def finish(self, owner, run_id, result):
         run = self.run(owner,run_id)
+        from analysis_engine.presentation import enrich_result
+        from types import SimpleNamespace
+        enrich_result(result, SimpleNamespace(**run['plan']))
         source = RECIPE_SOURCE
         if result.get("recipe_sha256") != run["recipe_sha256"]:
             raise InputError("Recipe changed during execution; restart and submit a new run.", "code_version_changed")

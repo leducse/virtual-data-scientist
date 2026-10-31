@@ -13,7 +13,8 @@ def main():
     parser.add_argument('--execute', action='store_true')
     args = parser.parse_args()
     assets = {'index.html': ('static/index.html', 'text/html; charset=utf-8')}
-    for name, kind in [('workspace.js', 'application/javascript'), ('auth.js', 'application/javascript'),
+    for name, kind in [('workspace.js', 'application/javascript'), ('experience.js', 'application/javascript'),
+                       ('vendor/plotly-basic-2.32.0.min.js','application/javascript'), ('auth.js', 'application/javascript'),
                        ('workspace.css', 'text/css'), ('favicon.svg', 'image/svg+xml'), ('monthly_revenue.csv', 'text/csv')]:
         assets['static/' + name] = ('static/' + name, kind)
     if not args.execute:
