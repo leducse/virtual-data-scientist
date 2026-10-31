@@ -1,5 +1,46 @@
 # Validation record
 
+## Chat / preview releases 16–17 — current evidence
+
+- 79 Python tests and 17 Node tests; source compilation, JS syntax, pip check and
+  whitespace checks passed. Prior release results below are historical.
+- Real hosted Back → restored question/file/enabled controls; Cognito Sign up
+  form present; successful sign-in automatically sent one saved request.
+- Summary `8440f2066f933e281f301c5c5f05f12a` and follow-up forecast
+  `21c401435039d47e83a086bf4e93726d` succeeded in AgentCore release 16. Exactly
+  two runs survived reload. Interpreter status was TERMINATED; independent
+  review accepted. Total measured input/output usage: 6,745 tokens.
+- Three ECharts figures: two linked time views and an isolated categorical MAE
+  comparison. Four palettes and D3 activity map verified; 390px viewport has no
+  horizontal overflow. PNG dimensions/signature and pinned JavaScript export
+  checked; self-contained HTML opened and rendered from a local file.
+- Account-limit blocking was tested with an explicitly set synthetic acceptance
+  account fixture at 100,000 tokens (not by spending that amount). API returned
+  429 quota_exceeded, Send was disabled, and charts/downloads remained available.
+  The fixture was restored to actual measured usage. Global admissions stayed
+  14/20; this ledger was never reset.
+- Opaque login cookie/reload and draft persistence were verified in the browser.
+  Logout cleared the draft and a replay of the old HttpOnly cookie returned 401.
+  New code tests cover expiry/revocation, strict Origin, account isolation,
+  invalid-JWT fallback rejection, wrong callback state, BFCache controls and
+  identity-bound pending intent.
+- Source asset releases are immutable/content-addressed. A stale HTML/new script
+  mismatch observed during an in-progress publish was repaired and the final
+  coherent hosted release was rechecked.
+- Final release 17 / runtime version 16 smoke: exact total 579,060; 2,008
+  measured model tokens; repeated submission returned the same job; zero residual
+  token reservation. Synthetic data/results were deleted. Global admissions
+  advanced once to 15/20. [Runtime evidence](deployment/dev-v3-final-runtime-check.json).
+- Current ECR scan: zero critical/high and two medium findings (same reviewed
+  base image). ECharts/D3 dependency graph npm audit: zero reported vulnerabilities.
+- [Consolidated verification](deployment/dev-v3-chat-verification.json).
+- [Actual cloud acceptance](deployment/2026-10-31-chat-hosted-acceptance.json),
+  [web manifest](deployment/dev-20261031-16.json),
+  [final runtime manifest](deployment/dev-20261031-17.json),
+  [library research](research/visualization-engine.md).
+
+
+
 ## Product experience v2 — release dev-20261031-15
 
 The branded development app is https://analyst.decision-layer.com/; runtime

@@ -1,5 +1,6 @@
 "use strict";
 window.vdsSpeech=(()=>{
+  const workletURL=typeof document!=="undefined" && document.currentScript?.src ? new URL("pcm-worklet.js",document.currentScript.src).href : "/static/pcm-worklet.js";
   function pcm16(chunks,inputRate){
     if(inputRate<16000 || inputRate>192000)throw new Error('Unsupported microphone sample rate.');
     const length=chunks.reduce((n,c)=>n+c.length,0), samples=new Float32Array(length);let offset=0;
@@ -70,7 +71,7 @@ window.vdsSpeech=(()=>{
         session.stream=await navigator.mediaDevices.getUserMedia({audio:{channelCount:1,echoCancellation:true},video:false});
         if(session.cancelled){await release(session);return;}
         session.context=new AudioContext();session.rate=session.context.sampleRate;
-        await session.context.audioWorklet.addModule('/static/pcm-worklet.js');
+        await session.context.audioWorklet.addModule(workletURL);
         session.node=new AudioWorkletNode(session.context,'vds-recorder');
         session.node.port.onmessage=e=>{if(e.data.limit){stop();return;}if(!session.transcribing && !session.cancelled)session.chunks.push(e.data);};
         const source=session.context.createMediaStreamSource(session.stream), silent=session.context.createGain();silent.gain.value=0;

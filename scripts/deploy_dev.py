@@ -36,6 +36,7 @@ def main():
     parser.add_argument('--stream-zip',type=Path)
     parser.add_argument('--domain')
     parser.add_argument('--certificate')
+    parser.add_argument('--preview-enabled',choices=['true','false'])
     parser.add_argument('--execute',action='store_true')
     args=parser.parse_args()
     if not args.execute:
@@ -59,7 +60,7 @@ def main():
         runtime_id=output['outputs']['RuntimeArn'].rsplit('/',1)[1]
         runtime=session.client('bedrock-agentcore-control',config=cfg).get_agent_runtime(agentRuntimeId=runtime_id)
         output['runtime_version']=runtime['agentRuntimeVersion']
-    if args.gateway_zip or args.stream_zip or args.domain:
+    if args.gateway_zip or args.stream_zip or args.domain or args.preview_enabled:
         core=cf.describe_stacks(StackName='VirtualDataScientistV2Dev')['Stacks'][0]
         core_outputs={o['OutputKey']:o['OutputValue'] for o in core['Outputs']}
         bucket=core_outputs['DataBucket']
@@ -72,6 +73,7 @@ def main():
                 changes[param]=key
                 output[param+'_sha256']=digest
         changes['StateTable']=core_outputs['StateTable']
+        if args.preview_enabled:changes['PreviewEnabled']=args.preview_enabled
         if args.domain:
             assert args.domain=='analyst.decision-layer.com' and args.certificate
             changes.update(CustomDomain=args.domain,CertificateArn=args.certificate,AppOrigin='https://'+args.domain)

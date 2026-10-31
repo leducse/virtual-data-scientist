@@ -37,7 +37,7 @@ class Identity:
         self.issuer, self.client_id = issuer, client_id
         self.keys = keys or jwt.PyJWKClient(issuer + '/.well-known/jwks.json', timeout=5)
 
-    def owner(self, token):
+    def verify(self, token):
         if not isinstance(token, str) or not 32 <= len(token) <= 16000:
             raise RequestError('Sign in to open your workspace.', 'unauthenticated', 401)
         try:
@@ -51,7 +51,10 @@ class Identity:
                 raise jwt.InvalidTokenError('Invalid subject')
         except (jwt.PyJWTError, jwt.PyJWKClientError, ValueError, TypeError) as exc:
             raise RequestError('Your sign-in has expired or is invalid. Sign in again.', 'unauthenticated', 401) from exc
-        return hashlib.sha256((self.issuer + '\0' + claims['sub']).encode()).hexdigest()
+        return hashlib.sha256((self.issuer + '\0' + claims['sub']).encode()).hexdigest(),int(claims['exp'])
+
+    def owner(self,token):
+        return self.verify(token)[0]
 
 
 class Gateway:
@@ -106,10 +109,30 @@ class Gateway:
             if headers.get('origin') not in allowed_origins:
                 raise RequestError('This origin is not allowed.','access_denied',403)
             return self.sessions.start(event)
+        if self.sessions and path in ('/api/v2/auth/session','/api/v2/auth/logout'):
+            if method=='POST':
+                if headers.get('origin') not in allowed_origins:
+                    raise RequestError('This origin is not allowed.','access_denied',403)
+                if path.endswith('/logout'):return self.sessions.logout(event)
+                account,expiry=self.identity.verify(headers.get('x-vds-token'))
+                self.sessions.rate(account,method)
+                result=self.sessions.login(account,expiry,event)
+                self.sessions.claim(account,event)
+                return result
+            if method=='GET' and path.endswith('/session'):
+                member=self.sessions.member(event)
+                return {'ok':True,'signed_in':bool(member),**({'identity_id':member['owner'],'expires_at':int(member['expires_at'])} if member else {})}
+            raise RequestError('Endpoint not found.','not_found',404)
+        member=self.sessions.member(event) if self.sessions else None
         if headers.get('x-vds-token'):
             owner=self.identity.owner(headers['x-vds-token'])
             self.principal={'owner':owner,'kind':'member'}
             owners=self.sessions.owners(owner) if self.sessions else [owner]
+        elif member:
+            owner=member['owner'];owners=self.sessions.owners(owner)
+            self.principal={'owner':owner,'kind':'member'}
+            if method=='POST' and headers.get('origin') not in allowed_origins:
+                raise RequestError('This origin is not allowed.','access_denied',403)
         elif self.sessions and os.environ.get('VDS_GUEST_ENABLED')=='true':
             owner=self.sessions.guest(event)['owner'];owners=[owner]
             self.principal={'owner':owner,'kind':'guest'}

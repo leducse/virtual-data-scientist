@@ -1,4 +1,4 @@
-# Restricted hosted development workspace
+# Hosted development preview
 
 This slice adds HTTPS access to the existing AgentCore development runtime. It
 uses the canonical static workspace; the consulting website remains unchanged.
@@ -20,7 +20,8 @@ flowchart LR
   R --> A[Planner / analyst / Code Interpreter / review]
 ```
 
-The user pool disables self-signup. The public browser client has no secret and
+The deployed user pool allows self-service preview registration; anonymous data
+access remains disabled. `PreviewEnabled` is independent of `GuestEnabled`. The public browser client has no secret and
 supports only authorization-code OAuth, with S256 PKCE and random callback state.
 The gateway accepts only a signed, unexpired access token for the exact configured
 issuer/client; ID tokens and supplied owner fields do not authorize access.
@@ -33,14 +34,32 @@ API caching is disabled. The Lambda URL and static S3 bucket deny direct anonymo
 access. Same-origin browser requests need no wildcard API CORS policy. Dataset
 uploads use one exact hosted origin in the private data bucket's CORS policy.
 
-Tokens remain in browser memory; only a ten-minute PKCE transaction uses
-sessionStorage. Callback state is checked and removed before exchanging the code,
-and the callback code is removed from the visible URL. Reload requires sign-in
-again; the identity provider's session can complete that without another password.
-Logout clears in-memory access and selected dataset, then visits provider logout.
-Offline JWT validation does not provide instantaneous revocation: a previously
-issued access token can remain valid until its fifteen-minute expiry. Development
-MFA is off. These are explicit production-hardening boundaries.
+The callback checks and consumes a ten-minute PKCE transaction, removes its code
+from the URL, and uses the access JWT only to create `/api/v2/auth/session`. The
+server stores an opaque hashed login reference and verified owner/expiry in DDB;
+it never stores the JWT/refresh token. `__Host-vds-session` is Secure, HttpOnly,
+SameSite=Lax, Path=/, with no Domain and at most fifteen minutes. Cookie-authenticated
+mutations require the configured Origin; an explicit invalid JWT cannot fall
+back to a cookie. Logout deletes the session row and expires the cookie before
+provider logout. Independently issued JWTs remain bounded by their own expiry;
+MFA remains off. Reload/Back restores a valid app session without provider login.
+
+`static/drafts.js` saves the per-tab question, dataset, request key and explicit
+pending intent; IndexedDB preserves an optional attachment through navigation.
+Drafts expire after two hours and clear after acceptance/logout. Header sign-in
+alone does not submit a draft. An explicit Send resumes once after sign-in with
+the same request key. A different authenticated identity requires draft review
+and another explicit Send. BFCache restores enabled controls and rechecks the
+server session. Draft storage is device-local and should be cleared on shared
+devices through Sign out.
+
+Signed-in accounts have up to 100,000 input+output model tokens and twenty
+analyses, whichever comes first. Atomic DDB admission reserves bounded work and
+settles measured usage; unknown outcomes keep headroom reserved. The token meter
+shows measured/reserved/available amounts. Exhaustion leaves saved charts and
+downloads accessible. A conservative text-byte/output budget covers each SDK
+model call, including internal structured-output retries. The existing cumulative
+development-wide admission limit remains separate from account entitlements.
 
 Uploads go straight to S3 under an owner-bound random incoming ID. The POST policy
 requires the declared size, at most 10 MiB, and AES256 encryption, and expires in
@@ -58,7 +77,7 @@ published evidence is bounded to 2 MiB to fit the hosted synchronous transport.
 
 - `aws_backend/web_gateway.py`: verified identity, routes, signed runtime calls,
   exact staged-upload policies, sanitized dependency diagnostics.
-- `static/auth.js`: PKCE, callback state, in-memory access, sign-in/out and request
+- `static/auth.js`: PKCE, callback state, opaque session restoration, sign-in/out and request
   body hashing; local verification keeps its loopback identity.
 - `scripts/render_web_stack.py`: separate CloudFormation web resources.
 - `scripts/build_web_gateway.py`: ARM64 dependency ZIP, explicit source allowlist.

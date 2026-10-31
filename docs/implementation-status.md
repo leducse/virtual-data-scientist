@@ -1,7 +1,7 @@
 # Implementation status — October 31, 2026
 
-Current development release: `dev-20261031-15`, runtime version 14. Open
-https://analyst.decision-layer.com/ with an invited account. Code is pushed to
+Current development release: `dev-20261031-17`, runtime version 16. Open
+https://analyst.decision-layer.com/ with a signed-in preview account. Code is pushed to
 `feat/product-experience-v2`; the original website/runtime are preserved.
 
 The user corrected the local-only delivery boundary and approved $10 for initial
@@ -19,12 +19,13 @@ correction. Source plans in `docs/plans/` describe the larger target.
 | Cancellation and cleanup | Application terminal-state/no-late-result check; direct live sandbox cancel and normal sessions confirmed TERMINATED |
 | Ownership/idempotency/deletion | Live wrong-owner reads/deletes denied, key conflict rejected, deleted run inaccessible and S3 prefix empty |
 | Frontend and verified-user gateway | Hosted CloudFront/Cognito/Lambda path passed Excel upload/chart/forecast/reload/download/logout; optional local bridge retained |
-| Plotly and palettes | Three complementary forecast figures; hover, four palettes, exact tables, PNG/HTML/Python downloads and mobile layout verified |
+| ECharts, D3 and palettes | Three complementary forecast figures; hover, four palettes, exact tables, PNG/SVG/HTML/JavaScript/Python downloads, linked time views and mobile layout verified |
+| Chat and login continuity | Left conversation / right selected evidence; actual Back, question/file preservation, one automatic job after sign-in, reload without repeat submission, and logout revocation verified |
 | Learning and suggestions | Reviewed method catalog and profile-driven eligible questions; no technical mapping or automatic paid analysis |
 | Agent activity and streaming | Real ordered stage events, active highlights, persisted replay and single-use tickets; native Lambda SSE through CloudFront verified |
 | Reproduction | ZIP includes support modules/notebook/SQL/tables; prepared data is an explicit separate export. Downloaded code reproduced exact test MAE in a fresh stopped managed Interpreter |
 | Speech | Twenty-second recording limit, real browser AudioWorklet/PCM path with synthetic microphone, Transcribe partial/final text; no automatic analysis submission |
-| Trial and login claim | Private AWS test: five analyses succeeded, sixth rejected, account + trial work preserved, member continued, other account denied. Public guest creation/self-signup remain off |
+| Trial and login claim | Private AWS test: five analyses succeeded, sixth rejected, account + trial work preserved, member continued, other account denied. Public guests remain off; self-service signed-in preview is enabled with a persistent 100k-token / twenty-analysis account limit |
 | Operator monitoring | Private CloudWatch dashboard/alarm and content-free stage/usage telemetry deployed; no outbound notification channel |
 | Regression/classification | Local fixed recipes and browser proof retained; not enabled in new cloud path |
 | Research | Not implemented; required research rejects finalization |
@@ -32,7 +33,7 @@ correction. Source plans in `docs/plans/` describe the larger target.
 
 `docs/deployment/` contains sanitized actual acceptance/scan/cleanup records.
 Detailed generated run evidence remains under ignored `data/` and in S3 subject
-to development retention. The suite has 71 passing Python tests and twelve passing Node tests. See validation
+to development retention. The suite has 79 passing Python tests and seventeen passing Node tests. See validation
 for exact commands, earlier local proof and unverified boundaries.
 
 ## Shortcuts and upgrade conditions
@@ -45,7 +46,8 @@ Background jobs use SDK async tracking and conditional DynamoDB leases, not a
 durable queue. A container interruption becomes an interrupted job after expiry;
 add a durable scheduler/reconciliation policy before promising automatic recovery.
 
-The hosted gateway derives ownership from verified Cognito access tokens. Direct
+The hosted gateway bootstraps ownership from verified Cognito access tokens and
+issues a server-stored opaque HttpOnly session, bounded to the verified expiry. Direct
 origins and cross-user access were denied in live tests. Production work includes
 MFA/revocation/request-rate policy; the optional loopback bridge remains a demo.
 Seven-day TTL/lifecycle cleanup is asynchronous; ECR images remain retained.

@@ -7,30 +7,34 @@ forecasts run in AgentCore Code Interpreter, pass independent numerical checks,
 and receive a separate model review. Sources, typed Parquet, results and audit
 artifacts live in S3; job state lives in DynamoDB.
 
-![Workspace using the AWS development runtime](docs/workspace-v2-results.png)
+![Workspace using the AWS development runtime](docs/workspace-chat-hosted.png)
 
 ## Deployed development environment
 
 The separate `VirtualDataScientistV2Dev` stack is deployed in `us-east-1`.
-Release `dev-20261031-15` uses an immutable ARM64 Docker image in ECR and
+Release `dev-20261031-17` uses an immutable ARM64 Docker image in ECR and
 `us.amazon.nova-pro-v1:0`. CSV and Excel chart/forecast tests passed against the
 real runtime. The original runtime and public website were not switched.
 
-[Deployment manifest](docs/deployment/dev-20261031-15.json) ·
+[Deployment manifest](docs/deployment/dev-20261031-17.json) ·
 [Live acceptance](docs/deployment/2026-10-31-live-acceptance.json) ·
 [Validation](docs/validation.md) · [Architecture and continuation](project_context.md)
 
 ## Open the hosted workspace
 
-Open [the restricted development workspace](https://analyst.decision-layer.com/).
+Open [the development preview](https://analyst.decision-layer.com/).
 Cognito sign-in and a hosted Lambda gateway derive ownership from verified access
 tokens. Static files, preparation, analysis and persistent state are all on AWS;
-no local process is required. Self-signup is disabled. An administrator must
-create a development account before a user can sign in. No invitation is sent
-by the test scripts.
+no local process is required. Users can register through Cognito for a signed-in
+preview of up to 100,000 combined input/output tokens or twenty analyses,
+whichever comes first. Anonymous analysis remains disabled. Development-wide
+capacity limits also apply; this is not an unlimited public production service.
 
-The browser uses authorization code + S256 PKCE and keeps access tokens in memory.
-After reload, sign in again through the provider session to retrieve saved work.
+The browser uses authorization code + S256 PKCE, then exchanges the verified
+access token for an opaque HttpOnly/Secure session cookie. Provider tokens are
+not persisted. Reload/Back restores the app session within its fifteen-minute
+verified lifetime. A pending question, file and stable request key survive sign-in,
+and the app continues once without requiring another submit.
 Datasets/evidence expire through asynchronous seven-day lifecycle/TTL policies;
 login accounts have a separate administrator-managed lifecycle.
 [Hosted architecture and operating limits](docs/hosted-development-access.md) ·
@@ -42,14 +46,20 @@ selectors. Preparation asks a short business clarification when necessary. Inclu
 the clarification in the question before another upload. Inferred definitions,
 units and analytical limits remain visible.
 
+[Visualization engine research and decision](docs/research/visualization-engine.md) ·
+[Chat and login acceptance](docs/deployment/2026-10-31-chat-hosted-acceptance.json) ·
+[Final release verification](docs/deployment/dev-v3-chat-verification.json)
+
 ## Interactive analysis experience
 
 After profiling, supported analysis suggestions explain why they fit the data.
-Results include reviewed methodology lessons, interactive Plotly figures, four
-palettes, exact values and real agent/tool activity. Forecasts include history,
+Chat sits on the left; selected evidence sits on the right. Follow-up analysis
+questions preserve the previous plan context. Results include reviewed
+methodology lessons, interactive Apache ECharts figures, four
+palettes, exact values and a D3.js map driven by real agent/tool activity. Forecasts include history,
 untouched test predictions and validation-only model comparison.
 
-Download PNG/SVG, self-contained chart HTML, figure JSON/Python, full evidence,
+Download PNG/SVG, self-contained chart HTML, ECharts JSON/JavaScript and Python/Plotly, full evidence,
 or a ZIP with analysis code, support modules, notebook, SQL and result tables.
 Prepared Parquet is a separate explicit download. The downloaded analysis was
 executed in a fresh AgentCore Interpreter and reproduced the saved test metrics.
@@ -61,9 +71,9 @@ The private `vds-v2-development` CloudWatch dashboard covers outcomes, latency,
 quality gates, gateway health and measured role-level usage.
 
 The five-analysis guest trial and account-claim path are implemented and live-tested
-through a temporary IAM-only AWS endpoint. Anonymous access and self-signup remain
-off. Invited development accounts have a twenty-analysis allowance, with a shared
-cumulative twenty-admission guard and conservative token reservations. See
+through a temporary IAM-only AWS endpoint. Anonymous access remains off. Signed-in previews have a server-enforced account
+allowance with conservative per-request token reservations. A shared cumulative
+twenty-admission guard continues to protect the approved development allowance. See
 [operations](docs/operations.md), [current verification](docs/deployment/dev-v2-verification.json),
 [trial acceptance](docs/deployment/dev-v2-trial-acceptance.json) and
 [export reproduction](docs/deployment/dev-v2-export-reproduction.json).
@@ -140,7 +150,7 @@ node --check static/workspace.js
 The last two commands only describe actions. Their `--execute` forms perform
 billable cloud work; use them within an explicitly authorized scope.
 [Cloud operations](docs/cloud-trial.md) records the actual approval and commands.
-The 71-test Python suite and 12 Node tests include mocked AWS state, lifecycle,
+The 79-test Python suite and 17 Node tests include mocked AWS state, lifecycle,
 quota and browser contracts; live cloud proof is recorded separately. The final
 Amazon Linux image scan reports no critical/high findings and two medium OS
 findings. [Image review](docs/deployment/dev-v2-image-risk-review.md) and

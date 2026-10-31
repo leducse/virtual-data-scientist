@@ -1,8 +1,10 @@
 "use strict";
 const $ = (s) => document.querySelector(s);
 const escape = (v) => String(v ?? "").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#39;");
-const state = {datasets:[],runs:[],selected:localStorage.getItem("vds_dataset"),timer:null,busy:false,palette:localStorage.getItem("vds_palette") || "decision"};
-const experience=window.vdsExperience;
+const state = {datasets:[],runs:[],selected:localStorage.getItem("vds_dataset"),timer:null,busy:false,focusRun:null,draftFile:null,palette:localStorage.getItem("vds_palette") || "decision"};
+const experience=window.vdsExperience, drafts=window.vdsDrafts;
+let intent=drafts.read();
+if(intent)$("#question").value=intent.question || "";
 const streams=new Map(), reconnectAt=new Map();
 const active = (r) => ["queued","running","reviewing"].includes(r.status);
 const format = (v) => typeof v === "number" ? new Intl.NumberFormat("en-US",{maximumFractionDigits:3}).format(v) : String(v ?? "");
@@ -17,36 +19,48 @@ window.vdsSpeech.init(api,notice);
 function selected() {return state.datasets.find(d=>d.id===state.selected);}
 function choose(id) {
   state.selected=id; localStorage.setItem("vds_dataset",id);
-  const previous=state.runs.find(r=>r.dataset_id===id);
-  $("#question").value=previous?.question || "";
+  state.focusRun=null;
   render();
 }
 function render() {
   const d=selected();
+  if(d && !state.drawerInitialized){$(".data-drawer").open=false;state.drawerInitialized=true;}
   $("#dataset-count").textContent=`${state.datasets.length} versions`;
   $("#datasets").innerHTML=state.datasets.map(d=>`<div class="dataset"><button type="button" class="${d.id===state.selected ? "selected" : ""}" data-select="${d.id}" aria-pressed="${d.id===state.selected}">${escape(d.name)}<small>${d.profile.rows.toLocaleString()} rows · ${d.profile.columns.length} columns · ${d.id.slice(0,8)}</small></button><button type="button" class="delete" data-delete="${d.id}" aria-label="Delete ${escape(d.name)} and its analyses">×</button></div>`).join("");
   const date = d?.profile.columns.find(c=>c.role==="time");
   $("#profile").innerHTML=d ? `<strong>${escape(d.name)}</strong> · ${d.profile.rows.toLocaleString()} records ready for analysis<p class="muted" style="margin-top:8px">${date?.min ? `Observed dates: ${escape(date.min)} to ${escape(date.max)}. ` : ""}Data preparation and field detection completed automatically.</p><details><summary>Data preparation notes</summary><div class="chips">${d.profile.columns.map(c=>`<span class="chip">${escape(c.name)} · ${escape(c.type)}${c.missing ? ` · ${c.missing} missing` : ""}</span>`).join("")}</div><p class="muted" style="margin-top:8px">Version ${d.id.slice(0,8)} · source preserved · preparation ${format(d.timing_ms.ingestion)} ms</p></details>` : "<p>Upload a business dataset and ask your question. Its structure will be detected automatically.</p>";
   const suggestions=d?.experience;
   $("#recommendations").hidden=!suggestions;
-  $("#recommendations").innerHTML=suggestions ? `<h2>Good questions for this data</h2><p class="muted">Based on the profile. Choose a question to edit it; analysis starts only when you press Run.</p><div class="suggestion-grid">${suggestions.suggestions.map(s=>`<article><span class="eyebrow">${escape(s.effort)}</span><h3>${escape(s.question)}</h3><p>${escape(s.why)}</p><button class="secondary" type="button" data-suggestion="${escape(s.id)}">Use this question →</button>${learning(s.methods)}</article>`).join("")}</div>${suggestions.notes.map(n=>`<p class="warning">${escape(n)}</p>`).join("")}` : "";
-  $("#analyze").disabled=!d || state.busy || state.allowance?.remaining===0;
-  const runs=state.runs.filter(r=>r.dataset_id===state.selected);
+  $("#recommendations").innerHTML=suggestions ? `<details ${state.runs.some(r=>r.dataset_id===state.selected) ? "":"open"}><summary>Suggested analyses for this data</summary><h2 style="margin-top:14px">Good questions for this data</h2><p class="muted">Based on the profile. Choose a question to edit it; analysis starts only when you press Send.</p><div class="suggestion-grid">${suggestions.suggestions.map(s=>`<article><span class="eyebrow">${escape(s.effort)}</span><h3>${escape(s.question)}</h3><p>${escape(s.why)}</p><button class="secondary" type="button" data-suggestion="${escape(s.id)}">Use this question →</button>${learning(s.methods)}</article>`).join("")}</div>${suggestions.notes.map(n=>`<p class="warning">${escape(n)}</p>`).join("")}</details>` : "";
+  $("#analyze").disabled=state.busy || (!d && !state.draftFile && !$("#file").files[0] && !(state.selected && !window.vdsAuth.authenticated())) || (window.vdsAuth.authenticated() && state.allowance?.can_submit===false);
+  const history=state.runs.filter(r=>r.dataset_id===state.selected);
+  if($("#preview-status")){
+    $("#preview-status").hidden=state.allowance?.can_submit!==false;
+    $("#preview-status").textContent="Your remaining preview allowance cannot cover another analysis. Saved results and downloads remain available.";
+  }
+  renderConversation(history);
+  const runs=history.filter(r=>r.id===(state.focusRun || history[0]?.id));
   const container=$("#runs");
-  if(!runs.length)container.innerHTML='<p class="muted">Your results, methods, and checks will appear here.</p>';
+  if(!runs.length){container.querySelectorAll(".plot").forEach(experience.dispose);container.innerHTML='<p class="muted">Your results, methods, and checks will appear here.</p>';}
   else {
     if(!container.querySelector("article"))container.replaceChildren();
     const ids=new Set(runs.map(r=>r.id));
-    container.querySelectorAll("article.run").forEach(node=>{if(!ids.has(node.dataset.run))node.remove();});
+    container.querySelectorAll("article.run").forEach(node=>{if(!ids.has(node.dataset.run)){node.querySelectorAll(".plot").forEach(experience.dispose);node.remove();}});
     for(const [index,r] of runs.entries()){
       const html=renderRun(r), old=container.querySelector(`[data-run="${r.id}"]`);
       if(old?.dataset.rendered===html)continue;
       const holder=document.createElement("div");holder.innerHTML=html;const node=holder.firstElementChild;node.dataset.rendered=html;
-      if(old)old.replaceWith(node);else container.insertBefore(node,container.children[index] || null);
-      renderPlots(r,node);
+      if(old){old.querySelectorAll(".plot").forEach(experience.dispose);old.replaceWith(node);}else container.insertBefore(node,container.children[index] || null);
+      renderPlots(r,node);experience.workflow(r,node.querySelector(".workflow-map"));
     }
   }
   updateRoute();
+}
+function renderConversation(history){
+  const conversation=$("#conversation"),nearBottom=conversation.scrollHeight-conversation.scrollTop-conversation.clientHeight<80;
+  const content=history.slice().reverse().map(r=>`<article class="chat-turn ${r.id===(state.focusRun || history[0]?.id) ? "current":""}"><p class="chat-user">${escape(r.question)}</p><div class="chat-assistant"><strong>Data scientist · ${escape(r.status)}</strong><p>${escape(r.result?.summary || r.error?.message || r.stage || "Planning your analysis…")}</p><button type="button" class="secondary" data-result="${r.id}">${r.result ? "Explore visuals & evidence":"View agent activity"} →</button></div></article>`).join("") || '<p class="chat-welcome">Upload a table, ask a question, then build on the result. I’ll prepare the data and check the analysis.</p>';
+  if(conversation.dataset.rendered!==content){conversation.innerHTML=content;conversation.dataset.rendered=content;if(nearBottom)conversation.scrollTop=conversation.scrollHeight;}
+  $("#attachment-note").textContent=state.draftFile ? `Attached: ${state.draftFile.name} · saved through sign-in` : selected() ? `Using ${selected().name} · follow up in your own words` : "Attach a file or choose a prepared dataset. Fields are detected automatically.";
 }
 function learning(methods) {
   if(!methods?.length)return "";
@@ -54,14 +68,14 @@ function learning(methods) {
 }
 function chart(result,id) {
   const visuals=experience.figures(result);
-  return visuals.map((v,i)=>`<section class="visual"><h4>${escape(v.title)}</h4><p class="muted">${escape(v.purpose)}${v.split ? ` · ${escape(v.split)} data` : ""}</p><div class="plot" id="plot-${id}-${i}" aria-label="${escape(v.title)}"></div><div class="figure-actions">${["png","svg","html","json","python"].map(kind=>`<button class="secondary" data-figure-run="${id}" data-figure-index="${i}" data-figure-kind="${kind}" type="button">${{png:"PNG",svg:"SVG",html:"Interactive HTML",json:"Figure JSON",python:"Python code"}[kind]}</button>`).join("")}</div><details><summary>Exact chart values</summary><div class="table-wrap"><table><thead><tr><th>Series</th><th>Period / method</th><th>Value</th></tr></thead><tbody>${v.figure.data.flatMap(t=>t.x.map((x,j)=>`<tr><td>${escape(t.name)}</td><td>${escape(x)}</td><td>${escape(format(t.y[j]))}</td></tr>`)).join("")}</tbody></table></div></details></section>`).join("");
+  return visuals.map((v,i)=>`<section class="visual"><h4>${escape(v.title)}</h4><p class="muted">${escape(v.purpose)}${v.split ? ` · ${escape(v.split)} data` : ""}</p><div class="plot" id="plot-${id}-${i}" aria-label="${escape(v.title)}"></div><div class="figure-actions">${["png","svg","html","json","javascript","python"].map(kind=>`<button class="secondary" data-figure-run="${id}" data-figure-index="${i}" data-figure-kind="${kind}" type="button">${{png:"PNG",svg:"SVG",html:"Interactive HTML",json:"Chart JSON",javascript:"JavaScript code",python:"Python code"}[kind]}</button>`).join("")}</div><details><summary>Exact chart values</summary><div class="table-wrap"><table><thead><tr><th>Series</th><th>Period / method</th><th>Value</th></tr></thead><tbody>${v.figure.data.flatMap(t=>t.x.map((x,j)=>`<tr><td>${escape(t.name)}</td><td>${escape(x)}</td><td>${escape(format(t.y[j]))}</td></tr>`)).join("")}</tbody></table></div></details></section>`).join("");
 }
 async function renderPlots(run,node) {
-  if(!run.result)return;
+  if(!run.result || !node)return;
   try{
     for(const [i,v] of experience.figures(run.result).entries()){
-      const fig=experience.styled(v,state.palette), element=node.querySelector(`#plot-${run.id}-${i}`);
-      await window.Plotly.react(element,fig.data,fig.layout,{responsive:true,displaylogo:false,scrollZoom:false,toImageButtonOptions:{format:"png",filename:v.id,width:1200,height:650,scale:2}});
+      const element=node.querySelector(`#plot-${run.id}-${i}`);
+      experience.render(v,state.palette,element,"run-"+run.id);
     }
   }catch(error){notice("A chart could not render. Its exact values and evidence remain available.",true);}
 }
@@ -70,7 +84,7 @@ function activity(run) {
   if(!events.length)return "";
   const latest=new Map(events.map(e=>[e.stage,e]));
   const stages=run.plan?.tier==="quick" ? [["planner","Orchestrator","agent"],["query","Data query","tool"],["numerical_checks","Numerical checks","check"],["publication","Results","output"]] : [["planner","Orchestrator","agent"],["analyst","Analyst","agent"],["interpreter","Code Interpreter","tool"],["numerical_checks","Numerical checks","check"],["reviewer","Reviewer","agent"],["publication","Results","output"]];
-  return `<div class="activity" aria-label="Analysis activity"><ol class="flow-nodes">${stages.map(([key,label,kind])=>{const e=latest.get(key), status=e?.status || (active(run) ? "queued" : "skipped");return `<li class="flow-node ${status}" aria-current="${status==="started" ? "step" : "false"}"><small>${kind}</small><strong>${label}</strong><span>${status==="started" ? "Working" : status}${e?.duration_ms!==undefined ? ` · ${format(e.duration_ms/1000)}s` : ""}</span></li>`;}).join("")}</ol><details><summary>Activity timeline</summary><ol class="timeline">${events.map(e=>`<li>${new Date(e.timestamp*1000).toLocaleTimeString()} · ${escape(e.stage.replaceAll("_"," "))} · ${escape(e.status)}${e.attempt>1 ? ` · attempt ${e.attempt}` : ""}</li>`).join("")}</ol></details></div>`;
+  return `<div class="activity" aria-label="Analysis activity"><div class="workflow-map"></div><ol class="flow-nodes sr-only">${stages.map(([key,label,kind])=>{const e=latest.get(key), status=e?.status || (active(run) ? "queued" : "skipped");return `<li class="flow-node ${status}" aria-current="${status==="started" ? "step" : "false"}"><small>${kind}</small><strong>${label}</strong><span>${status==="started" ? "Working" : status}${e?.duration_ms!==undefined ? ` · ${format(e.duration_ms/1000)}s` : ""}</span></li>`;}).join("")}</ol><details><summary>Activity timeline</summary><ol class="timeline">${events.map(e=>`<li>${new Date(e.timestamp*1000).toLocaleTimeString()} · ${escape(e.stage.replaceAll("_"," "))} · ${escape(e.status)}${e.attempt>1 ? ` · attempt ${e.attempt}` : ""}</li>`).join("")}</ol></details></div>`;
 }
 function renderRun(r) {
   const result=r.result;
@@ -82,7 +96,8 @@ async function refresh(initial=false){
   const result=await api("workspace"); state.datasets=result.datasets; state.runs=result.runs; state.cloud=result.cloud_enabled; state.streaming=result.streaming_enabled;
   state.allowance=result.allowance;
   window.vdsSpeech.available(result.speech_enabled===true);
-  $("#allowance").textContent=state.allowance ? `${state.allowance.remaining} of ${state.allowance.limit} analyses available${state.allowance.kind==="guest" ? " · guest trial" : ""}` : "";
+  $("#allowance").className="token-meter";
+  $("#allowance").innerHTML=state.allowance ? `<span>${format(state.allowance.tokens_remaining)} / ${format(state.allowance.token_limit)} tokens available</span><progress value="${state.allowance.tokens_committed}" max="${state.allowance.token_limit}" aria-label="Preview tokens committed"></progress><small>${format(state.allowance.tokens_measured)} used · ${format(state.allowance.tokens_reserved)} reserved · ${state.allowance.remaining} analyses left</small>` : "";
   if(initial && window.vdsClaimError)notice(window.vdsClaimError,true);
   $("#execution-badge").textContent=state.cloud ? "AWS AGENTCORE · DEVELOPMENT" : "LOCAL WORKSPACE";
   $("#execution-title").textContent=state.cloud ? "Running on AWS" : "Local verification mode";
@@ -123,33 +138,72 @@ async function streamRun(runId){
     clearTimeout(state.timer);state.timer=setTimeout(()=>refresh().catch(e=>notice(e.message,true)),1000);
   }
 }
-$("#upload-form").addEventListener("submit",async e=>{
-  e.preventDefault();const file=$("#file").files[0];if(!file)return;
-  if(file.size>10*1024*1024){notice("Choose a file up to 10 MiB.",true);return;}
-  $("#upload").disabled=true;notice("Reading and profiling your dataset…");
-  try{
-    let result;
-    if(window.vdsAuth.hosted()) {
+async function remember(pending=false,action="send"){
+  const question=$("#question").value.trim(),file=$("#file").files[0] || state.draftFile;
+  const same=intent && intent.question===question && intent.dataset_id===state.selected && (!file || intent.file_name===file.name);
+  intent=await drafts.save({...intent,question,dataset_id:state.selected,file_name:file?.name || intent?.file_name,
+    request_key:same && intent.request_key ? intent.request_key:crypto.randomUUID(),pending,action,
+    identity_id:intent?.identity_id || window.vdsAuth.identity()},file);
+  return intent;
+}
+window.vdsBeforeLogin=()=>remember(intent?.pending===true,intent?.action || "send");
+window.vdsClearDraft=()=>drafts.clear();
+async function prepareFile(){
+  if(intent?.dataset_id && state.datasets.some(d=>d.id===intent.dataset_id) && !intent.file_id){choose(intent.dataset_id);return;}
+  const file=state.draftFile || $("#file").files[0];if(!file)throw new Error("Attach a dataset before sending this question.");
+  if(file.size>10*1024*1024)throw new Error("Choose a file up to 10 MiB.");
+  let result;
+  if(window.vdsAuth.hosted()){
+    if(!intent.upload_id){
       const upload=await api("uploads",{name:file.name,size:file.size});
       const form=new FormData();Object.entries(upload.post.fields).forEach(([key,value])=>form.append(key,value));form.append("file",file);
-      const stored=await fetch(upload.post.url,{method:"POST",body:form});
-      if(!stored.ok) throw new Error("The file upload did not complete. Try again.");
-      result=await api("datasets",{upload_id:upload.upload_id,name:file.name,question:$("#question").value});
-    } else {
-      const bytes=new Uint8Array(await file.arrayBuffer());let binary="";for(let i=0;i<bytes.length;i+=8192) binary+=String.fromCharCode(...bytes.subarray(i,i+8192));
-      result=await api("datasets",{name:file.name,content_base64:btoa(binary),question:$("#question").value});
+      const stored=await fetch(upload.post.url,{method:"POST",body:form});if(!stored.ok)throw new Error("The file upload did not complete. Try again.");
+      intent.upload_id=upload.upload_id;drafts.write(intent);
     }
-    await refresh();choose(result.dataset.id);notice("Your data is prepared. Ask your business question.");
-  }catch(e){notice(e.message,true);}
-  finally{$("#upload").disabled=false;}
-});
-$("#analysis-form").addEventListener("submit",async e=>{
-  e.preventDefault();if(!selected())return;state.busy=true;$("#analyze").disabled=true;notice("Planning your analysis…");
+    result=await api("datasets",{upload_id:intent.upload_id,name:file.name,question:intent.question});
+  }else{
+    const bytes=new Uint8Array(await file.arrayBuffer());let binary="";for(let i=0;i<bytes.length;i+=8192)binary+=String.fromCharCode(...bytes.subarray(i,i+8192));
+    result=await api("datasets",{name:file.name,content_base64:btoa(binary),question:intent.question});
+  }
+  intent.dataset_id=result.dataset.id;intent.prepared=true;drafts.write(intent);
+  await refresh();choose(result.dataset.id);
+}
+async function sendPending(){
+  if(state.busy || !intent?.pending)return;
+  state.busy=true;$("#question").disabled=true;$("#upload").disabled=true;render();
   try{
-    const result=await api("runs",{dataset_id:state.selected,request_key:crypto.randomUUID(),question:$("#question").value});
-    await refresh();notice(result.run.status==="succeeded" ? "Result saved with its evidence." : result.run.status==="failed" ? result.run.error.message : "Background job started. You can refresh this page and keep the result.",result.run.status==="failed");
-  }catch(e){notice(e.message,true);}finally{state.busy=false;$("#analyze").disabled=!selected() || state.allowance?.remaining===0;}
+    if(!window.vdsAuth.authenticated()){await window.vdsAuth.login();return;}
+    if(!drafts.canResume(intent,window.vdsAuth.identity())){intent.pending=false;drafts.write(intent);notice("You signed in to a different account. Review the saved draft and press Send to use it here.",true);return;}
+    notice(intent.action==="profile" ? "Profiling your data…":"Preparing your message and analysis…");
+    if(!intent.prepared && (intent.file_id || !intent.dataset_id))await prepareFile();
+    if(intent.action!=="profile"){
+      const result=await api("runs",{dataset_id:intent.dataset_id,request_key:intent.request_key,question:intent.question});
+      state.focusRun=result.run.id;$("#question").value="";
+      notice(result.run.status==="failed" ? result.run.error.message:"Message sent. Your analysis continues in AgentCore.",result.run.status==="failed");
+    }else notice("Your data is prepared. Suggested analyses are ready on the right.");
+    await drafts.clear();intent=null;state.draftFile=null;$("#file").value="";
+    await refresh();
+  }catch(error){
+    if(error.code==="unauthenticated"){notice("Your message is saved. Continuing through sign-in…");await window.vdsAuth.login();}
+    else notice(error.message+" Your draft is saved; Send retries the same request.",true);
+  }finally{state.busy=false;$("#question").disabled=false;$("#upload").disabled=false;render();}
+}
+async function submit(action){
+  if(state.busy)return;
+  try{
+    await initialization;
+    await remember(true,action);intent.identity_id=window.vdsAuth.identity();drafts.write(intent);await sendPending();
+  }catch(error){notice(error.message,true);}
+}
+$("#upload-form").addEventListener("submit",e=>{e.preventDefault();submit("profile");});
+$("#analysis-form").addEventListener("submit",e=>{e.preventDefault();submit("send");});
+$("#question").addEventListener("input",()=>{if(!state.busy){intent={...intent,question:$("#question").value,dataset_id:state.selected,identity_id:window.vdsAuth.identity(),pending:false};drafts.write(intent);}});
+$("#file").addEventListener("change",async()=>{
+  try{const file=$("#file").files[0];if(file && file.size>10*1024*1024)throw new Error("Choose a file up to 10 MiB.");
+    await drafts.clear();intent=null;state.draftFile=file || null;await remember(false);render();
+  }catch(error){$("#file").value="";state.draftFile=null;notice(error.message,true);render();}
 });
+$("#conversation").addEventListener("click",e=>{const button=e.target.closest("[data-result]");if(button){state.focusRun=button.dataset.result;render();if(innerWidth<761)$("#runs").scrollIntoView({behavior:"smooth"});}});
 $("#datasets").addEventListener("click",async e=>{
   const select=e.target.closest("[data-select]");if(select){choose(select.dataset.select);return;}
   const del=e.target.closest("[data-delete]");if(!del)return;
@@ -174,4 +228,16 @@ $("#runs").addEventListener("click",async e=>{
 $("#recommendations").addEventListener("click",e=>{const button=e.target.closest("[data-suggestion]");if(!button)return;const suggestion=selected()?.experience?.suggestions.find(s=>s.id===button.dataset.suggestion);if(suggestion){notice('');$("#question").value=suggestion.question;$("#question").focus();}});
 $("#palette").value=state.palette in experience.palettes ? state.palette : "decision";
 $("#palette").addEventListener("change",async e=>{state.palette=e.target.value;localStorage.setItem("vds_palette",state.palette);for(const r of state.runs.filter(r=>r.dataset_id===state.selected && r.result))await renderPlots(r,$(`[data-run="${r.id}"]`));});
-window.vdsAuth.ready.then(signedIn=>signedIn && refresh(true)).catch(e=>notice(e.message,true));
+async function restore(signedIn){
+  intent=drafts.read();
+  if(intent){$("#question").value=intent.question || "";state.draftFile=await drafts.file(intent);if(intent.dataset_id)state.selected=intent.dataset_id;}
+  if(signedIn){await refresh(true);if(intent?.pending){
+    if(drafts.canResume(intent,window.vdsAuth.identity()))await sendPending();
+    else {intent.pending=false;drafts.write(intent);notice("This is a different account. Review your saved draft before pressing Send.",true);}
+  }}else {
+    state.datasets=[];state.runs=[];state.allowance=null;$("#allowance").textContent="";
+    for(const controller of streams.values())controller.abort();clearTimeout(state.timer);render();
+  }
+}
+const initialization=window.vdsAuth.ready.then(restore).catch(e=>notice(e.message,true));
+window.addEventListener("vds-auth-change",()=>restore(window.vdsAuth.authenticated()).catch(e=>notice(e.message,true)));

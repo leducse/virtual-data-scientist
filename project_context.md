@@ -10,17 +10,17 @@ not configure technical columns or algorithms. Automatic preparation plus a
 checked Strands plan selects the appropriate supported tool.
 
 Separate AWS development stack `VirtualDataScientistV2Dev` is deployed in
-account `441383083571`, `us-east-1`, release `dev-20261031-15`. Actual CSV and Excel
+account `441383083571`, `us-east-1`, release `dev-20261031-17`. Actual CSV and Excel
 chart/forecast runs, narrative review, imports/plot transfer, stopped sessions,
-reconnect, owner isolation, cancellation and deletion passed. Current deployment outputs are in `docs/deployment/dev-20261031-15.json`;
+reconnect, owner isolation, cancellation and deletion passed. Current runtime outputs are in `docs/deployment/dev-20261031-17.json`;
+web/identity outputs remain in `docs/deployment/dev-20261031-16.json`;
 the earlier `2026-10-31-agentcore-dev.json` remains historical evidence.
 
 The actual HTTPS workspace is https://analyst.decision-layer.com/.
 The original CloudFront URL remains a supported sign-in origin.
 A separate `VirtualDataScientistV2DevWeb` stack provides private static S3,
 CloudFront, Cognito code/PKCE sign-in and an IAM-only Lambda URL gateway.
-The gateway verifies access tokens and derives owner identity; open signup is
-disabled. Hosted Excel upload/chart/forecast, a full 10 MiB upload, identity/origin
+The gateway verifies access tokens and derives owner identity; self-service signed-in preview registration is enabled. Hosted Excel upload/chart/forecast, a full 10 MiB upload, identity/origin
 isolation, reload/reconnect, evidence download and logout passed. Temporary test
 users were removed without sending invitations. The owner account is provisioned and Cognito accepted its email invitation.
 First sign-in/password change remains unconfirmed. The optional loopback bridge remains available.
@@ -66,7 +66,9 @@ sheet/date context for another upload.
 Core experience changes are implemented and deployed in the existing development
 stacks. Source and acceptance are linked from `docs/implementation-status.md`.
 
-- Plotly.js 2.32.0 basic is self-hosted; forecasts return three checked figures.
+- Apache ECharts 6.1.0 renders checked browser figures; D3.js 7.9.0 draws activity.
+  Plotly manifests/Python exports remain compatible. The left chat selects the
+  evidence view on the right; forecast follow-ups retain prior-plan context.
   Four palettes preserve numbers and apply to individual exports and code bundles.
 - Saved profiles drive deterministic capability/coverage/readiness suggestions;
   no model call or analysis credit is needed to view suggestions or lessons.
@@ -85,8 +87,8 @@ stacks. Source and acceptance are linked from `docs/implementation-status.md`.
   metrics and role usage records are deployed. No notification channel is wired.
 - Guest quotas, token reservations, global development admission and atomic account
   claims passed private AWS acceptance: five completed analyses, sixth rejected,
-  member continuation and preserved old/account namespaces. Public guests and
-  self-signup remain disabled; anonymous launch needs broader cost/abuse review.
+  member continuation and preserved old/account namespaces. Public guests remain disabled. Self-signup now enables a 100,000-token /
+  twenty-analysis account preview, subject to the existing global admission guard.
 - `analyst.decision-layer.com` has validated ACM TLS and Route 53 aliases, with
   Cognito callbacks and S3 CORS supporting the new and original origins.
 
@@ -116,7 +118,7 @@ The application run ID remains a correlation ID, not an OTEL distributed trace.
 | `scripts/render_web_stack.py`, `build_web_gateway.py`, `publish_dev_site.py` | Separate hosted stack, minimal ARM64 package and static allowlist |
 | `scripts/hosted_acceptance.py`, `tests/auth.test.cjs` | Temporary-user live acceptance and browser authentication contracts |
 | `analysis_engine/cloud_proxy.py`, `workspace_http.py` | Optional loopback HTTP and IAM runtime invocation |
-| `static/index.html`, `workspace.js/css`, `experience.js`, `speech.js` | Upload/questions, Plotly figures, themes, lessons, activity, dictation and exports |
+| `static/index.html`, `workspace.js/css`, `experience.js`, `speech.js` | Left chat, ECharts figures, D3 activity, themes, lessons, dictation and exports |
 | `presentation.py`, `exports.py`, `quotas.py`, `telemetry.py` | Reviewed suggestions/lessons, immutable reproduction bundles, transactional usage and content-free events |
 | `aws_backend/streaming/`, `web_sessions.py` | Native SSE/Transcribe proxy and atomic guest/account namespace claims |
 | `scripts/cloud_acceptance.py`, `cloud_safety_acceptance.py`, `cloud_smoke.py` | Explicit live acceptance, lifecycle and library/PNG proof |
@@ -141,9 +143,13 @@ bounds reads and automatically prepares the staged object before deleting it.
 The runtime itself remains IAM-authenticated and trusts internal callers to
 supply the verified owner. The optional loopback bridge hashes its local cookie;
 that demo namespace and legacy routes are separate from hosted Cognito users.
-Never expose the local server publicly. Hosted tokens remain in memory; reload
-requires provider sign-in. Revocation is bounded by fifteen-minute access-token
-expiry, and development MFA is off. Source data/evidence expire after seven days
+Never expose the local server publicly. PKCE tokens stay transient; an opaque
+HttpOnly/Secure/SameSite=Lax app cookie restores verified identity on reload/Back.
+Its server-side DDB row expires no later than the access token (fifteen minutes)
+and is deleted on logout. Independently obtained JWTs can remain valid until
+their expiry; development MFA is off. Pending questions/files and idempotency
+keys survive redirects in per-tab sessionStorage/IndexedDB. Cross-account
+resumption requires explicit review/Send; logout clears the draft. Source data/evidence expire after seven days
 asynchronously; Cognito accounts have a separate administrator-managed lifecycle.
 
 Request keys are idempotent within an owner; changing the question with the same
@@ -187,7 +193,7 @@ these do not establish a temporal/grouped production contract.
 ## Validation and commands
 
 See `docs/validation.md` and `docs/deployment/` for exact evidence. Final suite:
-71 Python tests and twelve Node tests passed, plus compile/JS syntax/package
+79 Python tests and seventeen Node tests passed, plus compile/JS syntax/package
 checks, actual image/CF deployment
 and live synthetic/browser acceptance. The managed interpreter libraries differ
 from the pinned container; cross-version numerical refits passed for the fixture.
@@ -262,3 +268,48 @@ Upload a spreadsheet and ask a question. The system prepares the data itself,
 uses AWS agents to analyze and check it, and saves the answer and evidence.
 The hosted development interface now includes private-account sign-in. The
 consulting website and production release still need a separate integration.
+
+## Chat / preview release continuation
+
+Current release `dev-20261031-17` is runtime version 16, with a final guard
+that retains unknown token usage if provider metrics are missing. The complete
+hosted chat flow was verified on release 16 / runtime version 15. Live summary + follow-up forecast
+used 6,745 measured model tokens; both jobs succeeded, the Interpreter stopped,
+and exactly two jobs persisted through sign-in and reload. An explicit synthetic
+account-at-limit fixture returned 429 before another admission and retained
+charts/downloads. The fixture was restored to actual usage; the development
+admission ledger was not reset (14/20 consumed at acceptance).
+
+Auth/session logic lives in `static/auth.js`, `static/drafts.js`,
+`aws_backend/web_gateway.py` and `web_sessions.py`. Entitlement/reservation logic
+is in `analysis_engine/quotas.py` and `token_budget.py`. Nova CountTokens was
+unavailable in this account/region; text-only model calls use a deliberately
+conservative byte/output bound and reconcile completed turns to measured usage.
+Unknown usage remains reserved. This can stop a request before all nominal
+tokens can be consumed. Changes to models, media or tokenization require a
+review of that estimate; it is not an AWS hard dollar cap.
+
+Static publishing snapshots source bytes and gives each release immutable
+content-addressed JS/CSS URLs, with HTML switched last. This avoids stale-HTML /
+new-JavaScript mismatches during refresh. The audio worklet follows its parent
+script release. No model-generated JavaScript/HTML enters the renderer.
+
+Principal engineer: verified JWT bootstrap creates a revocable opaque identity
+lease; a saved intent and server idempotency key bridge navigation boundaries.
+DynamoDB transactions reserve per-account tokens before job admission and share
+a request budget across all internal provider calls and model roles.
+
+Undergraduate: the login redirect temporarily leaves the app. The browser saves
+the draft/file first, gets a secure session on return, then sends the same job
+identifier once. Tokens are reserved before work and unused headroom is returned
+after the model reports its usage.
+
+Non-technical: sign-in remembers what you were asking, and your saved results
+stay available when the preview allowance runs out.
+
+The final release 17 smoke reran one bounded real model query: 2,008 measured
+tokens, exact source total 579,060, zero residual token reservation and duplicate
+request returning the same job. Synthetic data/results were deleted. This
+raised development admissions to 15/20. Both final image scans have no critical
+or high findings and the same two medium findings documented in the prior risk
+review. Frontend npm dependency audit: zero reported vulnerabilities.

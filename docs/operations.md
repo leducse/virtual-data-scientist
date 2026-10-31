@@ -64,8 +64,11 @@ first, then streams Transcribe results after Stop; it is not continuous live voi
 Partial transcripts never submit an analysis. Cancelling a browser connection
 does not itself cancel an analysis; use the explicit Cancel job control.
 
-Guest admission and self-signup default off. Public enablement is a release action,
-after image findings, quota/security acceptance and operating cost review. Operator
+Guest admission remains off. Self-service signed-in preview is enabled in release
+16, independently of guest admission: 100,000 input/output tokens or twenty
+analyses per account, whichever comes first. A conservative per-request budget
+can stop an analysis before the nominal remainder can be consumed. Existing
+global admission and speech limits remain in force. Operator
 notification channels and additional continuous monitoring are separate choices.
 
 ## Rollback

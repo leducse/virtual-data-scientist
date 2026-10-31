@@ -13,7 +13,7 @@ def template():
             'BucketEncryption': {'ServerSideEncryptionConfiguration': [{'ServerSideEncryptionByDefault': {'SSEAlgorithm': 'AES256'}}]}}},
         'Users': {'Type': 'AWS::Cognito::UserPool', 'DeletionPolicy': 'Retain', 'Properties': {
             'UserPoolName': 'VdsV2DevUsers', 'UserPoolTier': 'LITE', 'DeletionProtection': 'ACTIVE',
-            'AdminCreateUserConfig': {'AllowAdminCreateUserOnly': {'Fn::If':['HasGuests',False,True]}},
+            'AdminCreateUserConfig': {'AllowAdminCreateUserOnly': {'Fn::If':['HasPreview',False,True]}},
             'AutoVerifiedAttributes':['email'],
             'Policies': {'PasswordPolicy': {'MinimumLength': 14, 'RequireLowercase': True, 'RequireUppercase': True, 'RequireNumbers': True, 'RequireSymbols': True}},
             'MfaConfiguration': 'OFF'}},
@@ -34,7 +34,7 @@ def template():
             'Policies': [{'PolicyName': 'HostedWorkspace', 'PolicyDocument': {'Version': '2012-10-17', 'Statement': [
                 {'Effect': 'Allow', 'Action': ['bedrock-agentcore:InvokeAgentRuntime'], 'Resource': [ref('RuntimeArn'), sub('${RuntimeArn}/runtime-endpoint/DEFAULT')]},
                 {'Effect': 'Allow', 'Action': ['s3:PutObject'], 'Resource': sub('arn:${AWS::Partition}:s3:::${DataBucket}/*/incoming/*')},
-                {'Effect':'Allow','Action':['dynamodb:GetItem','dynamodb:PutItem','dynamodb:UpdateItem'],
+                {'Effect':'Allow','Action':['dynamodb:GetItem','dynamodb:PutItem','dynamodb:UpdateItem','dynamodb:DeleteItem'],
                  'Resource':sub('arn:${AWS::Partition}:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${StateTable}')},
                 {'Effect': 'Allow', 'Action': ['logs:CreateLogStream', 'logs:PutLogEvents'], 'Resource': sub('arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/vds-v2-dev-web:*')}
             ]}}]}},
@@ -129,15 +129,15 @@ def template():
                        'AppOrigin': {'Type': 'String', 'Default': 'https://localhost'}, 'StateTable':{'Type':'String','Default':''},
                        'CustomDomain':{'Type':'String','Default':''},'CertificateArn':{'Type':'String','Default':''},
                        'LegacyOrigin':{'Type':'String','Default':'https://d19bkp3wlr8r7k.cloudfront.net'},
-                       'StreamCodeKey':{'Type':'String','Default':''},'GuestEnabled':{'Type':'String','Default':'false','AllowedValues':['false','true']}},
+                       'StreamCodeKey':{'Type':'String','Default':''},'PreviewEnabled':{'Type':'String','Default':'false','AllowedValues':['false','true']},'GuestEnabled':{'Type':'String','Default':'false','AllowedValues':['false','true']}},
         'Conditions':{'HasStreaming':{'Fn::Not':[{'Fn::Equals':[ref('StreamCodeKey'),'']}]},
-            'HasGuests':{'Fn::Equals':[ref('GuestEnabled'),'true']},'HasDomain':{'Fn::Not':[{'Fn::Equals':[ref('CustomDomain'),'']}]}},'Resources': resources,
+            'HasPreview':{'Fn::Equals':[ref('PreviewEnabled'),'true']},'HasGuests':{'Fn::Equals':[ref('GuestEnabled'),'true']},'HasDomain':{'Fn::Not':[{'Fn::Equals':[ref('CustomDomain'),'']}]}},'Resources': resources,
         'Outputs': {'SiteBucket': {'Value': ref('Site')}, 'WebUrl': {'Value': {'Fn::If':['HasDomain',sub('https://${CustomDomain}'),sub('https://${Distribution.DomainName}')]}},
                     'LegacyWebUrl':{'Value':sub('https://${Distribution.DomainName}')},
                     'DistributionId': {'Value': ref('Distribution')}, 'UserPoolId': {'Value': ref('Users')},
                     'ClientId': {'Value': ref('Client')}, 'LoginDomain': {'Value': sub('https://${LoginDomain}.auth.${AWS::Region}.amazoncognito.com')},
                     'GatewayOriginUrl': {'Value': attr('GatewayUrl', 'FunctionUrl')},
-                    'GuestEnabled':{'Value':ref('GuestEnabled')},
+                    'PreviewEnabled':{'Value':ref('PreviewEnabled')},'GuestEnabled':{'Value':ref('GuestEnabled')},
                     'StreamOriginUrl':{'Condition':'HasStreaming','Value':attr('StreamUrl','FunctionUrl')}}}
 
 

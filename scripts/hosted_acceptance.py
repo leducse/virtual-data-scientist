@@ -20,6 +20,7 @@ def main():
     parser.add_argument('--execute', action='store_true')
     parser.add_argument('--manifest', type=Path, default=Path('docs/deployment/2026-10-31-hosted-web.json'))
     parser.add_argument('--port', type=int, default=12989)
+    parser.add_argument('--evidence-name',default='2026-10-31-hosted-acceptance')
     args = parser.parse_args()
     if not args.execute:
         print('Review only: two temporary no-invite users, JWT/origin/upload isolation checks, then a loopback one-use browser sign-in helper; remove temporary users on finish; browser artifacts follow development retention. No model requests are submitted by this script.')
@@ -61,13 +62,13 @@ def main():
         session = result['sandbox']['session_id']
         state = boto3.client('bedrock-agentcore', region_name='us-east-1').get_code_interpreter_session(codeInterpreterIdentifier='aws.codeinterpreter.v1', sessionId=session)
         assert state['status'] == 'TERMINATED'
-        checks.update({'hosted_browser_chart_forecast': True, 'other_user_result_denied': True, 'sandbox_terminated': True})
+        checks.update({'member_preview_100k':workspace['allowance']['token_limit']==100000, 'exactly_two_analysis_jobs':len(workspace['runs'])==2, 'hosted_browser_chart_forecast': True, 'other_user_result_denied': True, 'sandbox_terminated': True})
         Path('data/hosted-browser-acceptance.json').write_text(json.dumps(evidence, indent=2) + '\n')
         summary = {'origin': origin, 'checks': checks, 'run_id': evidence['id'], 'execution': result['execution'],
                    'release': result['evidence']['release'], 'timing_ms': result['timing_ms'],
                    'sandbox_session': session, 'sandbox_status': state['status'], 'test': result['test'],
                    'independent_review': result['independent_review']}
-        Path('docs/deployment/2026-10-31-hosted-acceptance.json').write_text(json.dumps(summary, indent=2) + '\n')
+        Path('docs/deployment',args.evidence_name+'.json').write_text(json.dumps(summary, indent=2) + '\n')
         return summary
 
     try:

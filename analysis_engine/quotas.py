@@ -28,18 +28,22 @@ class Quotas:
     def reserve(self,owner,run,principal):
         quota_owner=principal['owner']
         limit=5 if principal['kind']=='guest' else 20
-        token_limit=250000 if principal['kind']=='guest' else 1000000
+        token_limit=250000 if principal['kind']=='guest' else 100000
+        row=self.table.get_item(Key={'pk':'quota#'+quota_owner,'sk':'allowance'},ConsistentRead=True).get('Item',{})
+        before=int(row.get('tokens_committed',0));tokens=min(RESERVE_TOKENS,max(0,token_limit-before))
+        if tokens<4096:raise InputError('Your preview token allowance is exhausted. Saved analyses and downloads remain available.','quota_exceeded')
+        run['token_budget']=tokens
         item={'pk':owner,'sk':'run#'+run['id'],'doc':json.dumps(run,allow_nan=False),
               'state':run['status'],'version':0,'expires_at':int(time.time())+7*86400}
         reservation={'pk':'quota#'+quota_owner,'sk':'reservation#'+run['id'],'state':'reserved',
-                     'tokens':RESERVE_TOKENS,'expires_at':int(time.time())+7*86400}
+                     'tokens':tokens,'expires_at':int(time.time())+7*86400}
         actions=[
             {'Put':{'TableName':self.table.name,'Item':encoded(item),'ConditionExpression':'attribute_not_exists(pk)'}},
             {'Put':{'TableName':self.table.name,'Item':encoded(reservation),'ConditionExpression':'attribute_not_exists(pk)'}},
             {'Update':{'TableName':self.table.name,'Key':encoded({'pk':'quota#'+quota_owner,'sk':'allowance'}),
                 'UpdateExpression':'ADD credits :one, tokens_committed :tokens',
-                'ConditionExpression':'(attribute_not_exists(credits) OR credits < :limit) AND (attribute_not_exists(tokens_committed) OR tokens_committed <= :available)',
-                'ExpressionAttributeValues':encoded({':one':1,':tokens':RESERVE_TOKENS,':limit':limit,':available':token_limit-RESERVE_TOKENS})}},
+                'ConditionExpression':'(attribute_not_exists(credits) OR credits < :limit) AND (attribute_not_exists(tokens_committed) OR tokens_committed = :before)',
+                'ExpressionAttributeValues':encoded({':one':1,':tokens':tokens,':limit':limit,':before':before})}},
             {'Update':{'TableName':self.table.name,'Key':encoded({'pk':'capacity','sk':'development-admissions-v2'}),
                 'UpdateExpression':'ADD admissions :one','ConditionExpression':'attribute_not_exists(admissions) OR admissions < :limit',
                 'ExpressionAttributeValues':encoded({':one':1,':limit':int(os.environ.get('VDS_ADMISSION_LIMIT','20'))})}}
@@ -53,7 +57,10 @@ class Quotas:
 
     def settle(self,principal,run_id,usage,succeeded,unknown=False):
         actual=sum(max(0,int(item.get('usage',{}).get('inputTokens',0)))+max(0,int(item.get('usage',{}).get('outputTokens',0))) for item in usage)
-        held=RESERVE_TOKENS if unknown else actual
+        reservation=self.table.get_item(Key={'pk':'quota#'+principal['owner'],'sk':'reservation#'+run_id},ConsistentRead=True).get('Item',{})
+        reserved=int(reservation.get('tokens',RESERVE_TOKENS))
+        unknown=unknown or actual>reserved
+        held=max(reserved,actual) if unknown else actual
         try:
             self.client.transact_write_items(TransactItems=[
                 {'Update':{'TableName':self.table.name,'Key':encoded({'pk':'quota#'+principal['owner'],'sk':'reservation#'+run_id}),
@@ -62,7 +69,7 @@ class Quotas:
                     'ExpressionAttributeValues':encoded({':settled':'settled',':reserved':'reserved',':actual':actual,':unknown':unknown})}},
                 {'Update':{'TableName':self.table.name,'Key':encoded({'pk':'quota#'+principal['owner'],'sk':'allowance'}),
                     'UpdateExpression':'ADD credits :credit_delta, tokens_committed :token_delta, measured_tokens :actual',
-                    'ExpressionAttributeValues':encoded({':credit_delta':0 if succeeded or unknown else -1,':token_delta':held-RESERVE_TOKENS,':actual':actual})}}
+                    'ExpressionAttributeValues':encoded({':credit_delta':0 if succeeded or unknown else -1,':token_delta':held-reserved,':actual':actual})}}
             ])
         except self.client.exceptions.TransactionCanceledException:
             # A repeated finalizer cannot refund or debit a second time.
@@ -72,5 +79,10 @@ class Quotas:
     def status(self,principal):
         row=self.table.get_item(Key={'pk':'quota#'+principal['owner'],'sk':'allowance'},ConsistentRead=True).get('Item',{})
         limit=5 if principal['kind']=='guest' else 20
-        return {'kind':principal['kind'],'limit':limit,'remaining':max(0,limit-int(row.get('credits',0))),
-                'tokens_measured':int(row.get('measured_tokens',0)), 'note':'Additional token, compute and development-wide limits apply.'}
+        token_limit=250000 if principal['kind']=='guest' else 100000
+        committed=int(row.get('tokens_committed',0));measured=int(row.get('measured_tokens',0))
+        remaining=max(0,limit-int(row.get('credits',0)));tokens_remaining=max(0,token_limit-committed)
+        return {'kind':principal['kind'],'limit':limit,'remaining':remaining,'token_limit':token_limit,
+                'tokens_measured':measured,'tokens_committed':committed,'tokens_reserved':max(0,committed-measured),
+                'tokens_remaining':tokens_remaining,'can_submit':remaining>0 and tokens_remaining>=4096,
+                'note':'Input and output tokens across all agents count toward this account preview. In-flight and unknown usage stays reserved. A small remainder may not cover another bounded request. Development capacity limits also apply.'}

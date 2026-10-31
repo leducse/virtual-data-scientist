@@ -7,33 +7,39 @@
 <link rel="stylesheet" href="/static/workspace.css">
 </head>
 <body>
-<a class="skip" href="#question">Skip to analysis</a>
+<a class="skip" href="#question">Skip to chat</a>
 <header><a class="brand" href="/">Decision Layer <span>/ Virtual Data Scientist</span></a><span class="badge" id="execution-badge">ANALYTICS WORKSPACE</span><span id="allowance" class="muted"></span><a id="studio-link" href="/studio">Report studio ↗</a><button id="continue-sign-in" class="secondary" hidden>Sign in to continue</button><button id="sign-out" class="secondary" hidden>Sign out</button></header>
-<section id="auth-panel" class="auth-panel" aria-label="Workspace sign-in" hidden><p class="eyebrow">PRIVATE DEVELOPMENT WORKSPACE</p><h1>Welcome back.</h1><p id="auth-message" role="status">Sign in to open your workspace.</p><button id="sign-in" type="button">Sign in securely →</button><p class="muted">Access is limited to invited development accounts. Uploaded datasets and analysis evidence are retained for seven days.</p></section>
+<section id="auth-panel" class="auth-panel" aria-label="Workspace sign-in" hidden><p class="eyebrow">SIGNED-IN PREVIEW</p><h1>Your data. A conversation.</h1><p id="auth-message" role="status">Sign in to open your workspace.</p><button id="sign-in" type="button">Sign in securely →</button><p class="muted">Create an account or sign in for a preview of up to 100,000 model tokens or 20 analyses, whichever comes first. Uploaded data and evidence are retained for seven days. Development capacity limits also apply.</p></section>
 <div class="layout">
-<aside aria-label="Datasets">
+<aside class="chat-panel" aria-label="Analysis conversation">
+<div class="section-heading"><h2>Chat with your data</h2><span>Private workspace</span></div>
+<details class="data-drawer" open><summary>Datasets & attachments</summary>
 <div class="section-heading"><h2>Your data</h2><span id="dataset-count">0 versions</span></div>
 <p class="muted">Upload once. Ask, check, and continue.</p>
 <form id="upload-form">
-<label class="drop" for="file"><strong>Choose a dataset</strong><span>CSV or Excel · up to 10 MiB</span><input id="file" type="file" accept=".csv,.xlsx" required></label>
+<label class="drop" for="file"><strong>Choose a dataset</strong><span>CSV or Excel · up to 10 MiB</span><input id="file" type="file" accept=".csv,.xlsx"></label>
 <button id="upload" type="submit">Upload & profile</button>
 </form>
 <div id="datasets" class="datasets"></div>
-<div class="local-note"><strong id="execution-title">Data prepared automatically</strong><p id="execution-description">Upload a table and ask a business question. The data scientist identifies the relevant data, prepares it and chooses the analysis.</p><a href="/static/monthly_revenue.csv" download>Download a sample CSV ↓</a></div>
+</details>
+<div id="notice" role="status" aria-live="polite"></div>
+<section id="conversation" class="conversation" aria-label="Conversation"><p class="chat-welcome">Upload a table, ask a question, then build on the result. I’ll prepare the data and check the analysis.</p></section>
+<form id="analysis-form" class="analysis-form">
+<label for="question">Message your data scientist</label><textarea id="question" rows="2" placeholder="Ask a question or follow up on a result…" required maxlength="2000"></textarea>
+<div id="speech-controls" class="speech-controls" hidden><button id="speech-record" type="button" class="secondary">Dictate in English</button><button id="speech-stop" type="button" class="secondary" hidden>Stop & transcribe</button><button id="speech-cancel" type="button" class="secondary" hidden>Cancel</button><span id="speech-status" role="status">Record up to 20 seconds. Review the transcript before sending.</span></div>
+<p class="muted" id="preview-status" role="status" hidden></p>
+<p class="muted" id="attachment-note">Attach a file or choose a prepared dataset. Fields are detected automatically.</p>
+<div class="submit-row"><span id="route-note">The data scientist chooses the analytical path.</span><button id="analyze" type="submit" disabled>Send <span aria-hidden="true">→</span></button></div>
+</form>
+<p class="muted retention-note">Development preview · data retained for seven days · <a href="/static/monthly_revenue.csv" download>Sample CSV ↓</a></p>
 </aside>
 <main>
-<section class="intro"><p class="eyebrow">FROM A QUESTION TO CHECKABLE EVIDENCE</p><h1>What would you like to learn?</h1><p>Start with a trend. Go deeper when the question calls for it.</p></section>
-<div id="notice" role="status" aria-live="polite"></div>
-<section id="profile" class="profile" aria-label="Dataset profile"><p>Choose a CSV or Excel workbook to begin, or try the sample dataset.</p></section>
+<section class="intro"><p class="eyebrow">ANALYSIS WORKSPACE</p><h1>See the evidence.</h1><p>Interactive visuals, methodology, and reproducible code for your conversation.</p></section>
+<section id="profile" class="profile" aria-label="Dataset profile"><p>Your dataset profile and analysis will appear here.</p></section>
 <section id="recommendations" class="recommendations" aria-label="Suggested analyses" hidden></section>
-<form id="analysis-form" class="analysis-form">
-<label for="question">Your question</label><textarea id="question" rows="2" placeholder="Show monthly revenue" required maxlength="2000"></textarea>
-<div id="speech-controls" class="speech-controls" hidden><button id="speech-record" type="button" class="secondary">Dictate in English</button><button id="speech-stop" type="button" class="secondary" hidden>Stop & transcribe</button><button id="speech-cancel" type="button" class="secondary" hidden>Cancel</button><span id="speech-status" role="status">Record up to 20 seconds. Review the transcript before running an analysis.</span></div>
-<p class="muted">Ask in your own words, or start with a suggestion based on your uploaded data.</p>
-<div class="submit-row"><span id="route-note">The data scientist chooses the analytical path.</span><button id="analyze" type="submit" disabled>Run analysis <span aria-hidden="true">→</span></button></div>
-</form>
-<section class="results" aria-label="Saved analyses"><div class="section-heading"><h2>Analyses & evidence</h2><label class="palette-label" for="palette">Chart colors<select id="palette"><option value="decision">Teal & gold</option><option value="ocean">Ocean</option><option value="plum">Plum & amber</option><option value="accessible">Blue & orange</option></select></label></div><div id="runs"><p class="muted">Your results, methods, and checks will appear here.</p></div></section>
+<div class="local-note" hidden><strong id="execution-title"></strong><p id="execution-description"></p></div>
+<section class="results" aria-label="Saved analyses"><div class="section-heading"><h2>Selected analysis & evidence</h2><label class="palette-label" for="palette">Chart colors<select id="palette"><option value="decision">Teal & gold</option><option value="ocean">Ocean</option><option value="plum">Plum & amber</option><option value="accessible">Blue & orange</option></select></label></div><div id="runs"><p class="muted">Your results, methods, and checks will appear here.</p></div></section>
 </main>
 </div>
-<script src="/static/vendor/plotly-basic-2.32.0.min.js" defer></script><script src="/static/experience.js" defer></script><script src="/static/auth.js" defer></script><script src="/static/speech.js" defer></script><script src="/static/workspace.js" defer></script>
+<script src="/static/vendor/echarts-6.1.0.min.js" defer></script><script src="/static/vendor/d3-7.9.0.min.js" defer></script><script src="/static/drafts.js" defer></script><script src="/static/experience.js" defer></script><script src="/static/auth.js" defer></script><script src="/static/speech.js" defer></script><script src="/static/workspace.js" defer></script>
 </body></html>

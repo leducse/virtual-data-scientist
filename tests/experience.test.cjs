@@ -23,3 +23,14 @@ test('unknown chart types and invalid numeric evidence are rejected',()=>{
     assert.throws(()=>ui.styled({id:'x',figure:{data:[data],layout:{}}}));
   }
 });
+
+test('ECharts adapter preserves sparse dates and isolates categorical validation from linked time views',()=>{
+  const history={id:'test',figure:{data:[{type:'scatter',name:'Observed',x:['2025-01','2025-03'],y:[1,3]},{type:'scatter',name:'Forecast',x:['2025-04'],y:[4],line:{dash:'dash'}}],layout:{}}};
+  const option=ui.option(history,'accessible');
+  assert.equal(option.xAxis.type,'time');
+  assert.deepEqual(Array.from(option.series[0].data,p=>p[1]),[1,3]);
+  assert.equal(option.series[1].lineStyle.type,'dashed');
+  assert.equal(option.tooltip.renderMode,'richText');
+  assert.equal(option.aria.enabled,true);
+  assert.equal(ui.option({id:'validation',figure:{data:[{type:'bar',name:'MAE',x:['naive','holt'],y:[2,1]}],layout:{}}}).xAxis.type,'category');
+});

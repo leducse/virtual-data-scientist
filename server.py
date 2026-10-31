@@ -2703,9 +2703,8 @@ class POCHandler(BaseHTTPRequestHandler):
         self.wfile.write(encoded)
 
     def serve_static(self, name: str) -> None:
-        safe_name = Path(name).name
-        file_path = STATIC_DIR / safe_name
-        if not file_path.exists():
+        file_path = (STATIC_DIR / name).resolve()
+        if not file_path.is_relative_to(STATIC_DIR.resolve()) or not file_path.is_file():
             return self.send_json({"ok": False, "error": "Static file not found."}, 404)
 
         content_types = {

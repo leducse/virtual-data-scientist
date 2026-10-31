@@ -41,21 +41,74 @@ window.vdsExperience = (() => {
     const url=URL.createObjectURL(new Blob([body],{type})), a=document.createElement("a");
     a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
   }
+  function option(visual,palette="decision") {
+    const fig=styled(visual,palette),temporal=fig.data.every(t=>t.x.every(x=>/^\d{4}-\d{2}(-\d{2})?$/.test(String(x))));
+    const categories=[...new Set(fig.data.flatMap(t=>t.x.map(String)))];
+    return {useUTC:true,color:(palettes[palette] || palettes.decision).colors,animation:false,
+      aria:{enabled:true,decal:{show:true},label:{description:String(visual.title)+". "+String(visual.purpose || "")+". "+fig.data.map(t=>String(t.name)+": "+t.y.length+" values, from "+t.x[0]+" to "+t.x.at(-1)).join(". ")}},backgroundColor:"#ffffff",
+      tooltip:{trigger:"axis",renderMode:"richText",confine:true,axisPointer:{type:"cross"}},
+      legend:{bottom:0,type:"scroll"},grid:{left:70,right:22,top:28,bottom:95},
+      toolbox:{right:12,feature:{dataZoom:{yAxisIndex:"none"},restore:{}}},
+      xAxis:{type:temporal ? "time":"category",...(temporal ? {}:{data:categories}),name:"",axisLabel:{hideOverlap:true}},
+      yAxis:{type:"value",name:String(visual.figure.layout?.yaxis?.title || "Value"),nameLocation:"middle",nameGap:54,scale:!fig.data.some(t=>t.type==="bar")},
+      dataZoom:[{type:"inside",filterMode:"none",zoomOnMouseWheel:"ctrl"},{type:"slider",bottom:32,height:18,filterMode:"none"}],
+      series:fig.data.map(t=>({name:String(t.name).replaceAll("&lt;","<").replaceAll("&gt;",">").replaceAll("&amp;","&"),
+        type:t.type==="bar" ? "bar":"line",showSymbol:true,symbolSize:6,connectNulls:false,
+        lineStyle:{width:2.5,type:t.line?.dash==="dash" ? "dashed":"solid"},
+        data:t.x.map((x,i)=>[temporal ? Date.parse(String(x).length===7 ? x+"-01T00:00:00Z":x+"T00:00:00Z") : String(x),t.y[i]])}))};
+  }
+  function render(visual,palette,element,group){
+    const chart=window.echarts.getInstanceByDom(element) || window.echarts.init(element,null,{renderer:"svg"});
+    chart.setOption(option(visual,palette),{notMerge:true});
+    if(group && chart.getOption().xAxis[0].type==="time"){chart.group=group;window.echarts.connect(group);}
+    if(!element.vdsResize){element.vdsResize=new ResizeObserver(()=>chart.resize());element.vdsResize.observe(element);}
+    return chart;
+  }
+  function dispose(element){element.vdsResize?.disconnect();window.echarts?.getInstanceByDom(element)?.dispose();}
+  function workflow(run,element){
+    const d3=window.d3;if(!d3 || !element)return;
+    const keys=run.plan?.tier==="quick" ? [["query","Data query"],["numerical_checks","Checks"],["publication","Results"]] :
+      [["analyst","Analyst"],["interpreter","Code Interpreter"],["numerical_checks","Checks"],["reviewer","Reviewer"],["publication","Results"]];
+    const latest=new Map((run.events || []).map(e=>[e.stage,e]));
+    const nodes=[["planner","Orchestrator"],...keys].map(([id,label],i)=>({id,label,x:i===0 ? 330:65+(i-1)*530/Math.max(1,keys.length-1),y:i===0 ? 35:130,
+      status:latest.get(id)?.status || (["queued","running","reviewing"].includes(run.status) ? "queued":"skipped")}));
+    const svg=d3.select(element).append("svg").attr("viewBox","0 0 660 175").attr("class","agent-graph").attr("role","img").attr("aria-label","Orchestrator and analysis agents; activity is based on recorded events.");
+    svg.append("title").text(nodes.map(n=>n.label+": "+n.status).join(". "));
+    const links=nodes.slice(1).map((n,i)=>({source:i===0 ? nodes[0]:nodes[i],target:n}));
+    svg.selectAll("path").data(links).join("path").attr("class","edge").attr("d",d3.linkVertical().x(n=>n.x).y(n=>n.y));
+    const groups=svg.selectAll("g.node").data(nodes).join("g").attr("class",n=>"node "+n.status).attr("transform",n=>`translate(${n.x},${n.y})`);
+    groups.append("rect").attr("x",-60).attr("y",-24).attr("width",120).attr("height",48).attr("rx",8);
+    groups.append("text").attr("text-anchor","middle").attr("y",-2).text(n=>n.label);
+    groups.append("text").attr("class","state").attr("text-anchor","middle").attr("y",14).text(n=>n.status==="started" ? "Working":n.status);
+  }
   async function exportFigure(visual,palette,kind,element) {
-    const fig=styled(visual,palette), name=visual.id;
-    if(kind==="png" || kind==="svg")return window.Plotly.downloadImage(element,{format:kind,filename:name,width:1200,height:650,scale:2});
-    if(kind==="json")return save(name+".json",JSON.stringify(fig,null,2),"application/json");
+    const fig=styled(visual,palette),options=option(visual,palette),name=visual.id.replace(/[^a-z0-9_-]/gi,"_");
+    if(kind==="svg" || kind==="png"){
+      const chart=window.echarts.getInstanceByDom(element);if(!chart)throw new Error("Open this chart before exporting.");
+      const svg=chart.renderToSVGString();
+      if(kind==="svg")return save(name+".svg",svg,"image/svg+xml");
+      const url=URL.createObjectURL(new Blob([svg],{type:"image/svg+xml"}));
+      try{const img=new Image();await new Promise((resolve,reject)=>{img.onload=resolve;img.onerror=reject;img.src=url;});
+        const canvas=document.createElement("canvas");canvas.width=1800;canvas.height=Math.round(1800*element.clientHeight/element.clientWidth);
+        canvas.getContext("2d").drawImage(img,0,0,canvas.width,canvas.height);
+        const blob=await new Promise(resolve=>canvas.toBlob(resolve,"image/png"));if(!blob)throw new Error("PNG export unavailable.");return save(name+".png",blob,"image/png");
+      }finally{URL.revokeObjectURL(url);}
+    }
+    if(kind==="json")return save(name+".echarts.json",JSON.stringify(options,null,2),"application/json");
+    if(kind==="javascript")return save(name+".js",`// npm install echarts@6.1.0\nimport * as echarts from 'echarts';\nconst option = ${JSON.stringify(options,null,2)};\nconst chart = echarts.init(document.getElementById('chart'), null, {renderer:'svg'});\nchart.setOption(option);\nnew ResizeObserver(() => chart.resize()).observe(chart.getDom());\n`);
     if(kind==="python"){
       const encoded=JSON.stringify(JSON.stringify(fig));
       return save(name+".py",`import json\nimport plotly.graph_objects as go\n\nfigure = go.Figure(json.loads(${encoded}))\nfigure.write_html('${name}.html', include_plotlyjs=True)\nfigure.show()\n`);
     }
     if(kind==="html"){
-      const response=await fetch("/static/vendor/plotly-basic-2.32.0.min.js");
-      if(!response.ok)throw new Error("Chart export library unavailable.");
-      const library=(await response.text()).replaceAll("</script", "<\\/script");
-      const payload=JSON.stringify(fig).replaceAll("<","\\u003c");
-      save(name+".html",`<!doctype html><meta charset="utf-8"><title>Saved analytical figure</title><div id="chart"></div><script>${library}</script><script>const figure=${payload};Plotly.newPlot('chart',figure.data,figure.layout,{responsive:true,displaylogo:false});</script>`,"text/html");
+      const response=await fetch("/static/vendor/echarts-6.1.0.min.js");if(!response.ok)throw new Error("Chart export library unavailable.");
+      const licenseResponse=await fetch("/static/vendor/echarts-6.1.0-LICENSE.txt");
+      const noticeResponse=await fetch("/static/vendor/echarts-6.1.0-NOTICE.txt");
+      if(!licenseResponse.ok || !noticeResponse.ok)throw new Error("Chart export license unavailable.");
+      const license=((await licenseResponse.text())+"\n"+(await noticeResponse.text())).replaceAll("--","- -");
+      const library=(await response.text()).replace(/<\/script/gi,"<\\/script"),payload=JSON.stringify(options).replaceAll("<","\\u003c");
+      save(name+".html",`<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>Saved analytical figure</title><div id="chart" style="width:100%;height:80vh;min-height:400px"></div><script>${library}</script><script>const chart=echarts.init(document.getElementById('chart'),null,{renderer:'svg'});chart.setOption(${payload});new ResizeObserver(()=>chart.resize()).observe(chart.getDom());</script><!-- Apache ECharts license and NOTICE\n${license}\n--></html>`,"text/html");
     }
   }
-  return {palettes,figures,styled,save,exportFigure};
+  return {palettes,figures,styled,option,render,dispose,workflow,save,exportFigure};
 })();

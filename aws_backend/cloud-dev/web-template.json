@@ -35,6 +35,14 @@
       "Type": "String",
       "Default": ""
     },
+    "PreviewEnabled": {
+      "Type": "String",
+      "Default": "false",
+      "AllowedValues": [
+        "false",
+        "true"
+      ]
+    },
     "GuestEnabled": {
       "Type": "String",
       "Default": "false",
@@ -55,6 +63,14 @@
             ""
           ]
         }
+      ]
+    },
+    "HasPreview": {
+      "Fn::Equals": [
+        {
+          "Ref": "PreviewEnabled"
+        },
+        "true"
       ]
     },
     "HasGuests": {
@@ -110,7 +126,7 @@
         "AdminCreateUserConfig": {
           "AllowAdminCreateUserOnly": {
             "Fn::If": [
-              "HasGuests",
+              "HasPreview",
               false,
               true
             ]
@@ -262,7 +278,8 @@
                   "Action": [
                     "dynamodb:GetItem",
                     "dynamodb:PutItem",
-                    "dynamodb:UpdateItem"
+                    "dynamodb:UpdateItem",
+                    "dynamodb:DeleteItem"
                   ],
                   "Resource": {
                     "Fn::Sub": "arn:${AWS::Partition}:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${StateTable}"
@@ -915,6 +932,11 @@
           "GatewayUrl",
           "FunctionUrl"
         ]
+      }
+    },
+    "PreviewEnabled": {
+      "Value": {
+        "Ref": "PreviewEnabled"
       }
     },
     "GuestEnabled": {

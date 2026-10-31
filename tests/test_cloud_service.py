@@ -94,8 +94,9 @@ class CloudServiceTests(unittest.TestCase):
         with self.assertRaises(InputError):self.service.prepare_upload('b'*64,{'upload_id':upload_id,'name':'sales.csv'})
         dataset=self.service.prepare_upload(self.owner,{'upload_id':upload_id,'name':'sales.csv'})
         self.assertEqual(dataset['profile']['rows'],72)
-        with self.assertRaises(InputError):self.service.prepare_upload(self.owner,{'upload_id':upload_id,'name':'sales.csv'})
+        self.assertEqual(self.service.prepare_upload(self.owner,{'upload_id':upload_id,'name':'sales.csv'})['id'],dataset['id'])
         with self.assertRaises(InputError):self.service.prepare_upload(self.owner,{'upload_id':'../other','name':'sales.csv'})
+        upload_id='2'*32
         self.service.store.put_blob(self.owner,'incoming/'+upload_id,b'x'*(10*1024*1024+1))
         with self.assertRaises(InputError) as err:self.service.prepare_upload(self.owner,{'upload_id':upload_id,'name':'sales.csv'})
         self.assertEqual(err.exception.code,'upload_limit')

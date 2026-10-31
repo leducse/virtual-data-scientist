@@ -1,116 +1,90 @@
 "use strict";
-// Tokens stay in memory. Only a short-lived PKCE transaction uses sessionStorage.
+// Provider tokens exist only during the PKCE exchange. The app uses an opaque,
+// HttpOnly cookie with a server-verified expiry for reloads and browser Back.
 window.vdsAuth = (() => {
-  let config = null, accessToken = null, expiresAt = 0, guest = false;
-  const authPanel = document.querySelector("#auth-panel");
-  const signIn = document.querySelector("#sign-in");
-  const signOut = document.querySelector("#sign-out");
-  const continueSignIn = document.querySelector("#continue-sign-in");
-  const message = document.querySelector("#auth-message");
-  const layout = document.querySelector(".layout");
-  const transactionKey = "vds_pkce";
-  const encoded = (bytes) => btoa(String.fromCharCode(...bytes)).replaceAll("+", "-").replaceAll("/", "_").replaceAll("=", "");
-  const random = () => encoded(crypto.getRandomValues(new Uint8Array(32)));
-  const digest = async (text) => new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(text)));
-  function gate(text = "Sign in to open your private development workspace.") {
-    accessToken = null; expiresAt = 0; guest = false;
-    layout.hidden = true; layout.inert = true;
-    authPanel.hidden = false; signOut.hidden = true; message.textContent = text;
+  let config=null, signedIn=false, guest=false, identity=null, expiresAt=0, starting=false;
+  const $=s=>document.querySelector(s), transactionKey="vds_pkce";
+  const encoded=bytes=>btoa(String.fromCharCode(...bytes)).replaceAll("+","-").replaceAll("/","_").replaceAll("=","");
+  const digest=async text=>new Uint8Array(await crypto.subtle.digest("SHA-256",new TextEncoder().encode(text)));
+  async function raw(path,body,token) {
+    const options={headers:{},cache:"no-store",credentials:"same-origin"};
+    if(token)options.headers["x-vds-token"]=token;
+    if(body!==undefined){options.method="POST";options.body=JSON.stringify(body);options.headers["Content-Type"]="application/json";
+      options.headers["x-amz-content-sha256"]=[...await digest(options.body)].map(b=>b.toString(16).padStart(2,"0")).join("");}
+    return fetch("/api/v2/"+path,options);
   }
-  async function login() {
-    signIn.disabled = true;
-    try {
-      const verifier = random(), state = random();
-      sessionStorage.setItem(transactionKey, JSON.stringify({verifier, state, created: Date.now()}));
-      const params = new URLSearchParams({response_type:"code", client_id:config.client_id,
-        redirect_uri:location.origin + "/", scope:"openid profile", state,
-        code_challenge_method:"S256", code_challenge:encoded(await digest(verifier))});
-      location.assign(config.domain + "/oauth2/authorize?" + params);
-    } catch {gate("Sign-in could not start. Try again."); signIn.disabled = false;}
+  function view(text="Sign in to start your 100,000-token preview. Your draft stays here.") {
+    $(".layout").hidden=false;$(".layout").inert=false;
+    $("#auth-panel").hidden=signedIn || guest;$("#auth-message").textContent=text;
+    $("#sign-in").disabled=false;$("#sign-out").hidden=!signedIn;
+    $("#continue-sign-in").hidden=signedIn;starting=false;
   }
-  const ready = (async () => {
-    // Only the hosted build supplies this public configuration; local checks keep
-    // their existing loopback identity and do not contact an identity provider.
-    if (!["localhost", "127.0.0.1", "[::1]"].includes(location.hostname)) {
-      gate("Connecting to secure sign-in…"); signIn.disabled = true;
-      const response = await fetch("/config.json", {cache:"no-store"});
-      if (!response.ok) throw new Error("Hosted workspace configuration is unavailable.");
-      config = await response.json();
-      if (!/^https:\/\/[a-z0-9-]+\.auth\.[a-z0-9-]+\.amazoncognito\.com$/.test(config.domain) || !/^[a-z0-9]+$/.test(config.client_id)) {
-        throw new Error("Hosted sign-in configuration is invalid.");
-      }
-      document.querySelector("#studio-link").hidden = true;
-      signIn.disabled = false;
-      signIn.addEventListener("click", login);
-      continueSignIn.addEventListener("click", login);
-      signOut.addEventListener("click", () => {
-        gate(); localStorage.removeItem("vds_dataset"); sessionStorage.removeItem(transactionKey);
-        location.assign(config.domain + "/logout?" + new URLSearchParams({client_id:config.client_id, logout_uri:location.origin + "/"}));
-      });
-      const params = new URLSearchParams(location.search);
-      const code = params.get("code"), oauthError = params.get("error");
-      if (code || oauthError) {
-        const saved = sessionStorage.getItem(transactionKey);
-        sessionStorage.removeItem(transactionKey);
-        history.replaceState(null, "", "/");
-        try {
-          const transaction = JSON.parse(saved || "null");
-          if (oauthError || !transaction || params.get("state") !== transaction.state || Date.now() - transaction.created > 600000) {
-            throw new Error("The sign-in request expired. Please start again.");
-          }
-          const response = await fetch(config.domain + "/oauth2/token", {method:"POST",
-            headers:{"Content-Type":"application/x-www-form-urlencoded"},
-            body:new URLSearchParams({grant_type:"authorization_code", client_id:config.client_id,
-              redirect_uri:location.origin + "/", code_verifier:transaction.verifier, code})});
-          if (!response.ok) throw new Error("Sign-in could not finish. Please try again.");
-          const tokens = await response.json();
-          if (!tokens.access_token || !(tokens.expires_in > 0)) throw new Error("Sign-in did not return access.");
-          accessToken = tokens.access_token; expiresAt = Date.now() + tokens.expires_in * 1000;
-          {
-            const claimBody="{}";
-            const claimed=await fetch('/api/v2/session/claim',{method:'POST',headers:{'Content-Type':'application/json','x-vds-token':accessToken,
-              'x-amz-content-sha256':[...await digest(claimBody)].map(b=>b.toString(16).padStart(2,'0')).join('')},body:claimBody,cache:'no-store'});
-            if(!claimed.ok)window.vdsClaimError='Sign-in succeeded, but your trial workspace could not be connected yet. Its data remains saved.';
-          }
-          localStorage.removeItem("vds_dataset");
-          authPanel.hidden = true; layout.hidden = false; layout.inert = false; signOut.hidden = false;
-          return true;
-        } catch (error) {gate(error.message); return false;}
-      }
-      if(config.guest_enabled){
-        const body='{}', response=await fetch('/api/v2/session',{method:'POST',body,cache:'no-store',headers:{'Content-Type':'application/json',
-          'x-amz-content-sha256':[...await digest(body)].map(b=>b.toString(16).padStart(2,'0')).join('')}});
-        if(response.ok){guest=true;authPanel.hidden=true;layout.hidden=false;layout.inert=false;continueSignIn.hidden=false;return true;}
-        const result=await response.json();gate(result.error?.message || 'Sign in to continue.');return false;
-      }
-      gate(); return false;
+  function gate(text){signedIn=false;guest=false;identity=null;expiresAt=0;view(text);}
+  function accept(session){signedIn=session.signed_in===true;identity=session.identity_id || null;expiresAt=(session.expires_at || 0)*1000;view();}
+  async function check(){const response=await raw("auth/session");if(!response.ok)throw new Error("Sign-in status is unavailable. Try again.");accept(await response.json());return signedIn;}
+  async function login(){
+    await ready;if(starting || !config)return;
+    starting=true;$("#sign-in").disabled=true;$("#continue-sign-in").disabled=true;
+    try{
+      if(window.vdsBeforeLogin)await window.vdsBeforeLogin();
+      const verifier=encoded(crypto.getRandomValues(new Uint8Array(32))),state=encoded(crypto.getRandomValues(new Uint8Array(32)));
+      sessionStorage.setItem(transactionKey,JSON.stringify({verifier,state,created:Date.now()}));
+      const params=new URLSearchParams({response_type:"code",client_id:config.client_id,redirect_uri:location.origin+"/",scope:"openid profile",state,
+        code_challenge_method:"S256",code_challenge:encoded(await digest(verifier))});
+      location.assign(config.domain+"/oauth2/authorize?"+params);
+    }catch(error){view(error.message || "Sign-in could not start. Try again.");}
+    finally{$("#continue-sign-in").disabled=false;}
+  }
+  async function logout(){
+    await ready;
+    const response=await raw("auth/logout",{});if(!response.ok){view("Sign-out did not finish. Please try again.");return;}
+    if(window.vdsClearDraft)await window.vdsClearDraft();
+    gate();localStorage.removeItem("vds_dataset");sessionStorage.removeItem(transactionKey);
+    location.assign(config.domain+"/logout?"+new URLSearchParams({client_id:config.client_id,logout_uri:location.origin+"/"}));
+  }
+  const ready=(async()=>{
+    if(["localhost","127.0.0.1","[::1]"].includes(location.hostname)){signedIn=true;return true;}
+    view("Connecting to secure sign-in…");$("#sign-in").disabled=true;
+    const response=await fetch("/config.json",{cache:"no-store"});if(!response.ok)throw new Error("Hosted workspace configuration is unavailable.");
+    config=await response.json();
+    if(!/^https:\/\/[a-z0-9-]+\.auth\.[a-z0-9-]+\.amazoncognito\.com$/.test(config.domain) || !/^[a-z0-9]+$/.test(config.client_id))throw new Error("Hosted sign-in configuration is invalid.");
+    $("#studio-link").hidden=true;$("#sign-in").addEventListener("click",login);$("#continue-sign-in").addEventListener("click",login);$("#sign-out").addEventListener("click",logout);
+    const params=new URLSearchParams(location.search),code=params.get("code"),oauthError=params.get("error");
+    if(code || oauthError){
+      const saved=sessionStorage.getItem(transactionKey);sessionStorage.removeItem(transactionKey);history.replaceState(null,"","/");
+      try{
+        const transaction=JSON.parse(saved || "null"),age=Date.now()-(transaction?.created || 0);
+        if(oauthError || !transaction || params.get("state")!==transaction.state || age<0 || age>600000)throw new Error("The sign-in request was cancelled or expired. Your draft is saved. Sign in to continue.");
+        const response=await fetch(config.domain+"/oauth2/token",{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},
+          body:new URLSearchParams({grant_type:"authorization_code",client_id:config.client_id,redirect_uri:location.origin+"/",code_verifier:transaction.verifier,code})});
+        if(!response.ok)throw new Error("Sign-in could not finish. Your draft is saved. Try again.");
+        const tokens=await response.json();if(!tokens.access_token)throw new Error("Sign-in did not return access.");
+        const session=await raw("auth/session",{},tokens.access_token);tokens.access_token=null;tokens.refresh_token=null;tokens.id_token=null;
+        const result=await session.json();if(!session.ok)throw new Error(result.error?.message || "Sign-in could not finish.");
+        accept(result);return signedIn;
+      }catch(error){gate(error.message);return false;}
     }
-    return true;
-  })().catch(error => {gate(error.message); throw error;});
-  return {
-    ready,
-    hosted: () => !!config,
-    isGuest: () => guest,
-    login,
-    async request(path, body, signal) {
+    if(await check())return true;
+    if(config.guest_enabled){const response=await raw("session",{});if(response.ok){guest=true;view();return true;}}
+    view();return false;
+  })().catch(error=>{gate(error.message);return false;});
+  window.addEventListener("pageshow",async event=>{
+    if(!event.persisted)return;
+    $("#sign-in").disabled=false;$("#continue-sign-in").disabled=false;starting=false;
+    await ready;if(config){try{await check();}catch(error){gate(error.message);}window.dispatchEvent(new Event("vds-auth-change"));}
+  });
+  return {ready,login,hosted:()=>!!config,isGuest:()=>guest,identity:()=>identity,authenticated:()=>signedIn || guest,
+    async request(path,body,signal){
       await ready;
-      const headers = {};
-      if (config) {
-        if (!guest && (!accessToken || Date.now() >= expiresAt - 10000)) {
-          gate("Your sign-in expired. Sign in again to continue.");
-          throw new Error("Sign in to continue.");
-        }
-        if(accessToken)headers["x-vds-token"] = accessToken;
+      if(config && !guest && (!signedIn || Date.now()>=expiresAt)){
+        gate("Your session expired. Sign in to continue; your draft is saved.");
+        const error=new Error("Sign in to continue.");error.code="unauthenticated";throw error;
       }
-      const options = {headers, cache:"no-store", signal};
-      if (body !== undefined) {
-        options.method = "POST"; options.body = JSON.stringify(body);
-        headers["Content-Type"] = "application/json";
-        if (config) headers["x-amz-content-sha256"] = [...await digest(options.body)].map(b => b.toString(16).padStart(2, "0")).join("");
-      }
-      const response = await fetch(`/api/v2/${path}`, options);
-      if (config && response.status === 401) gate("Your sign-in is invalid. Sign in again.");
+      const options={headers:{},cache:"no-store",credentials:"same-origin",signal};
+      if(body!==undefined){options.method="POST";options.body=JSON.stringify(body);options.headers["Content-Type"]="application/json";
+        if(config)options.headers["x-amz-content-sha256"]=[...await digest(options.body)].map(b=>b.toString(16).padStart(2,"0")).join("");}
+      const response=await fetch("/api/v2/"+path,options);
+      if(config && response.status===401)gate("Your session expired. Sign in to continue; your draft is saved.");
       return response;
-    }
-  };
+    }};
 })();

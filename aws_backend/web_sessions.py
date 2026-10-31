@@ -13,6 +13,7 @@ from boto3.dynamodb.types import TypeSerializer
 from botocore.config import Config
 
 COOKIE='__Host-vds-guest'
+MEMBER_COOKIE='__Host-vds-session'
 _serializer=TypeSerializer()
 wire=lambda values:{k:_serializer.serialize(v) for k,v in values.items()}
 
@@ -28,13 +29,34 @@ class Sessions:
         self.client=boto3.client('dynamodb',region_name=table.meta.client.meta.region_name,
             config=Config(connect_timeout=5,read_timeout=10,retries={'total_max_attempts':1}))
 
-    def cookie(self,event):
+    def cookie(self,event,name=COOKIE):
         cookies=SimpleCookie()
         try:cookies.load('; '.join(event.get('cookies') or []) or (event.get('headers') or {}).get('cookie',''))
         except Exception:return None
-        token=cookies.get(COOKIE)
+        token=cookies.get(name)
         if not token or not re.fullmatch(r'[a-f0-9]{64}',token.value):return None
         return hashlib.sha256(token.value.encode()).hexdigest()
+
+    def member(self,event):
+        key=self.cookie(event,MEMBER_COOKIE)
+        row=self.get('login#'+key,'session') if key else None
+        if not row or int(row['expires_at'])<=int(time.time()):return None
+        return row
+
+    def login(self,owner,expires,event):
+        # Store an opaque login, never the provider's access or refresh tokens.
+        now=int(time.time());expires=min(int(expires),now+900)
+        if expires<=now:raise SessionError('Your sign-in expired. Please sign in again.')
+        self.logout(event)
+        token=secrets.token_hex(32);key=hashlib.sha256(token.encode()).hexdigest()
+        self.table.put_item(Item={'pk':'login#'+key,'sk':'session','owner':owner,'expires_at':expires})
+        return {'ok':True,'signed_in':True,'identity_id':owner,'expires_at':expires,
+            '_cookies':[f'{MEMBER_COOKIE}={token}; Secure; HttpOnly; SameSite=Lax; Path=/; Max-Age={expires-now}']}
+
+    def logout(self,event):
+        key=self.cookie(event,MEMBER_COOKIE)
+        if key:self.table.delete_item(Key={'pk':'login#'+key,'sk':'session'})
+        return {'ok':True,'_cookies':[f'{MEMBER_COOKIE}=; Secure; HttpOnly; SameSite=Lax; Path=/; Max-Age=0']}
 
     def get(self,pk,sk):
         return self.table.get_item(Key={'pk':pk,'sk':sk},ConsistentRead=True).get('Item')

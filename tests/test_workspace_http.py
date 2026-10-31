@@ -44,6 +44,14 @@ class HttpTests(unittest.TestCase):
         self.assertEqual(self.request('workspace',client=other)[1]['datasets'],[])
         self.assertEqual(self.request(f"datasets/{d['id']}/delete",{})[0],200)
         self.assertEqual(self.request('runs/'+run['id'])[0],404)
+    def test_nested_vendor_assets_stay_within_static_root(self):
+        with self.client.open(self.url.replace('/api/v2/','/static/vendor/echarts-6.1.0.min.js')) as response:
+            self.assertEqual(response.status,200)
+            self.assertIn('javascript',response.headers['Content-Type'])
+        with self.assertRaises(urllib.error.HTTPError) as error:
+            self.client.open(self.url.replace('/api/v2/','/static/../server.py'))
+        self.assertEqual(error.exception.code,404)
+
     def test_origin_host_type_and_upload_limit(self):
         for headers in [{'Origin':'https://evil.example'},{'Host':'evil.example'},{'Content-Type':'text/plain'}]:
             self.assertIn(self.request('datasets',{},headers=headers)[0],[400,403])
