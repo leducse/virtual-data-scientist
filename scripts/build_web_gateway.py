@@ -19,6 +19,7 @@ def main():
             '--implementation', 'cp', '--python-version', '3.13', '--target', folder,
             '-r', str(root / 'requirements-web.txt')], check=True)
         (package / 'web_gateway.py').write_bytes((root / 'aws_backend/web_gateway.py').read_bytes())
+        (package / 'web_sessions.py').write_bytes((root / 'aws_backend/web_sessions.py').read_bytes())
         with zipfile.ZipFile(args.output, 'w', compression=zipfile.ZIP_DEFLATED) as archive:
             for source in sorted(package.rglob('*')):
                 if source.is_file(): archive.write(source, source.relative_to(package))

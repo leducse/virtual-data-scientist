@@ -5,6 +5,7 @@ import importlib.metadata
 import hashlib
 import math
 import time
+import platform
 from pathlib import Path
 from analysis_engine.ingestion import InputError
 
@@ -56,6 +57,7 @@ def quick_result(path, plan):
     if not math.isclose(result["total"], expected, rel_tol=1e-10, abs_tol=1e-8):
         raise InputError("Independent aggregation check failed.", "evidence_rejected")
     result["review"] = {"passed": True, "checks": ["independent_total", "complete_selected_columns"], "kind": "deterministic"}
+    result['python_version']=platform.python_version()
     return result
 
 
@@ -113,6 +115,7 @@ def forecast_result(path, plan, checkpoint=lambda stage: None):
               "timing_ms": {"analysis": round((time.monotonic()-started)*1000, 2)}}
     checkpoint("checking numerical evidence")
     result["review"] = review_forecast(path, plan, result)
+    result['python_version']=platform.python_version()
     return result
 
 

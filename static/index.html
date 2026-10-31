@@ -8,7 +8,7 @@
 </head>
 <body>
 <a class="skip" href="#question">Skip to analysis</a>
-<header><a class="brand" href="/">Decision Layer <span>/ Virtual Data Scientist</span></a><span class="badge" id="execution-badge">ANALYTICS WORKSPACE</span><a id="studio-link" href="/studio">Report studio ↗</a><button id="sign-out" class="secondary" hidden>Sign out</button></header>
+<header><a class="brand" href="/">Decision Layer <span>/ Virtual Data Scientist</span></a><span class="badge" id="execution-badge">ANALYTICS WORKSPACE</span><span id="allowance" class="muted"></span><a id="studio-link" href="/studio">Report studio ↗</a><button id="continue-sign-in" class="secondary" hidden>Sign in to continue</button><button id="sign-out" class="secondary" hidden>Sign out</button></header>
 <section id="auth-panel" class="auth-panel" aria-label="Workspace sign-in" hidden><p class="eyebrow">PRIVATE DEVELOPMENT WORKSPACE</p><h1>Welcome back.</h1><p id="auth-message" role="status">Sign in to open your workspace.</p><button id="sign-in" type="button">Sign in securely →</button><p class="muted">Access is limited to invited development accounts. Uploaded datasets and analysis evidence are retained for seven days.</p></section>
 <div class="layout">
 <aside aria-label="Datasets">
@@ -28,11 +28,12 @@
 <section id="recommendations" class="recommendations" aria-label="Suggested analyses" hidden></section>
 <form id="analysis-form" class="analysis-form">
 <label for="question">Your question</label><textarea id="question" rows="2" placeholder="Show monthly revenue" required maxlength="2000"></textarea>
+<div id="speech-controls" class="speech-controls" hidden><button id="speech-record" type="button" class="secondary">Dictate in English</button><button id="speech-stop" type="button" class="secondary" hidden>Stop & transcribe</button><button id="speech-cancel" type="button" class="secondary" hidden>Cancel</button><span id="speech-status" role="status">Record up to 20 seconds. Review the transcript before running an analysis.</span></div>
 <p class="muted">Ask in your own words, or start with a suggestion based on your uploaded data.</p>
 <div class="submit-row"><span id="route-note">The data scientist chooses the analytical path.</span><button id="analyze" type="submit" disabled>Run analysis <span aria-hidden="true">→</span></button></div>
 </form>
 <section class="results" aria-label="Saved analyses"><div class="section-heading"><h2>Analyses & evidence</h2><label class="palette-label" for="palette">Chart colors<select id="palette"><option value="decision">Teal & gold</option><option value="ocean">Ocean</option><option value="plum">Plum & amber</option><option value="accessible">Blue & orange</option></select></label></div><div id="runs"><p class="muted">Your results, methods, and checks will appear here.</p></div></section>
 </main>
 </div>
-<script src="/static/vendor/plotly-basic-2.32.0.min.js" defer></script><script src="/static/experience.js" defer></script><script src="/static/auth.js" defer></script><script src="/static/workspace.js" defer></script>
+<script src="/static/vendor/plotly-basic-2.32.0.min.js" defer></script><script src="/static/experience.js" defer></script><script src="/static/auth.js" defer></script><script src="/static/speech.js" defer></script><script src="/static/workspace.js" defer></script>
 </body></html>

@@ -3,15 +3,17 @@ const $ = (s) => document.querySelector(s);
 const escape = (v) => String(v ?? "").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#39;");
 const state = {datasets:[],runs:[],selected:localStorage.getItem("vds_dataset"),timer:null,busy:false,palette:localStorage.getItem("vds_palette") || "decision"};
 const experience=window.vdsExperience;
+const streams=new Map(), reconnectAt=new Map();
 const active = (r) => ["queued","running","reviewing"].includes(r.status);
 const format = (v) => typeof v === "number" ? new Intl.NumberFormat("en-US",{maximumFractionDigits:3}).format(v) : String(v ?? "");
 async function api(path, body) {
   const response = await window.vdsAuth.request(path,body);
   const result = await response.json();
-  if (!response.ok) {const e = new Error(result.error?.message || "Request failed."); e.details = result.error?.details; throw e;}
+  if (!response.ok) {const e = new Error(result.error?.message || "Request failed."); e.details = result.error?.details; e.code=result.error?.code; throw e;}
   return result;
 }
 function notice(text,error=false) {$("#notice").innerHTML = text ? `<p class="notice ${error ? "error" : ""}">${escape(text)}</p>` : "";}
+window.vdsSpeech.init(api,notice);
 function selected() {return state.datasets.find(d=>d.id===state.selected);}
 function choose(id) {
   state.selected=id; localStorage.setItem("vds_dataset",id);
@@ -28,7 +30,7 @@ function render() {
   const suggestions=d?.experience;
   $("#recommendations").hidden=!suggestions;
   $("#recommendations").innerHTML=suggestions ? `<h2>Good questions for this data</h2><p class="muted">Based on the profile. Choose a question to edit it; analysis starts only when you press Run.</p><div class="suggestion-grid">${suggestions.suggestions.map(s=>`<article><span class="eyebrow">${escape(s.effort)}</span><h3>${escape(s.question)}</h3><p>${escape(s.why)}</p><button class="secondary" type="button" data-suggestion="${escape(s.id)}">Use this question →</button>${learning(s.methods)}</article>`).join("")}</div>${suggestions.notes.map(n=>`<p class="warning">${escape(n)}</p>`).join("")}` : "";
-  $("#analyze").disabled=!d || state.busy;
+  $("#analyze").disabled=!d || state.busy || state.allowance?.remaining===0;
   const runs=state.runs.filter(r=>r.dataset_id===state.selected);
   const container=$("#runs");
   if(!runs.length)container.innerHTML='<p class="muted">Your results, methods, and checks will appear here.</p>';
@@ -77,14 +79,49 @@ function renderRun(r) {
 function updateRoute(){$("#route-note").textContent=state.cloud ? "AgentCore chooses and executes the analysis" : "Automatically inferred from your data and question";}
 async function refresh(initial=false){
   const previous=new Map(state.runs.map(r=>[r.id,r.status]));
-  const result=await api("workspace"); state.datasets=result.datasets; state.runs=result.runs; state.cloud=result.cloud_enabled;
+  const result=await api("workspace"); state.datasets=result.datasets; state.runs=result.runs; state.cloud=result.cloud_enabled; state.streaming=result.streaming_enabled;
+  state.allowance=result.allowance;
+  window.vdsSpeech.available(result.speech_enabled===true);
+  $("#allowance").textContent=state.allowance ? `${state.allowance.remaining} of ${state.allowance.limit} analyses available${state.allowance.kind==="guest" ? " · guest trial" : ""}` : "";
+  if(initial && window.vdsClaimError)notice(window.vdsClaimError,true);
   $("#execution-badge").textContent=state.cloud ? "AWS AGENTCORE · DEVELOPMENT" : "LOCAL WORKSPACE";
   $("#execution-title").textContent=state.cloud ? "Running on AWS" : "Local verification mode";
   $("#execution-description").textContent=state.cloud ? "Your data and evidence are saved in AWS for seven days in this development environment. The data scientist prepares, analyzes and checks the results." : "This server is in local verification mode. The hosted application uses AgentCore for planning and execution.";
   if(initial || !selected()) choose(selected()?.id || state.datasets[0]?.id || ""); else render();
   const completed=state.runs.find(r=>["queued","running","reviewing"].includes(previous.get(r.id)) && !active(r));
   if(completed) notice(completed.status==="succeeded" ? "Analysis complete. The result and its evidence are saved." : completed.error?.message || completed.stage, completed.status!=="succeeded");
-  clearTimeout(state.timer);if(state.runs.some(active)) state.timer=setTimeout(()=>refresh().catch(e=>notice(e.message,true)),1000);
+  clearTimeout(state.timer);
+  if(window.vdsAuth.hosted() && state.streaming){
+    for(const r of state.runs.filter(active))if(!streams.has(r.id) && Date.now()>(reconnectAt.get(r.id) || 0))streamRun(r.id);
+  }
+  if(state.runs.some(r=>active(r) && !streams.has(r.id)))state.timer=setTimeout(()=>refresh().catch(e=>notice(e.message,true)),1500);
+}
+async function streamRun(runId){
+  const controller=new AbortController();streams.set(runId,controller);
+  let reader;
+  try{
+    const {ticket}=await api("stream-tickets",{run_id:runId});
+    const run=state.runs.find(r=>r.id===runId), after=run?.events?.at(-1)?.sequence || 0;
+    const response=await window.vdsAuth.request("events/stream",{ticket,after},controller.signal);
+    if(!response.ok || !response.body)throw new Error("Progress stream unavailable.");
+    reader=response.body.getReader();const decoder=new TextDecoder();let pending="";
+    while(true){
+      const {done,value}=await reader.read();if(done)break;pending+=decoder.decode(value,{stream:true});
+      if(pending.length>3*1024*1024)throw new Error("Progress response exceeded its limit.");
+      let boundary;
+      while((boundary=pending.indexOf("\n\n"))>=0){
+        const block=pending.slice(0,boundary);pending=pending.slice(boundary+2);
+        const type=block.split("\n").find(l=>l.startsWith("event: "))?.slice(7), data=block.split("\n").find(l=>l.startsWith("data: "))?.slice(6);
+        if(!type || !data)continue;const event=JSON.parse(data), current=state.runs.find(r=>r.id===runId);
+        if(type==="stage" && current){current.events=current.events || [];if(!current.events.some(e=>e.id===event.id))current.events.push(event);render();}
+        if(type==="finished" || type==="unavailable"){await reader.cancel();return;}
+      }
+    }
+  }catch(error){if(error.name!=="AbortError")reconnectAt.set(runId,Date.now()+22000);}
+  finally{
+    reader?.releaseLock();streams.delete(runId);
+    clearTimeout(state.timer);state.timer=setTimeout(()=>refresh().catch(e=>notice(e.message,true)),1000);
+  }
 }
 $("#upload-form").addEventListener("submit",async e=>{
   e.preventDefault();const file=$("#file").files[0];if(!file)return;
@@ -111,7 +148,7 @@ $("#analysis-form").addEventListener("submit",async e=>{
   try{
     const result=await api("runs",{dataset_id:state.selected,request_key:crypto.randomUUID(),question:$("#question").value});
     await refresh();notice(result.run.status==="succeeded" ? "Result saved with its evidence." : result.run.status==="failed" ? result.run.error.message : "Background job started. You can refresh this page and keep the result.",result.run.status==="failed");
-  }catch(e){notice(e.message,true);}finally{state.busy=false;$("#analyze").disabled=!selected();}
+  }catch(e){notice(e.message,true);}finally{state.busy=false;$("#analyze").disabled=!selected() || state.allowance?.remaining===0;}
 });
 $("#datasets").addEventListener("click",async e=>{
   const select=e.target.closest("[data-select]");if(select){choose(select.dataset.select);return;}
@@ -123,7 +160,7 @@ $("#runs").addEventListener("click",async e=>{
   const figure=e.target.closest("[data-figure-run]");
   if(figure){try{const run=state.runs.find(r=>r.id===figure.dataset.figureRun), i=Number(figure.dataset.figureIndex);await experience.exportFigure(experience.figures(run.result)[i],state.palette,figure.dataset.figureKind,$(`#plot-${run.id}-${i}`));}catch(error){notice(error.message,true);}return;}
   const bundle=e.target.closest("[data-bundle]");
-  if(bundle){try{const result=await api(`runs/${bundle.dataset.bundle}/artifacts`);const a=document.createElement("a");a.href=result.url;a.rel="noreferrer";a.click();}catch(error){notice(error.message,true);}return;}
+  if(bundle){try{const result=await api(`runs/${bundle.dataset.bundle}/artifacts?palette=${encodeURIComponent(state.palette)}`);const a=document.createElement("a");a.href=result.url;a.rel="noreferrer";a.click();}catch(error){notice(error.message,true);}return;}
   const open=e.target.closest("[data-open]");
   if(open){try {const run=(await api(`runs/${open.dataset.open}`)).run;state.runs=state.runs.map(r=>r.id===run.id ? run : r);render();} catch(error){notice(error.message,true);}return;}
   const cancel=e.target.closest("[data-cancel]");

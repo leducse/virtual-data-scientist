@@ -10,7 +10,7 @@ from analysis_engine.ingestion import parse_table, write_parquet
 from analysis_engine.planning import local_plan
 from analysis_engine.presentation import recommendations, enrich_result
 from analysis_engine.tabular import forecast_result, quick_result
-from analysis_engine.exports import build_bundle
+from analysis_engine.exports import build_bundle, themed_bundle, PALETTES
 from analysis_engine.telemetry import emit, safe_error
 
 
@@ -66,10 +66,13 @@ class ExperienceTests(unittest.TestCase):
             for name in archive.namelist():
                 if name.endswith('.py'):ast.parse(archive.read(name).decode())
             self.assertEqual(json.loads(archive.read('figures.json'))[0]['data'][0]['y'],[r['value'] for r in result['series']])
+        with zipfile.ZipFile(io.BytesIO(themed_bundle(bundle,'ocean'))) as themed:
+            self.assertEqual(json.loads(themed.read('figures.json'))[0]['layout']['colorway'],PALETTES['ocean'])
+            self.assertEqual(json.loads(themed.read('figures.json'))[0]['data'][0]['y'],[r['value'] for r in result['series']])
 
     def test_telemetry_excludes_sensitive_values_and_run_ids_as_dimensions(self):
         with self.assertLogs('vds.telemetry',level='INFO') as output:
-            emit(event='stage',stage='planner',status='completed',duration_ms=20,run_id='a'*32,prompt='secret-prompt',token='secret-token',error_code='secret source value')
+            emit(event='stage',stage='analysis',status='completed',duration_ms=20,run_id='a'*32,prompt='secret-prompt',token='secret-token',error_code='secret source value')
             safe_error(ValueError('secret-prompt'))
         text=' '.join(output.output)
         self.assertNotIn('secret',text)

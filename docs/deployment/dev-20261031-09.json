@@ -1,0 +1,15 @@
+{
+  "release": "dev-20261031-09",
+  "runtime_status": "UPDATE_COMPLETE",
+  "CodeKey_sha256": "3df3e78070a08d8e17bc262307a81de597349f51751e8d609a04399d5248e1de",
+  "web_status": "UPDATE_COMPLETE",
+  "outputs": {
+    "UserPoolId": "us-east-1_1yUNrgO0A",
+    "WebUrl": "https://d19bkp3wlr8r7k.cloudfront.net",
+    "ClientId": "31jjr85q2fgnp66g7ht2du6371",
+    "DistributionId": "E3K5TU1GM2AOW4",
+    "LoginDomain": "https://vds-v2-dev-441383083571.auth.us-east-1.amazoncognito.com",
+    "GatewayOriginUrl": "https://ikiqgetptisx7tgqpu47yshl4q0hqaqo.lambda-url.us-east-1.on.aws/",
+    "SiteBucket": "virtualdatascientistv2devweb-site-oxnbdrngcx8m"
+  }
+}

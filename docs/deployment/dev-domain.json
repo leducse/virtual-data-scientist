@@ -1,0 +1,6 @@
+{
+  "domain": "analyst.decision-layer.com",
+  "certificate_arn": "arn:aws:acm:us-east-1:441383083571:certificate/c9c21f45-beed-45fa-b7d8-ae46d6bddb31",
+  "status": "ISSUED",
+  "alias_published": false
+}

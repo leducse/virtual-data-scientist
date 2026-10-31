@@ -1,10 +1,11 @@
 "use strict";
 // Tokens stay in memory. Only a short-lived PKCE transaction uses sessionStorage.
 window.vdsAuth = (() => {
-  let config = null, accessToken = null, expiresAt = 0;
+  let config = null, accessToken = null, expiresAt = 0, guest = false;
   const authPanel = document.querySelector("#auth-panel");
   const signIn = document.querySelector("#sign-in");
   const signOut = document.querySelector("#sign-out");
+  const continueSignIn = document.querySelector("#continue-sign-in");
   const message = document.querySelector("#auth-message");
   const layout = document.querySelector(".layout");
   const transactionKey = "vds_pkce";
@@ -12,7 +13,7 @@ window.vdsAuth = (() => {
   const random = () => encoded(crypto.getRandomValues(new Uint8Array(32)));
   const digest = async (text) => new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(text)));
   function gate(text = "Sign in to open your private development workspace.") {
-    accessToken = null; expiresAt = 0;
+    accessToken = null; expiresAt = 0; guest = false;
     layout.hidden = true; layout.inert = true;
     authPanel.hidden = false; signOut.hidden = true; message.textContent = text;
   }
@@ -41,6 +42,7 @@ window.vdsAuth = (() => {
       document.querySelector("#studio-link").hidden = true;
       signIn.disabled = false;
       signIn.addEventListener("click", login);
+      continueSignIn.addEventListener("click", login);
       signOut.addEventListener("click", () => {
         gate(); localStorage.removeItem("vds_dataset"); sessionStorage.removeItem(transactionKey);
         location.assign(config.domain + "/logout?" + new URLSearchParams({client_id:config.client_id, logout_uri:location.origin + "/"}));
@@ -64,10 +66,22 @@ window.vdsAuth = (() => {
           const tokens = await response.json();
           if (!tokens.access_token || !(tokens.expires_in > 0)) throw new Error("Sign-in did not return access.");
           accessToken = tokens.access_token; expiresAt = Date.now() + tokens.expires_in * 1000;
+          if(config.guest_enabled){
+            const claimBody="{}";
+            const claimed=await fetch('/api/v2/session/claim',{method:'POST',headers:{'Content-Type':'application/json','x-vds-token':accessToken,
+              'x-amz-content-sha256':[...await digest(claimBody)].map(b=>b.toString(16).padStart(2,'0')).join('')},body:claimBody,cache:'no-store'});
+            if(!claimed.ok)window.vdsClaimError='Sign-in succeeded, but your trial workspace could not be connected yet. Its data remains saved.';
+          }
           localStorage.removeItem("vds_dataset");
           authPanel.hidden = true; layout.hidden = false; layout.inert = false; signOut.hidden = false;
           return true;
         } catch (error) {gate(error.message); return false;}
+      }
+      if(config.guest_enabled){
+        const body='{}', response=await fetch('/api/v2/session',{method:'POST',body,cache:'no-store',headers:{'Content-Type':'application/json',
+          'x-amz-content-sha256':[...await digest(body)].map(b=>b.toString(16).padStart(2,'0')).join('')}});
+        if(response.ok){guest=true;authPanel.hidden=true;layout.hidden=false;layout.inert=false;continueSignIn.hidden=false;return true;}
+        const result=await response.json();gate(result.error?.message || 'Sign in to continue.');return false;
       }
       gate(); return false;
     }
@@ -76,17 +90,19 @@ window.vdsAuth = (() => {
   return {
     ready,
     hosted: () => !!config,
-    async request(path, body) {
+    isGuest: () => guest,
+    login,
+    async request(path, body, signal) {
       await ready;
       const headers = {};
       if (config) {
-        if (!accessToken || Date.now() >= expiresAt - 10000) {
+        if (!guest && (!accessToken || Date.now() >= expiresAt - 10000)) {
           gate("Your sign-in expired. Sign in again to continue.");
           throw new Error("Sign in to continue.");
         }
-        headers["x-vds-token"] = accessToken;
+        if(accessToken)headers["x-vds-token"] = accessToken;
       }
-      const options = {headers, cache:"no-store"};
+      const options = {headers, cache:"no-store", signal};
       if (body !== undefined) {
         options.method = "POST"; options.body = JSON.stringify(body);
         headers["Content-Type"] = "application/json";

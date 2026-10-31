@@ -7,6 +7,24 @@ import json
 import zipfile
 from pathlib import Path
 
+PALETTES={'decision':['#146659','#a66b16','#6d5f94','#346b96'], 'ocean':['#155f99','#008578','#b35b26','#78499a'],
+          'plum':['#79417f','#b56a00','#147a72','#446da0'], 'accessible':['#0072b2','#d55e00','#009e73','#8b4b8a']}
+
+
+def themed_bundle(data,palette):
+    if palette not in PALETTES:raise ValueError('Unknown presentation palette')
+    target=io.BytesIO()
+    with zipfile.ZipFile(io.BytesIO(data)) as original,zipfile.ZipFile(target,'w',compression=zipfile.ZIP_DEFLATED) as output:
+        for item in original.infolist():
+            body=original.read(item.filename)
+            if item.filename=='figures.json':
+                figures=json.loads(body)
+                for figure in figures:figure['layout']['colorway']=PALETTES[palette]
+                body=json.dumps(figures,allow_nan=False).encode()
+            output.writestr(item.filename,body)
+        output.writestr('presentation.json',json.dumps({'palette':palette,'colors':PALETTES[palette],'note':'Presentation only; analytical evidence and numbers are unchanged.'}))
+    return target.getvalue()
+
 
 def build_bundle(run, result):
     plan = run['plan']
@@ -49,12 +67,14 @@ for i, figure in enumerate(figures, 1):
         test_writer.writerows(zip(months, result['test']['actual'], result['test']['predictions'], result['test']['baseline_predictions']))
     files = {'analysis.py': analysis, 'visualization.py': plotting, 'analysis.ipynb': json.dumps(notebook, indent=2),
              'plan.json': json.dumps(plan, indent=2), 'figures.json': json.dumps(figures, allow_nan=False),
-             'result.json': json.dumps(result, indent=2, allow_nan=False), 'series.csv': table.getvalue(), 'test-predictions.csv': test_table.getvalue(),
+             'result.json': json.dumps({k:v for k,v in result.items() if k!='sandbox'}, indent=2, allow_nan=False), 'series.csv': table.getvalue(), 'test-predictions.csv': test_table.getvalue(),
              'query.sql': result.get('sql', ''), 'vds_recipe.py': recipe,
              'ingestion.py': Path(__file__).with_name('ingestion.py').read_text(),
              'executed-wrapper.py': result.get('executed_code', analysis),
              'requirements.txt': '\n'.join(f'{k}=={v}' for k, v in result.get('versions', {}).items()) + '\nplotly==5.22.0\nopenpyxl==3.1.5\n',
              'README.md': '# Analysis reproduction\n\nSource data is excluded. Use your matching prepared `dataset.parquet` (see source hashes in result.json).\n'
+                 + f'Executed analytical Python version: {result.get("python_version", "not recorded for this older run")}. Use a compatible Python environment for the pinned requirements.\n'
+                 +
                  'Install requirements.txt in an isolated environment, then run `python analysis.py` and `python visualization.py`, or open analysis.ipynb.\n'
                  'The visualization code uses the exact saved figure data. Change layout.colorway to choose a palette.\n'
                  'The analysis includes all trusted support modules and the executed wrapper. Numerical and narrative checks remain in result.json.\n'

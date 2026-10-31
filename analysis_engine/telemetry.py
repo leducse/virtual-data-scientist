@@ -17,10 +17,10 @@ def emit(**values):
             record.pop(key)
     record.update(service='vds', environment='development', release=os.environ.get('VDS_RELEASE', 'development'))
     metrics = []
-    if record.get('status') in {'completed', 'failed', 'cancelled'}:
+    if record.get('stage') == 'analysis' and record.get('status') in {'completed', 'failed', 'cancelled'}:
         record['stage_events'] = 1
         metrics.append({'Name': 'stage_events', 'Unit': 'Count'})
-    if 'duration_ms' in record:
+    if record.get('stage') == 'analysis' and 'duration_ms' in record:
         metrics.append({'Name': 'duration_ms', 'Unit': 'Milliseconds'})
     if metrics:
         record['_aws'] = {'Timestamp': int(time.time() * 1000), 'CloudWatchMetrics': [
@@ -31,4 +31,4 @@ def emit(**values):
 
 def safe_error(exc, run_id=None):
     emit(event='dependency_error', stage='runtime', status='failed', run_id=run_id or 'unknown',
-         error_code=type(exc).__name__)
+         error_code=getattr(exc,'code',type(exc).__name__))

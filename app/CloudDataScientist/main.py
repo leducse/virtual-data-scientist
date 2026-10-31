@@ -3,9 +3,13 @@ from __future__ import annotations
 import asyncio
 import os
 import threading
+import logging
 from bedrock_agentcore.runtime import BedrockAgentCoreApp
 from analysis_engine.ingestion import InputError
 from analysis_engine.cloud_service import CloudService
+
+logging.getLogger('strands').setLevel(logging.CRITICAL)
+logging.getLogger('botocore').setLevel(logging.ERROR)
 
 app=BedrockAgentCoreApp()
 _service=None

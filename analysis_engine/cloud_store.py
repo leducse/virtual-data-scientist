@@ -71,6 +71,8 @@ class CloudStore:
             run = self.get(owner, 'run', run_id)
             version = run.get('version_counter', 0)
             events = run.setdefault('events', [])
+            previous=next((e for e in events if (e['stage'],e['status'],e['attempt'])==(stage,status,attempt)),None)
+            if previous:return previous
             if len(events) >= 80:
                 raise InputError('Analysis event limit reached.', 'output_limit')
             event = {'sequence': len(events) + 1, 'id': f'{run_id}:{len(events)+1}',
