@@ -1,0 +1,9 @@
+{
+  "domain": "mlworkbench.decision-layer.com",
+  "previous_domain": "analyst.decision-layer.com",
+  "certificate_arn": "arn:aws:acm:us-east-1:441383083571:certificate/6eff4e9a-9d30-463e-89b8-c0a09531cf65",
+  "status": "ISSUED",
+  "alias_published": true,
+  "dns_change_id": "/change/C075831633JORMAEBZST5",
+  "distribution": "d19bkp3wlr8r7k.cloudfront.net"
+}

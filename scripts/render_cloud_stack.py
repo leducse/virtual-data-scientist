@@ -13,7 +13,7 @@ def template():
         'Data':{'Type':'AWS::S3::Bucket','DeletionPolicy':'Retain','UpdateReplacePolicy':'Retain','Properties':{
             'PublicAccessBlockConfiguration':{'BlockPublicAcls':True,'BlockPublicPolicy':True,'IgnorePublicAcls':True,'RestrictPublicBuckets':True},
             'BucketEncryption':{'ServerSideEncryptionConfiguration':[{'ServerSideEncryptionByDefault':{'SSEAlgorithm':'AES256'}}]},
-            'CorsConfiguration':{'Fn::If':['HasWebOrigin',{'CorsRules':[{'AllowedOrigins':[{'Ref':'WebOrigin'},{'Fn::If':['HasAlternateOrigin',{'Ref':'AlternateOrigin'},{'Ref':'AWS::NoValue'}]}],'AllowedMethods':['POST'],'AllowedHeaders':['*'],'ExposedHeaders':['ETag'],'MaxAge':300}]},{'Ref':'AWS::NoValue'}]},
+            'CorsConfiguration':{'Fn::If':['HasWebOrigin',{'CorsRules':[{'AllowedOrigins':[{'Ref':'WebOrigin'},{'Fn::If':['HasAlternateOrigin',{'Ref':'AlternateOrigin'},{'Ref':'AWS::NoValue'}]},{'Fn::If':['HasPreviousWebOrigin',{'Ref':'PreviousWebOrigin'},{'Ref':'AWS::NoValue'}]}],'AllowedMethods':['POST'],'AllowedHeaders':['*'],'ExposedHeaders':['ETag'],'MaxAge':300}]},{'Ref':'AWS::NoValue'}]},
             'LifecycleConfiguration':{'Rules':[{'Id':'DevelopmentRetention','Status':'Enabled','ExpirationInDays':7,'AbortIncompleteMultipartUpload':{'DaysAfterInitiation':1}}]}}},
         'DataPolicy':{'Type':'AWS::S3::BucketPolicy','Properties':{'Bucket':{'Ref':'Data'},'PolicyDocument':{'Version':'2012-10-17','Statement':[
             {'Effect':'Deny','Principal':'*','Action':'s3:*','Resource':[get('Data','Arn'),sub('${Data.Arn}/*')],'Condition':{'Bool':{'aws:SecureTransport':'false'}}}]}}},
@@ -72,8 +72,8 @@ def template():
     resources['Dashboard']['Properties']['DashboardBody']=sub(json.dumps({'start':'-PT3H','periodOverride':'inherit','widgets':widgets}))
     return {'AWSTemplateFormatVersion':'2010-09-09','Description':'Virtual Data Scientist isolated container development environment',
         'Parameters':{'ImageUri':{'Type':'String','Default':''},'ModelId':{'Type':'String','Default':'us.amazon.nova-pro-v1:0'},
-                      'ModelResources':{'Type':'CommaDelimitedList'},'ReleaseId':{'Type':'String','Default':'dev-v2'},'WebOrigin':{'Type':'String','Default':''},'AlternateOrigin':{'Type':'String','Default':''}},
-        'Conditions':{'HasAlternateOrigin':{'Fn::Not':[{'Fn::Equals':[{'Ref':'AlternateOrigin'},'']}]},'HasImage':{'Fn::Not':[{'Fn::Equals':[{'Ref':'ImageUri'},'']}]},'HasWebOrigin':{'Fn::Not':[{'Fn::Equals':[{'Ref':'WebOrigin'},'']}]}},'Resources':resources,
+                      'ModelResources':{'Type':'CommaDelimitedList'},'ReleaseId':{'Type':'String','Default':'dev-v2'},'WebOrigin':{'Type':'String','Default':''},'AlternateOrigin':{'Type':'String','Default':''},'PreviousWebOrigin':{'Type':'String','Default':''}},
+        'Conditions':{'HasPreviousWebOrigin':{'Fn::Not':[{'Fn::Equals':[{'Ref':'PreviousWebOrigin'},'']}]},'HasAlternateOrigin':{'Fn::Not':[{'Fn::Equals':[{'Ref':'AlternateOrigin'},'']}]},'HasImage':{'Fn::Not':[{'Fn::Equals':[{'Ref':'ImageUri'},'']}]},'HasWebOrigin':{'Fn::Not':[{'Fn::Equals':[{'Ref':'WebOrigin'},'']}]}},'Resources':resources,
         'Outputs':{'DataBucket':{'Value':{'Ref':'Data'}},'StateTable':{'Value':{'Ref':'State'}},'ImageRepository':{'Value':get('Images','RepositoryUri')},
                    'RuntimeArn':{'Condition':'HasImage','Value':get('Runtime','AgentRuntimeArn')}}}
 

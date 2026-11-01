@@ -1,0 +1,78 @@
+{
+  "release": "dev-20261101-01",
+  "runtime_version": "17",
+  "image_digest": "sha256:a09d2b53cc3625906173c55c77c3dd898c07bfb52243778e8f7f2e1383a8f98f",
+  "primary_origin": "https://mlworkbench.decision-layer.com",
+  "retained_origins": [
+    "https://analyst.decision-layer.com",
+    "https://d19bkp3wlr8r7k.cloudfront.net"
+  ],
+  "stacks": {
+    "VirtualDataScientistV2Dev": "UPDATE_COMPLETE",
+    "VirtualDataScientistV2DevWeb": "UPDATE_COMPLETE"
+  },
+  "resource_changes": {
+    "VirtualDataScientistV2Dev": [
+      {
+        "LogicalResourceId": "DataPolicy",
+        "Action": "Modify",
+        "Replacement": "False"
+      },
+      {
+        "LogicalResourceId": "Data",
+        "Action": "Modify",
+        "Replacement": "False"
+      },
+      {
+        "LogicalResourceId": "RuntimeRole",
+        "Action": "Modify",
+        "Replacement": "False"
+      },
+      {
+        "LogicalResourceId": "Runtime",
+        "Action": "Modify",
+        "Replacement": "False"
+      }
+    ],
+    "VirtualDataScientistV2DevWeb": [
+      {
+        "LogicalResourceId": "Client",
+        "Action": "Modify",
+        "Replacement": "False"
+      },
+      {
+        "LogicalResourceId": "Distribution",
+        "Action": "Modify",
+        "Replacement": "False"
+      },
+      {
+        "LogicalResourceId": "Gateway",
+        "Action": "Modify",
+        "Replacement": "False"
+      }
+    ]
+  },
+  "verified_s3_cors_origins": [
+    "https://mlworkbench.decision-layer.com",
+    "https://d19bkp3wlr8r7k.cloudfront.net",
+    "https://analyst.decision-layer.com"
+  ],
+  "verified_callback_and_logout_urls": [
+    "https://analyst.decision-layer.com/",
+    "https://d19bkp3wlr8r7k.cloudfront.net/",
+    "https://mlworkbench.decision-layer.com/"
+  ],
+  "python_tests": 87,
+  "javascript_tests": 25,
+  "production_npm_vulnerabilities": 0,
+  "admissions_before": 19,
+  "admissions_after": 20,
+  "model_analyses_submitted": 0,
+  "runtime_health": {
+    "release": "dev-20261101-01",
+    "ok": true
+  },
+  "authentication_upload_evidence": "2026-11-01-domain-auth-acceptance.json",
+  "verification_dns": "New hostname resolved using its published public DNS answer from 1.1.1.1, scoped to the verification process. HTTPS hostname and certificate validation remained enabled. No system DNS settings or hosts file were changed.",
+  "browser_verification": "Pending expiry of a cached negative DNS answer on the local resolver."
+}

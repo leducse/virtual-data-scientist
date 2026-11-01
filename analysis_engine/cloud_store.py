@@ -4,6 +4,7 @@ import hashlib
 import json
 import time
 import uuid
+from contextlib import contextmanager
 from boto3.dynamodb.conditions import Attr, Key
 from analysis_engine.ingestion import InputError
 
@@ -48,8 +49,28 @@ class CloudStore:
         return doc
 
     def items(self,owner,kind):
-        response=self.table.query(KeyConditionExpression=Key('pk').eq(self.owner(owner)) & Key('sk').begins_with(kind+'#'),Limit=100,ConsistentRead=True)
-        return [json.loads(i['doc']) for i in response['Items']]
+        options={'KeyConditionExpression':Key('pk').eq(self.owner(owner)) & Key('sk').begins_with(kind+'#'),'Limit':100,'ConsistentRead':True}
+        documents=[]
+        while True:
+            response=self.table.query(**options)
+            documents.extend(json.loads(i['doc']) for i in response['Items'])
+            if not response.get('LastEvaluatedKey'):return documents
+            options['ExclusiveStartKey']=response['LastEvaluatedKey']
+
+    @contextmanager
+    def upload_slot(self,owner):
+        key={'pk':self.owner(owner),'sk':'lease#upload'}
+        token=uuid.uuid4().hex
+        now=int(time.time())
+        try:
+            self.table.put_item(Item={**key,'token':token,'expires_at':now+LEASE_SECONDS},
+                ConditionExpression=Attr('pk').not_exists() | Attr('expires_at').lt(now))
+        except self.table.meta.client.exceptions.ConditionalCheckFailedException as exc:
+            raise InputError('An upload is still being prepared. Retry in a moment.','capacity_exceeded') from exc
+        try:yield
+        finally:
+            try:self.table.delete_item(Key=key,ConditionExpression=Attr('token').eq(token))
+            except self.table.meta.client.exceptions.ConditionalCheckFailedException:pass
 
     def update_run(self,owner,run_id,**changes):
         for _ in range(3):

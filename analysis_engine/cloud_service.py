@@ -156,6 +156,10 @@ class CloudService:
         raise InputError('Unknown action.')
 
     def prepare_upload(self,owner,payload):
+        with self.store.upload_slot(owner):
+            return self._prepare_upload(owner,payload)
+
+    def _prepare_upload(self,owner,payload):
         upload_id=payload.get('upload_id')
         if not isinstance(upload_id,str) or not re.fullmatch(r'[a-f0-9]{32}',upload_id):
             raise InputError('The upload reference is invalid.')
@@ -174,11 +178,15 @@ class CloudService:
                 if not 0<source['ContentLength']<=MAX_BYTES:
                     raise InputError('Choose a file up to 10 MiB.','upload_limit')
                 raw=stream.read(MAX_BYTES+1)
-            return self.upload(owner,{'name':name,'content_base64':base64.b64encode(raw).decode(),'question':payload.get('question'),'source_upload_id':upload_id})
+            return self._upload(owner,{'name':name,'content_base64':base64.b64encode(raw).decode(),'question':payload.get('question'),'source_upload_id':upload_id})
         finally:
             self.store.s3.delete_object(Bucket=self.store.bucket,Key=key)
 
     def upload(self,owner,payload):
+        with self.store.upload_slot(owner):
+            return self._upload(owner,payload)
+
+    def _upload(self,owner,payload):
         started=time.monotonic()
         if len([d for d in self.store.items(owner,'dataset') if not d.get('deleted')])>=10:
             raise InputError('Development limit: ten dataset versions. Delete an old version first.','capacity_exceeded')

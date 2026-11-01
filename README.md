@@ -12,17 +12,18 @@ artifacts live in S3; job state lives in DynamoDB.
 ## Deployed development environment
 
 The separate `VirtualDataScientistV2Dev` stack is deployed in `us-east-1`.
-Release `dev-20261031-17` uses an immutable ARM64 Docker image in ECR and
+Release `dev-20261101-01` uses an immutable ARM64 Docker image in ECR and
 `us.amazon.nova-pro-v1:0`. CSV and Excel chart/forecast tests passed against the
 real runtime. The original runtime and public website were not switched.
 
-[Deployment manifest](docs/deployment/dev-20261031-17.json) ·
+[Deployment manifest](docs/deployment/dev-20261101-01.json) ·
 [Live acceptance](docs/deployment/2026-10-31-live-acceptance.json) ·
 [Validation](docs/validation.md) · [Architecture and continuation](project_context.md)
 
 ## Open the hosted workspace
 
-Open [the development preview](https://analyst.decision-layer.com/).
+Open [the development preview](https://mlworkbench.decision-layer.com/).
+The previous analyst subdomain and CloudFront address remain available during the transition.
 Cognito sign-in and a hosted Lambda gateway derive ownership from verified access
 tokens. Static files, preparation, analysis and persistent state are all on AWS;
 no local process is required. Users can register through Cognito for a signed-in
@@ -188,3 +189,5 @@ shows who coordinates each capability; the timeline shows execution order. The
 coordinator remains active after planning while its children work. The current
 backend supports quick summaries and reviewed forecasts. Analyst-only explanation
 and separate code-writer routing remain future task contracts.
+
+[November 1 quality audit and cleanup](docs/audits/2026-11-01-ponytail-audit.md) · [Domain migration manifest](docs/deployment/dev-domain-mlworkbench.json)

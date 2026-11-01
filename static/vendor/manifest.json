@@ -1,5 +1,5 @@
 {
-  "checked_on": "2026-10-31",
+  "checked_on": "2026-11-01",
   "audit_vulnerabilities": {
     "info": 0,
     "low": 0,
@@ -17,15 +17,6 @@
       "file": "echarts-6.1.0.min.js",
       "sha256": "b66b25aeb4df84e33199dc21694014d336d222cbd9deb0e5a7c14bd6aa0d0fd0",
       "package_integrity": "sha512-q0yaFPggC9FUdsWH4blavRWFmxdrIodbkoKNAjJudAI6CA9gNPxHtV2RcZNEepZVlk4yvBYkOkbk6HIVpIyHZA=="
-    },
-    {
-      "name": "d3",
-      "version": "7.9.0",
-      "license": "ISC",
-      "source": "https://registry.npmjs.org/d3/-/d3-7.9.0.tgz",
-      "file": "d3-7.9.0.min.js",
-      "sha256": "f2094bbf6141b359722c4fe454eb6c4b0f0e42cc10cc7af921fc158fceb86539",
-      "package_integrity": "sha512-e1U46jVP+w7Iut8Jt8ri1YsPOvFpg46k+K8TpCb0P+zjCkjkPnV7WzfDJzMHy1LnA+wj5pLT1wjO901gLXeEhA=="
     }
   ]
 }

@@ -1,0 +1,24 @@
+{
+  "origin": "https://mlworkbench.decision-layer.com",
+  "checks": {
+    "anonymous_denied": true,
+    "invalid_and_id_tokens_denied": true,
+    "direct_lambda_denied": true,
+    "direct_static_bucket_denied": true,
+    "owner_spoof_ignored": true,
+    "post_key_tampering_denied": true,
+    "other_user_staged_upload_denied": true,
+    "other_user_workspace_isolated": true,
+    "oversize_rejected": true,
+    "exact_ten_mib_prepared_and_deleted": true,
+    "cookie_login_reload_logout_replay": true,
+    "cookie_flags_and_origin_rejection": true,
+    "verified_callback_origins": [
+      "https://analyst.decision-layer.com",
+      "https://d19bkp3wlr8r7k.cloudfront.net",
+      "https://mlworkbench.decision-layer.com"
+    ]
+  },
+  "model_analyses_submitted": 0,
+  "temporary_users_removed": true
+}

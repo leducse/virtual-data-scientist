@@ -1,7 +1,7 @@
-# Implementation status — October 31, 2026
+# Implementation status — November 1, 2026
 
-Current development release: `dev-20261031-17`, runtime version 16. Open
-https://analyst.decision-layer.com/ with a signed-in preview account. Code is pushed to
+Current development release: `dev-20261101-01`, runtime version 17. Open
+https://mlworkbench.decision-layer.com/ with a signed-in preview account. Code is pushed to
 `feat/product-experience-v2`; the original website/runtime are preserved.
 
 The user corrected the local-only delivery boundary and approved $10 for initial

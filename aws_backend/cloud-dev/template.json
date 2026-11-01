@@ -24,9 +24,25 @@
     "AlternateOrigin": {
       "Type": "String",
       "Default": ""
+    },
+    "PreviousWebOrigin": {
+      "Type": "String",
+      "Default": ""
     }
   },
   "Conditions": {
+    "HasPreviousWebOrigin": {
+      "Fn::Not": [
+        {
+          "Fn::Equals": [
+            {
+              "Ref": "PreviousWebOrigin"
+            },
+            ""
+          ]
+        }
+      ]
+    },
     "HasAlternateOrigin": {
       "Fn::Not": [
         {
@@ -114,6 +130,17 @@
                         "HasAlternateOrigin",
                         {
                           "Ref": "AlternateOrigin"
+                        },
+                        {
+                          "Ref": "AWS::NoValue"
+                        }
+                      ]
+                    },
+                    {
+                      "Fn::If": [
+                        "HasPreviousWebOrigin",
+                        {
+                          "Ref": "PreviousWebOrigin"
                         },
                         {
                           "Ref": "AWS::NoValue"

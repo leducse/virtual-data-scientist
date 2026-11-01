@@ -19,6 +19,14 @@
       "Type": "String",
       "Default": ""
     },
+    "PreviousDomain": {
+      "Type": "String",
+      "Default": ""
+    },
+    "PreviousOrigin": {
+      "Type": "String",
+      "Default": ""
+    },
     "CustomDomain": {
       "Type": "String",
       "Default": ""
@@ -53,6 +61,18 @@
     }
   },
   "Conditions": {
+    "HasPreviousDomain": {
+      "Fn::Not": [
+        {
+          "Fn::Equals": [
+            {
+              "Ref": "PreviousDomain"
+            },
+            ""
+          ]
+        }
+      ]
+    },
     "HasStreaming": {
       "Fn::Not": [
         {
@@ -175,6 +195,17 @@
               },
               {
                 "Fn::Sub": "${LegacyOrigin}/"
+              },
+              {
+                "Fn::If": [
+                  "HasPreviousDomain",
+                  {
+                    "Fn::Sub": "${PreviousOrigin}/"
+                  },
+                  {
+                    "Ref": "AWS::NoValue"
+                  }
+                ]
               }
             ],
             [
@@ -193,6 +224,17 @@
               },
               {
                 "Fn::Sub": "${LegacyOrigin}/"
+              },
+              {
+                "Fn::If": [
+                  "HasPreviousDomain",
+                  {
+                    "Fn::Sub": "${PreviousOrigin}/"
+                  },
+                  {
+                    "Ref": "AWS::NoValue"
+                  }
+                ]
               }
             ],
             [
@@ -366,6 +408,9 @@
             },
             "VDS_LEGACY_ORIGIN": {
               "Ref": "LegacyOrigin"
+            },
+            "VDS_PREVIOUS_ORIGIN": {
+              "Ref": "PreviousOrigin"
             }
           }
         }
@@ -640,6 +685,17 @@
               [
                 {
                   "Ref": "CustomDomain"
+                },
+                {
+                  "Fn::If": [
+                    "HasPreviousDomain",
+                    {
+                      "Ref": "PreviousDomain"
+                    },
+                    {
+                      "Ref": "AWS::NoValue"
+                    }
+                  ]
                 }
               ],
               {

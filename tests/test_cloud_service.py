@@ -20,6 +20,27 @@ class CloudServiceTests(unittest.TestCase):
         self.service=CloudService(store=CloudStore(s3,table,'vds-service-test'),region='us-east-1')
         self.owner='a'*64
     def tearDown(self):self.service.pool.shutdown(wait=True)
+    def test_overlapping_upload_preparation_does_not_duplicate_or_remove_source(self):
+        upload_id='9'*32
+        self.service.store.put_blob(self.owner,'incoming/'+upload_id,(Path(__file__).parent/'fixtures/monthly_revenue.csv').read_bytes())
+        entered=threading.Event();release=threading.Event()
+        original=self.service.store.put_blob
+        def paused(*args,**kwargs):
+            entered.set()
+            if not release.wait(5):raise RuntimeError('Test upload did not resume')
+            return original(*args,**kwargs)
+        payload={'upload_id':upload_id,'name':'sales.csv'}
+        with patch.object(self.service.store,'put_blob',side_effect=paused):
+            future=self.service.pool.submit(self.service.prepare_upload,self.owner,payload)
+            self.assertTrue(entered.wait(5))
+            try:
+                with self.assertRaises(InputError) as error:self.service.prepare_upload(self.owner,payload)
+                self.assertEqual(error.exception.code,'capacity_exceeded')
+                self.assertTrue(self.service.store.blob(self.owner,'incoming/'+upload_id))
+            finally:release.set()
+            dataset=future.result(timeout=10)
+        self.assertEqual(self.service.prepare_upload(self.owner,payload)['id'],dataset['id'])
+        self.assertEqual(len(self.service.store.items(self.owner,'dataset')),1)
     def test_automatic_cloud_upload_submit_idempotency_and_state(self):
         raw=(Path(__file__).parent/'fixtures/monthly_revenue.csv').read_bytes()
         d=self.service.upload(self.owner,{'name':'sales.csv','content_base64':base64.b64encode(raw).decode()})

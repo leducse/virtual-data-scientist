@@ -21,6 +21,7 @@ def main():
     parser.add_argument('--manifest', type=Path, default=Path('docs/deployment/2026-10-31-hosted-web.json'))
     parser.add_argument('--port', type=int, default=12989)
     parser.add_argument('--evidence-name',default='2026-10-31-hosted-acceptance')
+    parser.add_argument('--auth-only',action='store_true',help='Verify uploads and cookie sessions on each configured callback origin, without model analyses or a browser helper.')
     args = parser.parse_args()
     if not args.execute:
         print('Review only: two temporary no-invite users, JWT/origin/upload isolation checks, then a loopback one-use browser sign-in helper; remove temporary users on finish; browser artifacts follow development retention. No model requests are submitted by this script.')
@@ -31,6 +32,7 @@ def main():
     users, tokens = [], []
     checks = {}
     browser_credentials = None
+    auth_only_complete = False
 
     def api(token, path, payload=None, expected=200):
         body = json.dumps(payload).encode() if payload is not None else None
@@ -114,6 +116,39 @@ def main():
         api(tokens[0]['AccessToken'], 'datasets/' + dataset['id'] + '/delete', {})
         checks['exact_ten_mib_prepared_and_deleted'] = True
 
+        if args.auth_only:
+            callbacks=cognito.describe_user_pool_client(UserPoolId=pool,ClientId=client_id)['UserPoolClient']['CallbackURLs']
+            verified_origins=[]
+            for callback in callbacks:
+                callback_origin=callback.rstrip('/')
+                # Only exercise the deployed app's explicitly configured origins.
+                assert callback_origin in {origin,outputs['LegacyWebUrl'],'https://analyst.decision-layer.com'}
+                body=b'{}'
+                headers={'Content-Type':'application/json','Origin':callback_origin,
+                         'x-amz-content-sha256':hashlib.sha256(body).hexdigest()}
+                with requests.Session() as browser:
+                    response=browser.post(callback_origin+'/api/v2/auth/session',data=body,
+                        headers={**headers,'x-vds-token':tokens[0]['AccessToken']},timeout=70)
+                    assert response.status_code==200,('cookie_login',callback_origin,response.status_code)
+                    assert all(flag in response.headers.get('Set-Cookie','') for flag in ('HttpOnly','Secure','SameSite=Lax'))
+                    cookies=browser.cookies.get_dict()
+                    assert cookies, 'No browser session cookie was returned.'
+                    response=browser.get(callback_origin+'/api/v2/auth/session',timeout=70)
+                    assert response.status_code==200 and response.json()['signed_in']
+                    response=browser.get(callback_origin+'/api/v2/workspace',timeout=70)
+                    assert response.status_code==200 and response.json()['allowance']['token_limit']==100000
+                    response=browser.post(callback_origin+'/api/v2/auth/logout',data=body,
+                        headers={**headers,'Origin':'https://untrusted.invalid'},timeout=70)
+                    assert response.status_code==403, 'Cross-origin logout was accepted.'
+                    response=browser.post(callback_origin+'/api/v2/auth/logout',data=body,headers=headers,timeout=70)
+                    assert response.status_code==200
+                    response=requests.get(callback_origin+'/api/v2/workspace',cookies=cookies,timeout=70)
+                    assert response.status_code==401, 'Revoked session cookie was replayed successfully.'
+                verified_origins.append(callback_origin)
+            checks.update(cookie_login_reload_logout_replay=True,cookie_flags_and_origin_rejection=True,verified_callback_origins=sorted(verified_origins))
+            auth_only_complete=True
+            return
+
         class BrowserHelper(BaseHTTPRequestHandler):
             def log_message(self, *args): pass
             def do_GET(self):
@@ -143,6 +178,10 @@ def main():
             cognito.admin_delete_user(UserPoolId=pool, Username=username)
         browser_credentials = None; tokens.clear()
         print('Removed temporary acceptance users; no credentials saved.', flush=True)
+        if auth_only_complete:
+            target=Path(__file__).resolve().parents[1]/'docs/deployment'/(args.evidence_name+'.json')
+            target.write_text(json.dumps({'origin':origin,'checks':checks,'model_analyses_submitted':0,'temporary_users_removed':True},indent=2)+'\n')
+            print('Authentication/upload acceptance passed: '+str(target),flush=True)
 
 
 if __name__ == '__main__': main()

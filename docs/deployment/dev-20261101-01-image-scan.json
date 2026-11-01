@@ -1,0 +1,55 @@
+{
+  "image_digest": "sha256:a09d2b53cc3625906173c55c77c3dd898c07bfb52243778e8f7f2e1383a8f98f",
+  "status": "COMPLETE",
+  "severity_counts": {
+    "MEDIUM": 2
+  },
+  "findings": [
+    {
+      "name": "CVE-2026-114406",
+      "severity": "MEDIUM",
+      "uri": "https://nvd.nist.gov/vuln/detail/CVE-2026-114406",
+      "attributes": [
+        {
+          "key": "CVSS3_SCORE",
+          "value": "6.8"
+        },
+        {
+          "key": "CVSS3_VECTOR",
+          "value": "CVSS:3.1/AV:N/AC:H/PR:N/UI:R/S:U/C:H/I:H/A:N"
+        },
+        {
+          "key": "package_version",
+          "value": "2025.2.76-1.0.amzn2023.0.4"
+        },
+        {
+          "key": "package_name",
+          "value": "ca-certificates"
+        }
+      ]
+    },
+    {
+      "name": "CVE-2026-76781",
+      "severity": "MEDIUM",
+      "uri": "https://nvd.nist.gov/vuln/detail/CVE-2026-76781",
+      "attributes": [
+        {
+          "key": "CVSS3_SCORE",
+          "value": "5.5"
+        },
+        {
+          "key": "CVSS3_VECTOR",
+          "value": "CVSS:3.1/AV:L/AC:L/PR:N/UI:R/S:U/C:N/I:N/A:H"
+        },
+        {
+          "key": "package_version",
+          "value": "2.10.4-1.amzn2023.0.21"
+        },
+        {
+          "key": "package_name",
+          "value": "libxml2"
+        }
+      ]
+    }
+  ]
+}

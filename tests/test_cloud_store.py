@@ -39,6 +39,25 @@ class CloudStoreTests(unittest.TestCase):
         self.store.release(one,'run1');self.store.release(two,'run3')
         self.assertTrue(self.store.acquire(self.alice,'run6'))
 
+    def test_deleted_history_does_not_hide_active_datasets_on_next_page(self):
+        for index in range(101):
+            key=f'{index:032x}'
+            self.store.put(self.alice,'dataset',key,{'id':key,'deleted':True})
+        self.assertEqual([d['id'] for d in self.store.workspace(self.alice)['datasets']],[self.dataset])
+
+    def test_upload_lease_reclaims_expiry_and_old_holder_cannot_unlock_replacement(self):
+        key={'pk':self.alice,'sk':'lease#upload'}
+        with self.store.upload_slot(self.alice):
+            with self.assertRaises(InputError):
+                with self.store.upload_slot(self.alice):pass
+            self.store.table.update_item(Key=key,UpdateExpression='SET expires_at = :past',ExpressionAttributeValues={':past':0})
+            replacement=self.store.upload_slot(self.alice)
+            replacement.__enter__()
+        with self.assertRaises(InputError):
+            with self.store.upload_slot(self.alice):pass
+        replacement.__exit__(None,None,None)
+        with self.store.upload_slot(self.alice):pass
+
     def test_saved_result_reopens_and_delete_revokes_then_purges(self):
         key=f'{self.dataset}/runs/{self.run}.json'
         self.store.put_blob(self.alice,key,b'{"total":42}')

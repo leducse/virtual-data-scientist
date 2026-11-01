@@ -62,6 +62,37 @@ class TrialTests(unittest.TestCase):
         with self.assertRaises(SessionError):self.sessions.guest(event)
         with self.assertRaises(SessionError):self.sessions.start(event)
 
+    def test_account_switch_does_not_claim_previous_users_guest_workspace(self):
+        event={'requestContext':{'http':{'method':'POST','sourceIp':'192.0.2.5'}},'headers':{}}
+        trial=self.sessions.start(event)
+        event.update(cookies=[trial['_cookies'][0].split(';')[0]],rawPath='/api/v2/auth/session',body='{}')
+        self.sessions.claim('b'*64,event)
+        event['headers']={'content-type':'application/json','origin':'https://app.test','x-vds-token':'temporary-test-token'}
+        with patch.dict(os.environ,{'VDS_APP_ORIGIN':'https://app.test'}):
+            gateway=Gateway.__new__(Gateway);gateway.sessions=self.sessions
+            gateway.identity=Mock();gateway.identity.verify.return_value=('c'*64,int(time.time())+900)
+            response=gateway.route(event)
+        member=self.sessions.member({'cookies':[response['_cookies'][0].split(';')[0]]})
+        self.assertEqual(member['owner'],'c'*64)
+        self.assertEqual(self.sessions.owners('c'*64),['c'*64])
+        self.assertEqual(len(self.sessions.owners('b'*64)),2)
+
+    def test_domain_transition_accepts_only_explicit_sign_in_origins(self):
+        env={'VDS_APP_ORIGIN':'https://mlworkbench.decision-layer.com',
+             'VDS_PREVIOUS_ORIGIN':'https://analyst.decision-layer.com',
+             'VDS_LEGACY_ORIGIN':'https://d19bkp3wlr8r7k.cloudfront.net'}
+        gateway=Gateway.__new__(Gateway);gateway.sessions=Mock();gateway.identity=Mock()
+        gateway.identity.verify.return_value=('c'*64,int(time.time())+900)
+        gateway.sessions.login.return_value={'ok':True}
+        event={'requestContext':{'http':{'method':'POST'}},'rawPath':'/api/v2/auth/session','body':'{}'}
+        with patch.dict(os.environ,env):
+            for origin in env.values():
+                self.assertEqual(gateway.route({**event,'headers':{'content-type':'application/json','origin':origin}}),{'ok':True})
+            for origin in ('https://evil.test','https://mlworkbench.decision-layer.com.evil.test'):
+                with self.assertRaises(RequestError) as error:
+                    gateway.route({**event,'headers':{'content-type':'application/json','origin':origin}})
+                self.assertEqual(error.exception.status,403)
+
     def test_guest_reset_limit_and_resource_ownership(self):
         event={'requestContext':{'http':{'sourceIp':'192.0.2.5'}},'headers':{}}
         self.sessions.start(event);self.sessions.start(event)

@@ -2,11 +2,13 @@
 import argparse
 import hashlib
 import json
-import time
+import re
+import uuid
 from pathlib import Path
 
 import boto3
 from botocore.config import Config
+from botocore.exceptions import WaiterError
 
 
 def update(client, name, template_path, changes):
@@ -15,10 +17,18 @@ def update(client, name, template_path, changes):
     template=json.loads(template_path.read_text())
     parameters=[{'ParameterKey':key,'ParameterValue':str(changes[key])} if key in changes else {'ParameterKey':key,'UsePreviousValue':True}
                 for key in template.get('Parameters',{}) if key in known or key in changes]
-    change_name='vds-'+str(int(time.time()))
+    change_name='vds-'+uuid.uuid4().hex
     client.create_change_set(StackName=name,ChangeSetName=change_name,ChangeSetType='UPDATE',
         TemplateBody=json.dumps(template),Parameters=parameters,Capabilities=['CAPABILITY_NAMED_IAM'])
-    client.get_waiter('change_set_create_complete').wait(StackName=name,ChangeSetName=change_name,WaiterConfig={'Delay':2,'MaxAttempts':60})
+    try:
+        client.get_waiter('change_set_create_complete').wait(StackName=name,ChangeSetName=change_name,WaiterConfig={'Delay':2,'MaxAttempts':60})
+    except WaiterError:
+        failed=client.describe_change_set(StackName=name,ChangeSetName=change_name)
+        if failed.get('Status')=='FAILED' and "The submitted information didn't contain changes" in failed.get('StatusReason',''):
+            client.delete_change_set(StackName=name,ChangeSetName=change_name)
+            print(json.dumps({'stack':name,'changes':[],'unchanged':True}),flush=True)
+            return stack
+        raise
     change=client.describe_change_set(StackName=name,ChangeSetName=change_name)
     if any(c['ResourceChange'].get('Replacement')=='True' or c['ResourceChange']['Action']=='Remove' for c in change.get('Changes',[])):
         raise RuntimeError('Development update would replace or remove a resource; inspect the saved change set before proceeding.')
@@ -35,10 +45,16 @@ def main():
     parser.add_argument('--gateway-zip',type=Path)
     parser.add_argument('--stream-zip',type=Path)
     parser.add_argument('--domain')
+    parser.add_argument('--previous-domain',default='')
     parser.add_argument('--certificate')
     parser.add_argument('--preview-enabled',choices=['true','false'])
     parser.add_argument('--execute',action='store_true')
     args=parser.parse_args()
+    if args.domain:
+        if not re.fullmatch(r'[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.decision-layer\.com',args.domain) or not args.certificate:
+            parser.error('A decision-layer.com subdomain and its us-east-1 certificate are required.')
+        if args.previous_domain and (not re.fullmatch(r'[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.decision-layer\.com',args.previous_domain) or args.previous_domain==args.domain):
+            parser.error('The previous domain must be a different decision-layer.com subdomain.')
     if not args.execute:
         print('Review only: existing VirtualDataScientistV2Dev and VirtualDataScientistV2DevWeb in us-east-1. No public launch or unrelated stacks.');return
     root=Path(__file__).resolve().parents[1]
@@ -52,7 +68,7 @@ def main():
         if args.image_digest:
             assert args.image_digest.startswith('sha256:') and len(args.image_digest)==71
             changes.update(ImageUri='441383083571.dkr.ecr.us-east-1.amazonaws.com/virtual-data-scientist-v2-dev@'+args.image_digest,ReleaseId=args.release)
-        if args.domain:changes.update(WebOrigin='https://'+args.domain,AlternateOrigin='https://d19bkp3wlr8r7k.cloudfront.net')
+        if args.domain:changes.update(WebOrigin='https://'+args.domain,AlternateOrigin='https://d19bkp3wlr8r7k.cloudfront.net',PreviousWebOrigin='https://'+args.previous_domain if args.previous_domain else '')
         stack=update(cf,'VirtualDataScientistV2Dev',root/'aws_backend/cloud-dev/template.json',changes)
         output['runtime_status']=stack['StackStatus']
         output['outputs']={o['OutputKey']:o['OutputValue'] for o in stack['Outputs']}
@@ -75,8 +91,8 @@ def main():
         changes['StateTable']=core_outputs['StateTable']
         if args.preview_enabled:changes['PreviewEnabled']=args.preview_enabled
         if args.domain:
-            assert args.domain=='analyst.decision-layer.com' and args.certificate
-            changes.update(CustomDomain=args.domain,CertificateArn=args.certificate,AppOrigin='https://'+args.domain)
+            changes.update(CustomDomain=args.domain,CertificateArn=args.certificate,AppOrigin='https://'+args.domain,
+                PreviousDomain=args.previous_domain,PreviousOrigin='https://'+args.previous_domain if args.previous_domain else '')
         changes={k:v for k,v in changes.items() if k in json.loads((root/'aws_backend/cloud-dev/web-template.json').read_text())['Parameters']}
         stack=update(cf,'VirtualDataScientistV2DevWeb',root/'aws_backend/cloud-dev/web-template.json',changes)
         output['web_status']=stack['StackStatus']

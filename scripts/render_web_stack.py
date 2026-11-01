@@ -21,8 +21,8 @@ def template():
             'UserPoolId': ref('Users'), 'ClientName': 'vds-dev-browser', 'GenerateSecret': False,
             'AllowedOAuthFlowsUserPoolClient': True, 'AllowedOAuthFlows': ['code'],
             'AllowedOAuthScopes': ['openid', 'profile'], 'SupportedIdentityProviders': ['COGNITO'],
-            'CallbackURLs': {'Fn::If':['HasDomain',[sub('${AppOrigin}/'),sub('${LegacyOrigin}/')],[sub('${AppOrigin}/')]]},
-            'LogoutURLs': {'Fn::If':['HasDomain',[sub('${AppOrigin}/'),sub('${LegacyOrigin}/')],[sub('${AppOrigin}/')]]},
+            'CallbackURLs': {'Fn::If':['HasDomain',[sub('${AppOrigin}/'),sub('${LegacyOrigin}/'),{'Fn::If':['HasPreviousDomain',sub('${PreviousOrigin}/'),ref('AWS::NoValue')]}],[sub('${AppOrigin}/')]]},
+            'LogoutURLs': {'Fn::If':['HasDomain',[sub('${AppOrigin}/'),sub('${LegacyOrigin}/'),{'Fn::If':['HasPreviousDomain',sub('${PreviousOrigin}/'),ref('AWS::NoValue')]}],[sub('${AppOrigin}/')]]},
             'ExplicitAuthFlows': ['ALLOW_ADMIN_USER_PASSWORD_AUTH', 'ALLOW_REFRESH_TOKEN_AUTH'],
             'PreventUserExistenceErrors': 'ENABLED', 'EnableTokenRevocation': True,
             'AccessTokenValidity': 15, 'IdTokenValidity': 15, 'RefreshTokenValidity': 1,
@@ -109,9 +109,9 @@ def template():
     resources.update(stream_resources)
     resources['Gateway']['Properties']['Environment']['Variables'].update({
         'VDS_STREAMING_ENABLED':{'Fn::If':['HasStreaming','true','false']},'VDS_STATE_TABLE':ref('StateTable'),
-        'VDS_GUEST_ENABLED':ref('GuestEnabled'),'VDS_APP_ORIGIN':ref('AppOrigin'),'VDS_LEGACY_ORIGIN':ref('LegacyOrigin')})
+        'VDS_GUEST_ENABLED':ref('GuestEnabled'),'VDS_APP_ORIGIN':ref('AppOrigin'),'VDS_LEGACY_ORIGIN':ref('LegacyOrigin'),'VDS_PREVIOUS_ORIGIN':ref('PreviousOrigin')})
     distribution=resources['Distribution']['Properties']['DistributionConfig']
-    distribution['Aliases']={'Fn::If':['HasDomain',[ref('CustomDomain')],ref('AWS::NoValue')]}
+    distribution['Aliases']={'Fn::If':['HasDomain',[ref('CustomDomain'),{'Fn::If':['HasPreviousDomain',ref('PreviousDomain'),ref('AWS::NoValue')]}],ref('AWS::NoValue')]}
     distribution['ViewerCertificate']={'Fn::If':['HasDomain',{'AcmCertificateArn':ref('CertificateArn'),'SslSupportMethod':'sni-only','MinimumProtocolVersion':'TLSv1.2_2021'},{'CloudFrontDefaultCertificate':True}]}
     distribution['Origins'].append({'Fn::If':['HasStreaming',{
         'Id':'stream','DomainName':{'Fn::Select':[2,{'Fn::Split':['/',attr('StreamUrl','FunctionUrl')]}]},
@@ -127,10 +127,10 @@ def template():
     return {'AWSTemplateFormatVersion': '2010-09-09', 'Description': 'Restricted VDS development web access; existing public site unchanged',
         'Parameters': {'RuntimeArn': {'Type': 'String'}, 'DataBucket': {'Type': 'String'}, 'CodeKey': {'Type': 'String'},
                        'AppOrigin': {'Type': 'String', 'Default': 'https://localhost'}, 'StateTable':{'Type':'String','Default':''},
-                       'CustomDomain':{'Type':'String','Default':''},'CertificateArn':{'Type':'String','Default':''},
+                       'PreviousDomain':{'Type':'String','Default':''},'PreviousOrigin':{'Type':'String','Default':''},'CustomDomain':{'Type':'String','Default':''},'CertificateArn':{'Type':'String','Default':''},
                        'LegacyOrigin':{'Type':'String','Default':'https://d19bkp3wlr8r7k.cloudfront.net'},
                        'StreamCodeKey':{'Type':'String','Default':''},'PreviewEnabled':{'Type':'String','Default':'false','AllowedValues':['false','true']},'GuestEnabled':{'Type':'String','Default':'false','AllowedValues':['false','true']}},
-        'Conditions':{'HasStreaming':{'Fn::Not':[{'Fn::Equals':[ref('StreamCodeKey'),'']}]},
+        'Conditions':{'HasPreviousDomain':{'Fn::Not':[{'Fn::Equals':[ref('PreviousDomain'),'']}]},'HasStreaming':{'Fn::Not':[{'Fn::Equals':[ref('StreamCodeKey'),'']}]},
             'HasPreview':{'Fn::Equals':[ref('PreviewEnabled'),'true']},'HasGuests':{'Fn::Equals':[ref('GuestEnabled'),'true']},'HasDomain':{'Fn::Not':[{'Fn::Equals':[ref('CustomDomain'),'']}]}},'Resources': resources,
         'Outputs': {'SiteBucket': {'Value': ref('Site')}, 'WebUrl': {'Value': {'Fn::If':['HasDomain',sub('https://${CustomDomain}'),sub('https://${Distribution.DomainName}')]}},
                     'LegacyWebUrl':{'Value':sub('https://${Distribution.DomainName}')},

@@ -1,6 +1,6 @@
 # Virtual Data Scientist project context
 
-Updated October 31, 2026. Mode: portfolio, advancing production readiness.
+Updated November 1, 2026. Mode: productionization of the hosted development preview.
 Canonical repository: `/Users/scottleduc/Projects/virtual-data-scientist`.
 
 ## Purpose and verified status
@@ -10,14 +10,13 @@ not configure technical columns or algorithms. Automatic preparation plus a
 checked Strands plan selects the appropriate supported tool.
 
 Separate AWS development stack `VirtualDataScientistV2Dev` is deployed in
-account `441383083571`, `us-east-1`, release `dev-20261031-17`. Actual CSV and Excel
+account `441383083571`, `us-east-1`, release `dev-20261101-01`. Actual CSV and Excel
 chart/forecast runs, narrative review, imports/plot transfer, stopped sessions,
-reconnect, owner isolation, cancellation and deletion passed. Current runtime outputs are in `docs/deployment/dev-20261031-17.json`;
-web/identity outputs remain in `docs/deployment/dev-20261031-16.json`;
+reconnect, owner isolation, cancellation and deletion passed. Current runtime and web outputs are in `docs/deployment/dev-20261101-01.json`;
 the earlier `2026-10-31-agentcore-dev.json` remains historical evidence.
 
-The actual HTTPS workspace is https://analyst.decision-layer.com/.
-The original CloudFront URL remains a supported sign-in origin.
+The actual HTTPS workspace is https://mlworkbench.decision-layer.com/.
+The previous `analyst.decision-layer.com` and original CloudFront URLs remain supported sign-in origins. Sessions and pending drafts are browser-origin scoped; use the old address to finish a draft started there. Account ownership and saved cloud data are unchanged across origins.
 A separate `VirtualDataScientistV2DevWeb` stack provides private static S3,
 CloudFront, Cognito code/PKCE sign-in and an IAM-only Lambda URL gateway.
 The gateway verifies access tokens and derives owner identity; self-service signed-in preview registration is enabled. Hosted Excel upload/chart/forecast, a full 10 MiB upload, identity/origin
@@ -89,8 +88,7 @@ stacks. Source and acceptance are linked from `docs/implementation-status.md`.
   claims passed private AWS acceptance: five completed analyses, sixth rejected,
   member continuation and preserved old/account namespaces. Public guests remain disabled. Self-signup now enables a 100,000-token /
   twenty-analysis account preview, subject to the existing global admission guard.
-- `analyst.decision-layer.com` has validated ACM TLS and Route 53 aliases, with
-  Cognito callbacks and S3 CORS supporting the new and original origins.
+- `mlworkbench.decision-layer.com` is the primary development URL. The two-domain ACM certificate, CloudFront aliases, Cognito callbacks, gateway origin allowlist and S3 CORS retain the previous analyst and original CloudFront addresses. See `docs/deployment/dev-domain-mlworkbench.json`.
 
 Execution tier is derived deterministically from the validated task after a live
 suggested question exposed an inconsistent model tier. Unknown sandbox outcomes
@@ -271,7 +269,7 @@ consulting website and production release still need a separate integration.
 
 ## Chat / preview release continuation
 
-Current release `dev-20261031-17` is runtime version 16, with a final guard
+Current release `dev-20261101-01` is runtime version 16, with a final guard
 that retains unknown token usage if provider metrics are missing. The complete
 hosted chat flow was verified on release 16 / runtime version 15. Live summary + follow-up forecast
 used 6,745 measured model tokens; both jobs succeeded, the Interpreter stopped,
@@ -383,3 +381,9 @@ Dynamic planner-to-children transitions explicitly refresh React Flow node
 internals when handles are added. A hosted recorded-trace transition verified
 one planning node expands to six cards and five parent paths, with the correct
 active child edge. No model execution was required.
+
+## November 1 audit and continuation
+
+The [ponytail audit](docs/audits/2026-11-01-ponytail-audit.md) reproduced and fixed incomplete DynamoDB pagination, overlapping upload preparation, account switching with a claimed guest cookie and deployment retries through unchanged stacks. Uploads now use a per-workspace conditional lease, reclaimed after 420 seconds if abandoned; a rejected overlap preserves its staged source. The two unused standalone D3/Plotly scripts were removed. ECharts and React Flow remain the supported browser renderers.
+
+The cumulative development admission guard is not reset by deployments. It was at 19 of 20 before this release; verification of this migration uses authentication, upload preparation and read-only checks without additional model analyses. Broader preview usage requires reviewing and deliberately increasing that guard within the authorized spending allowance.

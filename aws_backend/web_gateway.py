@@ -87,7 +87,7 @@ class Gateway:
         headers = {k.lower(): v for k, v in (event.get('headers') or {}).items()}
         request = event.get('requestContext', {}).get('http', {})
         method, path = request.get('method'), event.get('rawPath', '')
-        allowed_origins={os.environ.get('VDS_APP_ORIGIN'),os.environ.get('VDS_LEGACY_ORIGIN')}-{None,''}
+        allowed_origins={os.environ.get('VDS_APP_ORIGIN'),os.environ.get('VDS_LEGACY_ORIGIN'),os.environ.get('VDS_PREVIOUS_ORIGIN')}-{None,''}
         if method=='POST' and headers.get('origin') and headers['origin'] not in allowed_origins:
             raise RequestError('This origin is not allowed.','access_denied',403)
         body = {}
@@ -117,7 +117,11 @@ class Gateway:
                 account,expiry=self.identity.verify(headers.get('x-vds-token'))
                 self.sessions.rate(account,method)
                 result=self.sessions.login(account,expiry,event)
-                self.sessions.claim(account,event)
+                # A shared browser may still carry another account's claimed trial cookie.
+                # Signing in is independent of claiming that trial's data.
+                try:self.sessions.claim(account,event)
+                except SessionError as exc:
+                    if exc.code!='access_denied':raise
                 return result
             if method=='GET' and path.endswith('/session'):
                 member=self.sessions.member(event)

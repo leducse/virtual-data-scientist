@@ -142,3 +142,13 @@ The owner account is now provisioned. Cognito accepted the requested EMAIL
 invitation; inbox delivery and first sign-in remain unconfirmed. Cognito generated
 and delivered the temporary password directly; no password/token file was created.
 See `deployment/2026-10-31-owner-onboarding.json` for the non-personal record.
+
+## Current domain and migration
+
+The canonical development URL is https://mlworkbench.decision-layer.com/. The existing analyst subdomain and original CloudFront URL remain enabled for existing links, OAuth callbacks and browser-origin-scoped drafts. A user signing in at the new address receives the same account-owned cloud workspace, but browser session cookies and drafts do not move across origins. No Cognito pool, data bucket or runtime is replaced.
+
+`configure_dev_domain.py` first validates a us-east-1 ACM certificate for both names. Deploy the reviewed core/web templates with `deploy_dev.py --domain mlworkbench.decision-layer.com --previous-domain analyst.decision-layer.com --certificate CERTIFICATE_ARN` and the release/artifact arguments. Publish the new A/AAAA aliases with `configure_dev_domain.py --publish-alias --execute` only after CloudFront is deployed with both aliases. The scripts reject unrelated DNS targets and retain the previous hostname. The original `dev-domain.json` remains historical; current state is recorded in `dev-domain-mlworkbench.json`.
+
+CloudFront requires its viewer certificate in us-east-1 and certificate coverage for every alias: [AWS certificate requirements](https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/cnames-and-https-requirements.html). The migration certificate covers both exact hostnames; validation records remain for renewal.
+
+For a bounded post-deploy check that submits no model jobs, run `scripts/hosted_acceptance.py --execute --auth-only --manifest docs/deployment/dev-20261101-01.json --evidence-name 2026-11-01-domain-auth-acceptance` using the project virtual environment. It creates two synthetic no-invite accounts, tests uploads and callback-origin cookie sessions, deletes its test datasets/accounts and saves credential-free evidence.

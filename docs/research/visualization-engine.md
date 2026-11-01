@@ -1,6 +1,6 @@
 # Visualization engine decision — October 31, 2026
 
-Use Apache ECharts **6.1.0** for the analytical workspace and D3.js **7.9.0** for the agent activity diagram. Versions and licenses were checked against the npm package metadata, and the published package bundles are pinned and self-hosted with their license/NOTICE files. This is a fit decision for this product, rather than a universal ranking.
+Current choice: Apache ECharts **6.1.0** for analytical figures and React Flow **12.12.0** for the agent activity diagram. The original comparison below selected D3; the subsequent React Flow decision supersedes it. Unused standalone D3 and Plotly Basic bundles were removed in the November 1 audit. Active bundles are pinned and self-hosted with their license/NOTICE files. This is a fit decision for this product rather than a universal ranking.
 
 | Library | Strength for this application | Decision |
 | --- | --- | --- |
