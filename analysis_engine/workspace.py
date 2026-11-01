@@ -71,9 +71,17 @@ class Workspace:
             runs = [json.loads(r[0]) for r in con.execute("SELECT doc FROM runs WHERE owner=? ORDER BY rowid DESC LIMIT 100", (owner,))]
         return {"datasets": [d for d in datasets if not d.get("deleted")], "runs": runs, "mode": "local_demo", "cloud_enabled": False}
 
-    def ingest(self, owner, name, raw, sheet=None, header_row=None, question=None):
+    def load_sample(self,owner,sample_id):
+        from analysis_engine.public_datasets import load
+        existing=next((d for d in self.list(owner)['datasets'] if d.get('public_dataset',{}).get('id')==sample_id),None)
+        if existing:return existing
+        raw,metadata=load(sample_id)
+        return self.ingest(owner,sample_id+'.csv',raw,question=metadata['question'],teaching=metadata)
+
+    def ingest(self, owner, name, raw, sheet=None, header_row=None, question=None, teaching=None):
         started = time.monotonic()
         table, profile = parse_table(name, raw, sheet, header_row, question or "")
+        if teaching:profile['teaching']=teaching
         dataset_id = uuid.uuid4().hex
         folder = self.root / dataset_id
         folder.mkdir(mode=0o700)
@@ -85,6 +93,7 @@ class Workspace:
                    "parquet_sha256": hashlib.sha256((folder / "dataset.parquet").read_bytes()).hexdigest(),
                    "timing_ms": {"ingestion": round((time.monotonic()-started)*1000, 2)}, "storage": "local_immutable_parquet"}
             from analysis_engine.presentation import recommendations
+            if teaching:doc['public_dataset']=teaching
             doc['experience'] = recommendations(table, profile)
             with self.connect() as con:
                 con.execute("BEGIN IMMEDIATE")

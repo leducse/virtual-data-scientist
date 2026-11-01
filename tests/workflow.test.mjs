@@ -80,3 +80,15 @@ test('outer parent branches remain finite and terminate at the child handle',()=
     assert.ok(path.includes(String(rail)));
   }
 });
+
+
+test('persistent mini map keeps every child on one compact row and preserves parent edges',()=>{
+  for(const compact of [true,false]){
+    const graph=graphFor({plan:{tier:'deep'},status:'running',events:[{stage:'interpreter',status:'started',sequence:1}]},{compact,mini:true});
+    assert.equal(graph.nodes[0].position.y,0);
+    assert.ok(graph.nodes.slice(1).every(n=>n.position.y===60&&n.style.width<=108));
+    assert.ok(graph.edges.every(e=>e.source==='planner'&&e.data.railX===null));
+    assert.equal(graph.edges.find(e=>e.animated).target,'interpreter');
+    const width=Math.max(...graph.nodes.map(n=>n.position.x+n.style.width));assert.ok(width<=(compact?342:604));
+  }
+});

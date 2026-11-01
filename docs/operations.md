@@ -52,9 +52,9 @@ a conservative reservation. Viewing lessons/suggestions or changing themes uses
 no analysis credit. Member claims preserve up to three guest namespaces and the
 existing account namespace without copying source data or trusting client owners.
 
-The deployment has a cumulative twenty-admission development guard. It is not
+The deployment now has a cumulative 36-admission development guard. The previous count of 20 was preserved. It is not
 automatically reset by a browser, account creation, midnight or DynamoDB TTL.
-Review/reconcile the $10 authorized allowance before changing that guard. These
+The November 1 reconciliation found approximately $0.40 in posted shared-service estimates, with billing lag and attribution limits. The six-method acceptance matrix caught and corrected reviewer preview-limit and cross-library Holt fitting mismatches. Confirmed failed jobs remained counted; only identified methods were retested, with one final browser upload-analysis job. See `deployment/2026-11-01-showcase-budget.json`. Review/reconcile the $10 authorized allowance before changing that guard again. These
 application controls are not an AWS-enforced hard spending cap.
 
 Dictation allows at most twenty seconds per request, three issued sessions per

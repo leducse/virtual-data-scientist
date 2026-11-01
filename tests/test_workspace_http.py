@@ -45,7 +45,7 @@ class HttpTests(unittest.TestCase):
         self.assertEqual(self.request(f"datasets/{d['id']}/delete",{})[0],200)
         self.assertEqual(self.request('runs/'+run['id'])[0],404)
     def test_nested_vendor_assets_stay_within_static_root(self):
-        with self.client.open(self.url.replace('/api/v2/','/static/vendor/echarts-6.1.0.min.js')) as response:
+        with self.client.open(self.url.replace('/api/v2/','/static/vendor/plotly-cartesian-4.2.0.min.js')) as response:
             self.assertEqual(response.status,200)
             self.assertIn('javascript',response.headers['Content-Type'])
         with self.assertRaises(urllib.error.HTTPError) as error:

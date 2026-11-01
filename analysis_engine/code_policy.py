@@ -3,8 +3,9 @@ import ast
 from analysis_engine.ingestion import InputError
 
 
-def validate_forecast_program(code):
-    # shortcut: forecast wrappers only; add evaluated recipe capabilities before broadening generated Python.
+def validate_forecast_program(code, recipe="forecast_result"):
+    if recipe not in {'forecast_result', 'supervised_result', 'unsupervised_result'}:
+        raise InputError('Unapproved analytical recipe.', 'code_rejected')
     try:
         tree=ast.parse(code)
     except SyntaxError as exc:
@@ -23,7 +24,7 @@ def validate_forecast_program(code):
                 raise InputError('The program requests an unapproved import.','code_rejected')
             for name in node.names:
                 full=node.module+'.'+name.name
-                if full not in {'types.SimpleNamespace','vds_recipe.forecast_result','json.load','json.loads','json.dumps'}:
+                if full not in {'types.SimpleNamespace','vds_recipe.'+recipe,'json.load','json.loads','json.dumps'}:
                     raise InputError('The program requests an unapproved capability.','code_rejected')
                 aliases[name.asname or name.name]=full
         if isinstance(node,ast.Attribute) and node.attr.startswith('_'):
@@ -48,11 +49,29 @@ def validate_forecast_program(code):
             raise InputError('JSON callback hooks are not permitted.','code_rejected')
         elif target=='json.dumps' and any(k.arg not in {'indent','allow_nan','sort_keys'} for k in node.keywords):
             raise InputError('JSON callback hooks are not permitted.','code_rejected')
-        elif target=='vds_recipe.forecast_result':
+        elif target=='vds_recipe.'+recipe:
             if not node.args or not isinstance(node.args[0],ast.Constant) or node.args[0].value!='dataset.parquet':
                 raise InputError('The program must use the approved dataset.','code_rejected')
             used_recipe=True
         elif target not in {'print','json.load','json.loads','json.dumps','types.SimpleNamespace'}:
             raise InputError('The program requests an unapproved operation.','code_rejected')
     if not used_recipe:raise InputError('The approved analytical recipe was not called.','code_rejected')
+    return code
+
+
+def validate_sealed_program(code, example):
+    """New ML wrappers cannot mutate plans, results or runtime state."""
+    try:
+        proposed, expected = ast.parse(code), ast.parse(example)
+    except SyntaxError as exc:
+        raise InputError('Invalid analysis wrapper.', 'code_rejected') from exc
+    # Whitespace/comments and the file-handle variable may differ; operations may not.
+    def normalized(tree):
+        handles = {node.optional_vars.id for node in ast.walk(tree) if isinstance(node, ast.withitem) and isinstance(node.optional_vars, ast.Name)}
+        class Handles(ast.NodeTransformer):
+            def visit_Name(self, node):
+                return ast.copy_location(ast.Name(id='source' if node.id in handles else node.id, ctx=node.ctx), node)
+        return ast.dump(Handles().visit(tree), include_attributes=False)
+    if normalized(proposed) != normalized(expected):
+        raise InputError('Return the approved wrapper exactly; plans and analytical results cannot be edited.', 'code_rejected')
     return code

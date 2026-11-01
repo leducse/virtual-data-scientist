@@ -3,21 +3,21 @@
 Upload CSV or Excel and ask a business question. Automatic preparation identifies
 the table, header, types and analytical fields, then Strands plans the work in
 AWS AgentCore. Monthly charts run through DuckDB in the hosted container;
-forecasts run in AgentCore Code Interpreter, pass independent numerical checks,
+forecasts and reviewed ML recipes run in AgentCore Code Interpreter, pass independent numerical checks,
 and receive a separate model review. Sources, typed Parquet, results and audit
 artifacts live in S3; job state lives in DynamoDB.
 
-![Workspace using the AWS development runtime](docs/workspace-chat-hosted.png)
+![Workspace using the AWS development runtime](docs/workspace-ml-showcase.png)
 
 ## Deployed development environment
 
 The separate `VirtualDataScientistV2Dev` stack is deployed in `us-east-1`.
-Release `dev-20261101-01` uses an immutable ARM64 Docker image in ECR and
+Release `dev-20261101-05` uses an immutable ARM64 Docker image in ECR and
 `us.amazon.nova-pro-v1:0`. CSV and Excel chart/forecast tests passed against the
-real runtime. The original runtime and public website were not switched.
+real runtime. The new six-method showcase and a real browser upload/classification/export path also passed; the deployment evidence distinguishes releases used for each check. The original runtime and consulting website were not switched.
 
-[Deployment manifest](docs/deployment/dev-20261101-01.json) ·
-[Live acceptance](docs/deployment/2026-10-31-live-acceptance.json) ·
+[Deployment manifest](docs/deployment/dev-20261101-05.json) ·
+[ML showcase acceptance](docs/deployment/2026-11-01-ml-showcase-verification.json) ·
 [Validation](docs/validation.md) · [Architecture and continuation](project_context.md)
 
 ## Open the hosted workspace
@@ -56,14 +56,15 @@ units and analytical limits remain visible.
 After profiling, supported analysis suggestions explain why they fit the data.
 Chat sits on the left; selected evidence sits on the right. Follow-up analysis
 questions preserve the previous plan context. Results include reviewed
-methodology lessons, interactive Apache ECharts figures, four
-palettes, exact values and a React Flow canvas driven by real agent/tool activity. Forecasts include history,
+methodology lessons, interactive Plotly figures, four
+palettes, exact values and a compact persistent React Flow monitor driven by real agent/tool activity. Expand opens the detailed agent view. Forecasts include history,
 untouched test predictions and validation-only model comparison.
 
-Download PNG/SVG, self-contained chart HTML, ECharts JSON/JavaScript and Python/Plotly, full evidence,
+Download PNG/SVG, self-contained chart HTML, Plotly JSON/JavaScript and Python, full evidence,
 or a ZIP with analysis code, support modules, notebook, SQL and result tables.
-Prepared Parquet is a separate explicit download. The downloaded analysis was
-executed in a fresh AgentCore Interpreter and reproduced the saved test metrics.
+Readable task-specific scripts/notebooks expose preprocessing, library imports, fitting, validation and numerical checks. Figure code recreates a visual; the full bundle reproduces the analysis. Prepared Parquet is a separate explicit download.
+
+The teaching gallery includes eight frozen, attributed datasets: Iris, Wine, breast cancer, diabetes, Penguins, blobs, moons and seasonal sales. Two reviewed OpenML IDs/versions can also be imported. Loading profiles the data and suggests a question without consuming an analysis; users explicitly send the question. No technical column selection is required.
 
 English dictation records up to twenty seconds, then streams Amazon Transcribe
 results after Stop. Edit the transcript before submitting. Workflow streaming
@@ -74,7 +75,7 @@ quality gates, gateway health and measured role-level usage.
 The five-analysis guest trial and account-claim path are implemented and live-tested
 through a temporary IAM-only AWS endpoint. Anonymous access remains off. Signed-in previews have a server-enforced account
 allowance with conservative per-request token reservations. A shared cumulative
-twenty-admission guard continues to protect the approved development allowance. See
+36-admission guard continues to protect the approved development allowance. See
 [operations](docs/operations.md), [current verification](docs/deployment/dev-v2-verification.json),
 [trial acceptance](docs/deployment/dev-v2-trial-acceptance.json) and
 [export reproduction](docs/deployment/dev-v2-export-reproduction.json).
@@ -103,17 +104,17 @@ workspace. Do not expose it or the legacy `/studio` and MCP APIs publicly.
   previous brief. Deterministic validation checks actual names/types and recipes.
 - Calendar-month sums and charts with source-based total checks. The hosted
   quick path invokes the planner once and performs aggregation in DuckDB.
-- Forecasts compare naive, Holt and linear trend using chronological validation,
+- Forecasts compare naive, damped Holt and linear trend using chronological validation,
   then evaluate once on a later test period and refit for the future horizon.
-  Trusted refits and source/metric checks precede independent narrative review.
+  Holt fits a deterministic twelve-setting training-only grid; parameters and cutoff refits are recorded. Trusted refits and source/metric checks precede independent narrative review.
 - Analyst code is restricted to an approved recipe wrapper. At most one repair
   of rejected code is allowed before execution. Each accepted analysis gets a
   fresh sandbox; uncertain execution is never blindly replayed.
 - Conditional per-run state, idempotency, plan revisions, admission leases,
   cancellation, deletion, saved evidence and cross-session reconnect.
-- Fixed regression/classification recipes and a synthetic deal-risk registry
-  remain locally tested examples. They are not enabled in the new cloud path.
-  External research is not configured; required research fails explicitly.
+- Regression/classification: training-only scikit-learn preprocessing, dummy baseline, linear/tree candidates, validation-only selection and a held-out test; diagnostic figures include residuals, confusion matrices and per-class metrics.
+- Clustering: standardized KMeans with bounded silhouette-based candidate selection; PCA: variance/loadings/projection; anomaly detection: IsolationForest scores, threshold and flagged rows. These are exploratory all-row analyses, not predictive holdout evaluations.
+- Supervised/exploratory recipes bound inputs to 20,000 rows and 30 features. Targets, known labels, identifiers and possible post-outcome features are excluded. Temporal supervised inputs require clarification. General grouped-data validation and external research are not enabled.
 
 ## Bounds and lifecycle
 
@@ -151,7 +152,7 @@ node --check static/workspace.js
 The last two commands only describe actions. Their `--execute` forms perform
 billable cloud work; use them within an explicitly authorized scope.
 [Cloud operations](docs/cloud-trial.md) records the actual approval and commands.
-The 79-test Python suite and 25 Node tests include mocked AWS state, lifecycle,
+The 96-test Python suite and 27 Node tests include mocked AWS state, lifecycle,
 quota and browser contracts; live cloud proof is recorded separately. The final
 Amazon Linux image scan reports no critical/high findings and two medium OS
 findings. [Image review](docs/deployment/dev-v2-image-risk-review.md) and
@@ -168,7 +169,7 @@ The activity canvas uses React Flow 12.12.0 as a small React island inside the
 existing workspace. It supports custom role cards, actual working/completed
 states, parent–child coordination arrows, node inspection, pan/zoom/Fit, larger view,
 compact mobile routing and reduced motion. Manual inspection and viewport state
-survive streamed events. ECharts remains the analytical chart engine.
+survive streamed events. Plotly is the analytical chart engine.
 
 ```bash
 npm ci --ignore-scripts --prefix frontend/workflow
@@ -187,7 +188,7 @@ they reproduce exactly. No React migration of the rest of the app is required.
 The orchestrator is the parent of the selected roles, tools and checks. The map
 shows who coordinates each capability; the timeline shows execution order. The
 coordinator remains active after planning while its children work. The current
-backend supports quick summaries and reviewed forecasts. Analyst-only explanation
+backend supports quick summaries and reviewed forecasts, regression, classification, clustering, PCA and anomaly detection. Analyst-only explanation
 and separate code-writer routing remain future task contracts.
 
 [November 1 quality audit and cleanup](docs/audits/2026-11-01-ponytail-audit.md) · [Domain migration manifest](docs/deployment/dev-domain-mlworkbench.json)

@@ -1,43 +1,25 @@
-# Visualization engine decision — October 31, 2026
+# Visualization engine decision — November 1, 2026
 
-Current choice: Apache ECharts **6.1.0** for analytical figures and React Flow **12.12.0** for the agent activity diagram. The original comparison below selected D3; the subsequent React Flow decision supersedes it. Unused standalone D3 and Plotly Basic bundles were removed in the November 1 audit. Active bundles are pinned and self-hosted with their license/NOTICE files. This is a fit decision for this product rather than a universal ranking.
+Use **Plotly.js Cartesian 4.2.0** for analytical charts and **React Flow 12.12.0** for the agent monitor. This supersedes the previous ECharts adapter. Scientific diagnostics and readable Python exports now share Plotly figure conventions. The Python export pins Plotly 5.22.0, matching the execution sandbox; browser/Python package versions are different distributions.
 
-| Library | Strength for this application | Decision |
-| --- | --- | --- |
-| [Apache ECharts](https://echarts.apache.org/handbook/en/basics/release-note/v6-feature/) | Broad analytical chart types; time and category axes; tooltips, legends, zoom, linked views, SVG/canvas renderers, ARIA and decals. Apache 2.0. | Main browser renderer. SVG suits the bounded 1,200-point trusted figures and provides vector exports. |
-| [D3.js](https://d3js.org/what-is-d3) | Low-level data joins, shapes, scales, layouts and interaction for unusual visual explanations. ISC. | Bespoke orchestrator/subagent diagram, driven by actual saved stage events. |
-| [Plotly.js](https://plotly.com/javascript/) | Scientific/statistical and 3D chart coverage, strong Python interoperability. MIT. | Keep existing evidence manifests and Python chart exports compatible. Browser rendering moves to ECharts. |
-| [Vega-Lite](https://vega.github.io/vega-lite/) | Concise declarative statistical grammar, composition and interactive selections. BSD 3-Clause. | Strong alternative for a future chart authoring grammar; adding a second main chart engine now would duplicate validation and exports. |
-| [Highcharts](https://www.highcharts.com/docs/accessibility/accessibility-module) | Extensive charting and a dedicated accessibility module. Its [license agreement](https://shop.highcharts.com/license) distinguishes internal, SaaS and OEM uses. | A credible commercial alternative; the selected open-source stack avoids adding a commercial chart license to this development preview. |
-| [Observable Plot](https://observablehq.github.io/plot/) | Concise layered marks, transforms and small multiples, built with D3. ISC. | Attractive for exploratory/statistical authoring; ECharts is the stronger fit for the chosen dashboard interaction and export contract. |
-| [deck.gl](https://deck.gl/docs) | WebGPU/WebGL2 rendering, picking, filtering and map integration for large spatial datasets. | Consider for a future geospatial task; current bounded monthly series do not need this additional renderer. |
+| Option | Fit and decision |
+|---|---|
+| [Plotly.js](https://plotly.com/javascript/statistical-charts/) | Selected: statistical/scientific chart coverage, tooltips, zoom, legends, PNG/SVG export and [Python interoperability](https://plotly.com/python/). MIT licensed. The lazy-loaded Cartesian bundle covers the reviewed 2D analytical contract; this release does not enable arbitrary 3D graphics. |
+| [Vega-Lite](https://vega.github.io/vega-lite/) and [Altair](https://altair-viz.github.io/) | Strong alternative for a composable grammar, faceting and linked selections. Requires a different figure/export contract. |
+| [Apache ECharts](https://echarts.apache.org/en/feature.html) | Capable dashboard engine. Expanding its former adapter was viable, but scientific exports would continue to use a different Python renderer. Its unused local vendor bundles have been removed. |
+| [D3](https://d3js.org/what-is-d3) | Useful for bespoke visual explanations; more custom interaction and export code than the analytical product currently needs. |
+| [deck.gl](https://deck.gl/docs) | Future large geospatial data route; not necessary for current bounded tabular tasks. |
 
-Three.js is a general 3D graphics engine. Current questions are monthly trends and checked forecasts, so added dimensionality would obscure these comparisons. Scientific 3D or geographic views should be introduced when a dataset and analytical task justify them.
+## Checked rendering boundary
 
-## Implemented interaction and evidence boundary
+The adapter accepts reviewed scatter, line, bar, heatmap, box and histogram traces. It bounds trace values to 1,200 points, heatmaps to 50 by 50 cells, rejects nonfinite numbers and escapes labels. Layout properties are copied through a small allowlist. Model-supplied functions, scripts, remote resources and arbitrary layout objects are never executed.
 
-- Rich-text crosshair tooltips, scrollable legends, axis zoom/restore and a range slider. Ctrl + wheel zoom avoids capturing normal page scrolling.
-- Linked time-axis views within one run; categorical method comparisons are deliberately kept outside that group.
-- Four persistent palettes, SVG rendering, ARIA/decal support, and exact-value tables for every figure. These features do not constitute a full accessibility audit.
-- PNG, SVG, self-contained interactive HTML, ECharts JSON/JavaScript, and Python/Plotly exports. Python regenerates the same checked data with its native engine; visual styling is not pixel-identical.
-- The adapter accepts validated line/bar data only. It does not execute model-generated chart code, formatters, HTML or remote resources. Additional library capabilities require reviewed chart types and tests before exposure.
-- Forecast holdouts, validation errors and historical/forecast values remain distinct, preserving their units and split labels.
+The product provides four persistent palettes, exact-value tables, tooltips, zoom/legend controls, PNG/SVG, figure JSON, figure JavaScript, figure Python and self-contained interactive HTML. Full task-specific ML reproduction is a separate analysis bundle/notebook. ROC/PR displays sample at most 1,000 points including endpoints; complete probabilities and curves remain in evidence/CSV. Projection previews are deterministic and bounded to 600 rows.
 
-Relevant primary references: [SVG/canvas tradeoffs](https://echarts.apache.org/handbook/en/best-practices/canvas-vs-svg/), [ARIA/decal guidance](https://echarts.apache.org/handbook/en/best-practices/aria/), [D3 API](https://d3js.org/api).
+Bundles are pinned, self-hosted and license-preserving. `static/vendor/manifest.json` records distribution hashes and npm package integrity. Advisory scans do not exhaustively inspect code embedded inside a prebuilt vendor bundle. CSP remains self-only for scripts; no external chart CDN is required.
 
-The exact bundle hashes, package integrity values and observed dependency audit are recorded in `static/vendor/manifest.json`.
+## Agent monitor
 
-## Subsequent workflow decision — React Flow
+[React Flow](https://reactflow.dev/) retains parent-to-child arrows from the orchestrator to the actual participating agents, tools and checks. The default monitor is compact and sticky; Expand opens the detailed viewer. Status comes from persisted workflow events. Selection, keyboard details, reduced motion and viewport preservation are supported. It is an activity viewer, not a user-authored execution graph.
 
-After reviewing the requested [React Flow site](https://reactflow.dev/), its
-[custom node API](https://reactflow.dev/learn/customization/custom-nodes) and
-[accessibility guidance](https://reactflow.dev/learn/advanced-use/accessibility),
-the workflow viewer now uses React Flow 12.12.0. This supersedes the D3 choice
-for the agent map above; ECharts remains the analytical engine. Core React Flow
-is MIT licensed. The implementation uses original custom node UI and the open
-core library, with its attribution and bundled license notices retained.
-
-It provides measured node/edge layout, pan/zoom, controls and accessible React
-components. The app adds event-derived statuses and inspection, a compact mobile
-route, reduced motion and root/viewport preservation. Dependencies are pinned in
-`frontend/workflow/package-lock.json`; the audit reports zero vulnerabilities.
+The build uses pinned dependencies and retains open-source license notices. See `frontend/workflow/`, `docs/plans/ml-showcase-and-exports.md` and the release acceptance evidence.

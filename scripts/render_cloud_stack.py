@@ -40,7 +40,7 @@ def template():
             'AgentRuntimeName':'VirtualDataScientistV2Dev','AgentRuntimeArtifact':{'ContainerConfiguration':{'ContainerUri':{'Ref':'ImageUri'}}},
             'RoleArn':get('RuntimeRole','Arn'),'NetworkConfiguration':{'NetworkMode':'PUBLIC'},'ProtocolConfiguration':'HTTP',
             'LifecycleConfiguration':{'IdleRuntimeSessionTimeout':60,'MaxLifetime':900},
-            'EnvironmentVariables':{'VDS_DATA_BUCKET':{'Ref':'Data'},'VDS_STATE_TABLE':{'Ref':'State'},'VDS_MODEL_ID':{'Ref':'ModelId'},'VDS_RELEASE':{'Ref':'ReleaseId'}}}}
+            'EnvironmentVariables':{'VDS_DATA_BUCKET':{'Ref':'Data'},'VDS_STATE_TABLE':{'Ref':'State'},'VDS_MODEL_ID':{'Ref':'ModelId'},'VDS_RELEASE':{'Ref':'ReleaseId'},'VDS_ADMISSION_LIMIT':{'Ref':'AdmissionLimit'}}}}
     }
     metric_base=['DecisionLayer/VDS','stage_events','environment','development','stage','analysis','status']
     widgets=[
@@ -71,7 +71,7 @@ def template():
     # Re-serialize after adding the usage view.
     resources['Dashboard']['Properties']['DashboardBody']=sub(json.dumps({'start':'-PT3H','periodOverride':'inherit','widgets':widgets}))
     return {'AWSTemplateFormatVersion':'2010-09-09','Description':'Virtual Data Scientist isolated container development environment',
-        'Parameters':{'ImageUri':{'Type':'String','Default':''},'ModelId':{'Type':'String','Default':'us.amazon.nova-pro-v1:0'},
+        'Parameters':{'ImageUri':{'Type':'String','Default':''},'ModelId':{'Type':'String','Default':'us.amazon.nova-pro-v1:0'},'AdmissionLimit':{'Type':'Number','Default':20,'MinValue':1,'MaxValue':40},
                       'ModelResources':{'Type':'CommaDelimitedList'},'ReleaseId':{'Type':'String','Default':'dev-v2'},'WebOrigin':{'Type':'String','Default':''},'AlternateOrigin':{'Type':'String','Default':''},'PreviousWebOrigin':{'Type':'String','Default':''}},
         'Conditions':{'HasPreviousWebOrigin':{'Fn::Not':[{'Fn::Equals':[{'Ref':'PreviousWebOrigin'},'']}]},'HasAlternateOrigin':{'Fn::Not':[{'Fn::Equals':[{'Ref':'AlternateOrigin'},'']}]},'HasImage':{'Fn::Not':[{'Fn::Equals':[{'Ref':'ImageUri'},'']}]},'HasWebOrigin':{'Fn::Not':[{'Fn::Equals':[{'Ref':'WebOrigin'},'']}]}},'Resources':resources,
         'Outputs':{'DataBucket':{'Value':{'Ref':'Data'}},'StateTable':{'Value':{'Ref':'State'}},'ImageRepository':{'Value':get('Images','RepositoryUri')},

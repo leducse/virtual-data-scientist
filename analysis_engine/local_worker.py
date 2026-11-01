@@ -6,7 +6,7 @@ import sys
 from pathlib import Path
 from analysis_engine.planning import AnalysisPlan
 from analysis_engine.ingestion import InputError
-from analysis_engine.tabular import forecast_result, supervised_result
+from analysis_engine.tabular import forecast_result, supervised_result, unsupervised_result, review_unsupervised
 
 
 def main():
@@ -19,8 +19,9 @@ def main():
         tmp.replace(input_path.parent / "stage.txt")
     try:
         path = input_path.parent.parent / "dataset.parquet"
-        function = forecast_result if plan.task == "forecast" else supervised_result
+        function = forecast_result if plan.task == "forecast" else supervised_result if plan.task in {"classification", "regression"} else unsupervised_result
         result = function(path,plan,checkpoint)
+        if plan.task in {"clustering","pca","anomaly_detection"}:result["review"]=review_unsupervised(path,plan,result)
     except Exception as exc:
         result = {"error": {"code": getattr(exc,"code","analysis_failed"), "message": str(exc) if isinstance(exc,InputError) else "The fixed recipe could not fit this dataset."}}
     tmp = input_path.parent / "output.tmp"

@@ -69,6 +69,11 @@ def handle(handler, method, root):
         status = 200
         if method == "GET" and path == "/api/v2/workspace":
             result = service.list(owner)
+        elif path == '/api/v2/public-datasets' and method == 'GET':
+            from analysis_engine.public_datasets import catalog
+            result={'datasets':catalog()}
+        elif path == '/api/v2/public-datasets' and method == 'POST':
+            result={'dataset':service.load_sample(owner,payload.get('sample_id'))}
         elif method == "POST" and path == "/api/v2/datasets":
             try:
                 raw = base64.b64decode(payload.get("content_base64", ""), validate=True)

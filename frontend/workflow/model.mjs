@@ -11,7 +11,7 @@ export const STEPS={
 };
 export const STATUS={coordinating:'Coordinating',started:'Working',completed:'Complete',failed:'Failed',cancelled:'Cancelled',skipped:'Skipped',queued:'Waiting',unrecorded:'Not recorded',interrupted:'Stopped'};
 export function duration(ms){return Number.isFinite(ms) && ms>=0 ? `${(ms/1000).toLocaleString('en-US',{maximumFractionDigits:1})}s`:null;}
-export function graphFor(run,{compact=false}={}){
+export function graphFor(run,{compact=false,mini=false}={}){
   const events=(run.events || []).filter(e=>e && typeof e.stage==='string').map((e,i)=>({...e,order:i})).sort((a,b)=>(a.sequence || a.order)-(b.sequence || b.order));
   const latest=new Map(events.map(e=>[e.stage,e]));
   let route=run.plan?.tier;
@@ -41,14 +41,17 @@ export function graphFor(run,{compact=false}={}){
       data.startedAt=Number.isFinite(run.created_at) ? run.created_at:data.startedAt;
       data.finishedAt=!ACTIVE.has(run.status) && Number.isFinite(jobEnd?.timestamp) ? jobEnd.timestamp:null;
     }
-    return {id,type:'activity',style:{width:compact ? 164:196},position:{x:positions[index][0],y:positions[index][1]},data,
+    data.mini=mini;
+    const nodeWidth=compact ? 62:108, gap=compact ? 8:16, span=(keys.length-1)*(nodeWidth+gap)-gap;
+    const position=mini ? {x:index===0 ? Math.max(0,(span-(compact?94:108))/2):(index-1)*(nodeWidth+gap),y:index===0?0:60}:{x:positions[index][0],y:positions[index][1]};
+    return {id,type:'activity',style:{width:mini ? index===0 ? (compact?94:108):nodeWidth:compact ? 164:196},position,data,
       sourcePosition:'bottom',targetPosition:'top'};
   });
   const edges=nodes.slice(1).map((target,i)=>{
     const working=target.data.status==='started',completed=target.data.status==='completed';
     // Lower-row branches go around the outer columns, preserving a visible
     // parent relationship without drawing through another child's card.
-    const outer=compact ? i>=2 && i<4:i>=3;
+    const outer=!mini && (compact ? i>=2 && i<4:i>=3);
     const railX=outer ? target.position.x===0 ? (compact ? -28:-34):(compact ? 402:730):null;
     return {id:'planner-'+target.id,source:'planner',target:target.id,type:'coordination',animated:working,
       data:{railX},className:working ? 'vds-edge-working':completed ? 'vds-edge-complete':'vds-edge-waiting',

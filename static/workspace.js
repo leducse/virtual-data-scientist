@@ -59,9 +59,13 @@ function render() {
         if(previousFlow && nextFlow)nextFlow.replaceWith(previousFlow);
         disposeRun(old);old.replaceWith(node);
       }else container.insertBefore(node,container.children[index] || null);
-      renderPlots(r,node);experience.workflow(r,node.querySelector(".workflow-map"));
+      renderPlots(r,node);
     }
   }
+  const monitored=state.runs.find(active) || runs[0];
+  $('#agent-monitor').hidden=!monitored;
+  if(monitored){$('#agent-monitor-title').textContent=monitored.question;experience.workflow(monitored,$('#agent-map'));}
+  else experience.disposeWorkflow($('#agent-map'));
   updateRoute();
 }
 function renderConversation(history){
@@ -76,30 +80,31 @@ function learning(methods) {
 }
 function chart(result,id) {
   const visuals=experience.figures(result);
-  return visuals.map((v,i)=>`<section class="visual"><h4>${escape(v.title)}</h4><p class="muted">${escape(v.purpose)}${v.split ? ` · ${escape(v.split)} data` : ""}</p><div class="plot" id="plot-${id}-${i}" aria-label="${escape(v.title)}"></div><div class="figure-actions">${["png","svg","html","json","javascript","python"].map(kind=>`<button class="secondary" data-figure-run="${id}" data-figure-index="${i}" data-figure-kind="${kind}" type="button">${{png:"PNG",svg:"SVG",html:"Interactive HTML",json:"Chart JSON",javascript:"JavaScript code",python:"Python code"}[kind]}</button>`).join("")}</div><details><summary>Exact chart values</summary><div class="table-wrap"><table><thead><tr><th>Series</th><th>Period / method</th><th>Value</th></tr></thead><tbody>${v.figure.data.flatMap(t=>t.x.map((x,j)=>`<tr><td>${escape(t.name)}</td><td>${escape(x)}</td><td>${escape(format(t.y[j]))}</td></tr>`)).join("")}</tbody></table></div></details></section>`).join("");
+  return visuals.map((v,i)=>`<section class="visual"><h4>${escape(v.title)}</h4><p class="muted">${escape(v.purpose)}${v.split ? ` · ${escape(v.split)} data` : ""}</p><div class="plot" id="plot-${id}-${i}" aria-label="${escape(v.title)}"></div><div class="figure-actions">${["png","svg","html","json","javascript","python"].map(kind=>`<button class="secondary" data-figure-run="${id}" data-figure-index="${i}" data-figure-kind="${kind}" type="button">${{png:"PNG",svg:"SVG",html:"Interactive HTML",json:"Chart JSON",javascript:"Figure JavaScript",python:"Figure Python"}[kind]}</button>`).join("")}</div><details><summary>Exact chart values</summary><div class="table-wrap"><table><thead><tr><th>Series</th><th>Period / method</th><th>Value</th></tr></thead><tbody>${v.figure.data.flatMap(t=>t.type==='heatmap' ? t.y.flatMap((y,j)=>t.x.map((x,k)=>`<tr><td>${escape(t.name)} · ${escape(y)}</td><td>${escape(x)}</td><td>${escape(format(t.z[j][k]))}</td></tr>`)) : (t.x || t.y.map((_,j)=>j+1)).map((x,j)=>`<tr><td>${escape(t.name)}</td><td>${escape(x)}</td><td>${escape(format(t.y[j]))}</td></tr>`)).join("")}</tbody></table></div></details></section>`).join("");
 }
 async function renderPlots(run,node) {
   if(!run.result || !node)return;
   try{
     for(const [i,v] of experience.figures(run.result).entries()){
       const element=node.querySelector(`#plot-${run.id}-${i}`);
-      experience.render(v,state.palette,element,"run-"+run.id);
+      await experience.render(v,state.palette,element,"run-"+run.id);
     }
   }catch(error){notice("A chart could not render. Its exact values and evidence remain available.",true);}
 }
 function activity(run) {
   const events=run.events || [];
-  return `<div class="activity" aria-label="Analysis activity"><div class="workflow-map"></div><details><summary>Activity timeline</summary><ol class="timeline">${events.map(e=>`<li>${new Date(e.timestamp*1000).toLocaleTimeString()} · ${escape(e.stage.replaceAll("_"," "))} · ${escape(e.status)}${e.attempt>1 ? ` · attempt ${e.attempt}` : ""}</li>`).join("")}</ol></details></div>`;
+  return `<div class="activity" aria-label="Analysis activity"><details><summary>Activity timeline</summary><ol class="timeline">${events.map(e=>`<li>${new Date(e.timestamp*1000).toLocaleTimeString()} · ${escape(e.stage.replaceAll("_"," "))} · ${escape(e.status)}${e.attempt>1 ? ` · attempt ${e.attempt}` : ""}</li>`).join("")}</ol></details></div>`;
 }
 function renderRun(r) {
   const result=r.result;
-  return `<article class="run" data-run="${r.id}"><div class="run-heading"><h3>${escape(r.question)}</h3><span class="status ${escape(r.status)}">${escape(r.status)}</span></div><p class="meta">${escape(r.plan?.tier || "planning")} · version ${r.dataset_id.slice(0,8)} · ${new Date(r.created_at*1000).toLocaleString()} · trace ${r.id.slice(0,8)}</p>${activity(r)}${result ? `<p>${escape(result.summary)}</p>${result.independent_review ? `<p class="muted">Independent review: ${result.independent_review.decision === "accept" ? "accepted the checked result" : escape(result.independent_review.decision)}.</p>` : ""}${chart(result,r.id)}${learning(result.methodology)}<p class="muted">${escape(result.execution)} · ${escape(format(result.timing_ms?.end_to_end))} ms end to end · numerical review ${result.review?.passed ? "passed" : "pending"}</p>${(result.warnings || []).map(w=>`<p class="warning">${escape(w)}</p>`).join("")}<div class="evidence-actions"><button class="secondary" data-download="${r.id}">Full evidence JSON</button>${r.bundle_key ? `<button class="secondary" data-bundle="${r.id}">Download code, notebook & data tables ↓</button><button class="secondary" data-prepared="${r.id}">Prepared data (Parquet)</button>` : ""}</div><details><summary>Plan, methods & numerical checks</summary><pre>${escape(JSON.stringify({plan:r.plan,review:result.review,independent_review:result.independent_review,candidates:result.candidates,test:result.test,sql:result.sql,versions:result.versions},null,2))}</pre></details>` : `<p>${escape(r.error?.message || r.stage)}</p>${r.result_available ? `<button class="secondary" data-open="${r.id}">Open saved result</button>` : ""}${active(r) ? `<button class="secondary" data-cancel="${r.id}">Cancel job</button>` : ""}`}</article>`;
+  return `<article class="run" data-run="${r.id}"><div class="run-heading"><h3>${escape(r.question)}</h3><span class="status ${escape(r.status)}">${escape(r.status)}</span></div><p class="meta">${escape(r.plan?.tier || "planning")} · version ${r.dataset_id.slice(0,8)} · ${new Date(r.created_at*1000).toLocaleString()} · trace ${r.id.slice(0,8)}</p>${activity(r)}${result ? `<p>${escape(result.summary)}</p>${result.independent_review ? `<p class="muted">Independent review: ${result.independent_review.decision === "accept" ? "accepted the checked result" : escape(result.independent_review.decision)}.</p>` : ""}${chart(result,r.id)}${learning(result.methodology)}<p class="muted">${escape(result.execution)} · ${escape(format(result.timing_ms?.end_to_end))} ms end to end · numerical review ${result.review?.passed ? "passed" : "pending"}</p>${(result.warnings || []).map(w=>`<p class="warning">${escape(w)}</p>`).join("")}<div class="evidence-actions"><button class="secondary" data-download="${r.id}">Full evidence JSON</button>${r.bundle_key ? `<button class="secondary" data-bundle="${r.id}">Full analysis notebook, code & tables ↓</button><button class="secondary" data-prepared="${r.id}">Prepared data (Parquet)</button>` : ""}</div><details><summary>Plan, methods & numerical checks</summary><pre>${escape(JSON.stringify({plan:r.plan,review:result.review,independent_review:result.independent_review,candidates:result.candidates,test:result.test,sql:result.sql,versions:result.versions},null,2))}</pre></details>` : `<p>${escape(r.error?.message || r.stage)}</p>${r.result_available ? `<button class="secondary" data-open="${r.id}">Open saved result</button>` : ""}${active(r) ? `<button class="secondary" data-cancel="${r.id}">Cancel job</button>` : ""}`}</article>`;
 }
 function updateRoute(){$("#route-note").textContent=state.cloud ? "AgentCore chooses and executes the analysis" : "Automatically inferred from your data and question";}
 async function refresh(initial=false){
   const previous=new Map(state.runs.map(r=>[r.id,r.status]));
   const result=await api("workspace"); state.datasets=result.datasets; state.runs=result.runs; state.cloud=result.cloud_enabled; state.streaming=result.streaming_enabled;
   state.allowance=result.allowance;
+
   window.vdsSpeech.available(result.speech_enabled===true);
   $("#allowance").className="token-meter";
   $("#allowance").innerHTML=state.allowance ? `<span>${format(state.allowance.tokens_remaining)} / ${format(state.allowance.token_limit)} tokens available</span><progress value="${state.allowance.tokens_committed}" max="${state.allowance.token_limit}" aria-label="Preview tokens committed"></progress><small>${format(state.allowance.tokens_measured)} used · ${format(state.allowance.tokens_reserved)} reserved · ${state.allowance.remaining} analyses left</small>` : "";
@@ -179,12 +184,19 @@ async function sendPending(){
   try{
     if(!window.vdsAuth.authenticated()){await window.vdsAuth.login();return;}
     if(!drafts.canResume(intent,window.vdsAuth.identity())){intent.pending=false;drafts.write(intent);notice("You signed in to a different account. Review the saved draft and press Send to use it here.",true);return;}
+    if(intent.action==='sample'){
+      const loaded=await api('public-datasets',{sample_id:intent.sample_id});
+      await refresh();choose(loaded.dataset.id);
+      $('#question').value=loaded.dataset.public_dataset.question;
+      await drafts.clear();intent=null;await remember(false);
+      notice('Sample prepared. Review the suggested question, then Send to run it.');return;
+    }
     notice(intent.action==="profile" ? "Profiling your data…":"Preparing your message and analysis…");
     if(!intent.prepared && (intent.file_id || !intent.dataset_id))await prepareFile();
     if(intent.action!=="profile"){
       const result=await api("runs",{dataset_id:intent.dataset_id,request_key:intent.request_key,question:intent.question});
       state.focusRun=result.run.id;$("#question").value="";
-      notice(result.run.status==="failed" ? result.run.error.message:"Message sent. Your analysis continues in AgentCore.",result.run.status==="failed");
+      notice(result.run.status==="failed" ? result.run.error.message:(state.cloud ? "Message sent. Your analysis continues in AgentCore.":"Message sent. Analysis is running."),result.run.status==="failed");
     }else notice("Your data is prepared. Suggested analyses are ready on the right.");
     await drafts.clear();intent=null;state.draftFile=null;$("#file").value="";
     await refresh();
@@ -246,3 +258,29 @@ async function restore(signedIn){
 }
 const initialization=window.vdsAuth.ready.then(restore).catch(e=>notice(e.message,true));
 window.addEventListener("vds-auth-change",()=>restore(window.vdsAuth.authenticated()).catch(e=>notice(e.message,true)));
+
+function renderSamples(){
+  const query=$('#sample-search').value.toLowerCase();
+  $('#sample-gallery').innerHTML=(state.samples || []).filter(d=>[d.title,d.task,d.provider || '',d.synthetic?'synthetic':'public'].join(' ').toLowerCase().includes(query)).map(d=>`<article class="sample-card"><strong>${escape(d.title)}</strong><small>${escape(d.task.replaceAll('_',' '))} · ${format(d.rows)} rows · ${d.synthetic?'Synthetic':d.provider==='OpenML'?'OpenML import':'Public snapshot'}</small><p>${escape(d.question)}</p><small>${escape(d.license)} · version ${escape(d.version)}</small><div><button type="button" class="secondary" data-sample="${escape(d.id)}">Load & profile</button> <a href="${escape(d.source.startsWith('https://')?d.source:'#')}" target="_blank" rel="noopener noreferrer">Source ↗</a></div></article>`).join('') || '<p class="muted">No reviewed example matches this search.</p>';
+}
+$('#sample-search').addEventListener('input',renderSamples);
+$('#sample-gallery').addEventListener('click',async event=>{
+  const button=event.target.closest('[data-sample]');if(!button || state.busy)return;
+  state.busy=true;button.disabled=true;
+  try{
+    await window.vdsAuth.ready;
+    if(!window.vdsAuth.authenticated()){
+      const sample=state.samples.find(d=>d.id===button.dataset.sample);
+      $('#question').value=sample.question;state.draftFile=null;$('#file').value='';
+      intent=await drafts.save({question:sample.question,sample_id:sample.id,pending:true,action:'sample',identity_id:null,request_key:crypto.randomUUID()});
+      await window.vdsAuth.login();return;
+    }
+    notice('Loading and profiling the teaching dataset…');
+    const result=await api('public-datasets',{sample_id:button.dataset.sample});
+    await refresh();choose(result.dataset.id);
+    $('#question').value=result.dataset.public_dataset.question;
+    intent=null;await remember(false);notice('Sample prepared. Review the suggested question, then Send to run it.');
+  }catch(error){notice(error.message,true);}finally{state.busy=false;button.disabled=false;render();}
+});
+
+(async()=>{try{const response=await fetch('/static/dataset-catalog.json');if(!response.ok)throw new Error('Unavailable');state.samples=await response.json();renderSamples();}catch{$('#sample-gallery').textContent='The dataset gallery is unavailable. Upload a file to continue.';}})();

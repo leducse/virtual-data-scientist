@@ -10,6 +10,12 @@
       "Type": "String",
       "Default": "us.amazon.nova-pro-v1:0"
     },
+    "AdmissionLimit": {
+      "Type": "Number",
+      "Default": 20,
+      "MinValue": 1,
+      "MaxValue": 40
+    },
     "ModelResources": {
       "Type": "CommaDelimitedList"
     },
@@ -419,6 +425,9 @@
           },
           "VDS_RELEASE": {
             "Ref": "ReleaseId"
+          },
+          "VDS_ADMISSION_LIMIT": {
+            "Ref": "AdmissionLimit"
           }
         }
       }

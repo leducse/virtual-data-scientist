@@ -41,6 +41,16 @@ class CloudServiceTests(unittest.TestCase):
             dataset=future.result(timeout=10)
         self.assertEqual(self.service.prepare_upload(self.owner,payload)['id'],dataset['id'])
         self.assertEqual(len(self.service.store.items(self.owner,'dataset')),1)
+    def test_teaching_snapshot_is_idempotent_owner_scoped_and_uses_no_analysis_credit(self):
+        before=self.service.quotas.status({'owner':self.owner,'kind':'member'})
+        dataset=self.service.load_sample(self.owner,'iris')
+        self.assertEqual(dataset['profile']['teaching']['target'],'species')
+        self.assertEqual(self.service.load_sample(self.owner,'iris')['id'],dataset['id'])
+        self.assertEqual(self.service.quotas.status({'owner':self.owner,'kind':'member'}),before)
+        self.assertGreaterEqual(len(dataset['experience']['suggestions']),4)
+        with self.assertRaises(InputError):self.service.store.dataset('b'*64,dataset['id'])
+        with self.assertRaises(InputError):self.service.load_sample(self.owner,'../../.env')
+
     def test_automatic_cloud_upload_submit_idempotency_and_state(self):
         raw=(Path(__file__).parent/'fixtures/monthly_revenue.csv').read_bytes()
         d=self.service.upload(self.owner,{'name':'sales.csv','content_base64':base64.b64encode(raw).decode()})

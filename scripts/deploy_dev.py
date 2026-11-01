@@ -42,6 +42,7 @@ def main():
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--release',required=True)
     parser.add_argument('--image-digest')
+    parser.add_argument('--admission-limit',type=int,choices=range(1,41))
     parser.add_argument('--gateway-zip',type=Path)
     parser.add_argument('--stream-zip',type=Path)
     parser.add_argument('--domain')
@@ -63,8 +64,9 @@ def main():
     assert session.client('sts',config=cfg).get_caller_identity()['Account']=='441383083571'
     cf=session.client('cloudformation',config=cfg)
     output={'release':args.release}
-    if args.image_digest or args.domain:
+    if args.image_digest or args.domain or args.admission_limit:
         changes={}
+        if args.admission_limit:changes['AdmissionLimit']=args.admission_limit
         if args.image_digest:
             assert args.image_digest.startswith('sha256:') and len(args.image_digest)==71
             changes.update(ImageUri='441383083571.dkr.ecr.us-east-1.amazonaws.com/virtual-data-scientist-v2-dev@'+args.image_digest,ReleaseId=args.release)

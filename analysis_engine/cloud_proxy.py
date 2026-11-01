@@ -25,6 +25,7 @@ class CloudProxy:
             raise InputError(error.get('message','The hosted analysis could not finish.'),error.get('code','dependency_failure'),error.get('details'))
         return data
 
+    def load_sample(self,owner,sample_id):return self.call(owner,'load_sample',{'sample_id':sample_id})['dataset']
     def list(self,owner):return self.call(owner,'workspace')
     def ingest(self,owner,name,raw,sheet=None,header_row=None,question=None):
         return self.call(owner,'upload',{'name':name,'content_base64':base64.b64encode(raw).decode(),'question':question})['dataset']

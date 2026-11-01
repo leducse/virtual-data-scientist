@@ -166,6 +166,8 @@ class Gateway:
             result['streaming_enabled']=os.environ.get('VDS_STREAMING_ENABLED')=='true'
             result['speech_enabled']=result['streaming_enabled']
             return result
+        if method == 'GET' and path == '/api/v2/public-datasets':return self.call(owner,'public_datasets')
+        if method == 'POST' and path == '/api/v2/public-datasets':return self.call(owner,'load_sample',{'sample_id':body.get('sample_id')})
         if method == 'POST' and path == '/api/v2/uploads':
             name, size = body.get('name'), body.get('size')
             if not isinstance(name, str) or len(name) > 200 or not name.lower().endswith(('.csv', '.xlsx')):

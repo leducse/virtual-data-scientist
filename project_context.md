@@ -3,6 +3,10 @@
 Updated November 1, 2026. Mode: productionization of the hosted development preview.
 Canonical repository: `/Users/scottleduc/Projects/virtual-data-scientist`.
 
+## ML showcase iteration
+
+The November 1 implementation adds a compact sticky React Flow monitor, Plotly.js Cartesian 4.2.0 analytical charts, readable task-specific analysis scripts/notebooks, an eight-snapshot teaching gallery and two reviewed OpenML imports. New regression, classification, clustering, PCA and anomaly routes cross the same AgentCore execution, numerical review and independent model-review boundaries as forecasting. See [implementation plan](docs/plans/ml-showcase-and-exports.md) and [renderer decision](docs/research/visualization-engine.md). 96 Python and 27 JavaScript tests pass. All six methods, two reviewed OpenML imports and browser gallery/login/upload/classification/exports passed on AWS; current evidence is `docs/deployment/2026-11-01-ml-showcase-verification.json`. The final image is release05 / runtime version 21.
+
 ## Purpose and verified status
 
 The primary experience is upload + natural-language business question. Users do
@@ -10,9 +14,9 @@ not configure technical columns or algorithms. Automatic preparation plus a
 checked Strands plan selects the appropriate supported tool.
 
 Separate AWS development stack `VirtualDataScientistV2Dev` is deployed in
-account `441383083571`, `us-east-1`, release `dev-20261101-01`. Actual CSV and Excel
+account `441383083571`, `us-east-1`, release `dev-20261101-05`. Actual CSV and Excel
 chart/forecast runs, narrative review, imports/plot transfer, stopped sessions,
-reconnect, owner isolation, cancellation and deletion passed. Current runtime and web outputs are in `docs/deployment/dev-20261101-01.json`;
+reconnect, owner isolation, cancellation and deletion passed. Current runtime and web outputs are in `docs/deployment/dev-20261101-05.json`;
 the earlier `2026-10-31-agentcore-dev.json` remains historical evidence.
 
 The actual HTTPS workspace is https://mlworkbench.decision-layer.com/.
@@ -45,7 +49,7 @@ flowchart LR
   RUNTIME --> STATE[(DynamoDB job state and leases)]
   RUNTIME --> PLAN[Strands task planner / Nova Pro]
   PLAN --> Q[Quick: trusted DuckDB]
-  PLAN --> A[Forecast: analyst and code policy]
+  PLAN --> A[Forecast and ML: analyst and code policy]
   A --> CI[Fresh AgentCore Code Interpreter]
   CI --> V[Source-based numerical checks]
   V --> REVIEW[Independent Nova Pro reviewer]
@@ -65,8 +69,8 @@ sheet/date context for another upload.
 Core experience changes are implemented and deployed in the existing development
 stacks. Source and acceptance are linked from `docs/implementation-status.md`.
 
-- Apache ECharts 6.1.0 renders checked browser figures; React Flow 12.12.0 draws activity.
-  Plotly manifests/Python exports remain compatible. The left chat selects the
+- Plotly.js Cartesian 4.2.0 renders checked browser figures; React Flow 12.12.0 draws compact persistent activity.
+  Python figure reproduction pins the sandbox version, Plotly 5.22.0. The left chat selects the
   evidence view on the right; forecast follow-ups retain prior-plan context.
   Four palettes preserve numbers and apply to individual exports and code bundles.
 - Saved profiles drive deterministic capability/coverage/readiness suggestions;
@@ -116,7 +120,7 @@ The application run ID remains a correlation ID, not an OTEL distributed trace.
 | `scripts/render_web_stack.py`, `build_web_gateway.py`, `publish_dev_site.py` | Separate hosted stack, minimal ARM64 package and static allowlist |
 | `scripts/hosted_acceptance.py`, `tests/auth.test.cjs` | Temporary-user live acceptance and browser authentication contracts |
 | `analysis_engine/cloud_proxy.py`, `workspace_http.py` | Optional loopback HTTP and IAM runtime invocation |
-| `static/index.html`, `workspace.js/css`, `experience.js`, `speech.js` | Left chat, ECharts figures, React Flow activity, themes, lessons, dictation and exports |
+| `static/index.html`, `workspace.js/css`, `experience.js`, `speech.js` | Left chat, Plotly figures, React Flow activity, themes, lessons, dictation and exports |
 | `presentation.py`, `exports.py`, `quotas.py`, `telemetry.py` | Reviewed suggestions/lessons, immutable reproduction bundles, transactional usage and content-free events |
 | `aws_backend/streaming/`, `web_sessions.py` | Native SSE/Transcribe proxy and atomic guest/account namespace claims |
 | `scripts/cloud_acceptance.py`, `cloud_safety_acceptance.py`, `cloud_smoke.py` | Explicit live acceptance, lifecycle and library/PNG proof |
@@ -257,7 +261,7 @@ release readiness remain separate gaps.
 The upload becomes a typed Parquet table and a reusable profile in AWS. A model
 matches the question to the right date and measure. DuckDB computes trends;
 a sandbox fits forecasts using earlier, middle and later time sections for
-training, selection and testing. Separate checks and a reviewer approve the
+training, selection and testing. Supervised predictions use training-only preprocessing and separate validation/test rows; exploratory techniques describe structure without claiming predictive accuracy. Separate checks and a reviewer approve the
 numbers, then AWS storage keeps the evidence across sessions.
 
 ## Non-technical explanation
@@ -269,7 +273,7 @@ consulting website and production release still need a separate integration.
 
 ## Chat / preview release continuation
 
-Current release `dev-20261101-01` is runtime version 16, with a final guard
+Historical chat guard (runtime version 16), with a final guard
 that retains unknown token usage if provider metrics are missing. The complete
 hosted chat flow was verified on release 16 / runtime version 15. Live summary + follow-up forecast
 used 6,745 measured model tokens; both jobs succeeded, the Interpreter stopped,
@@ -315,7 +319,7 @@ review. Frontend npm dependency audit: zero reported vulnerabilities.
 ## React Flow activity viewer — October 31 update
 
 The hosted frontend now uses React Flow 12.12.0 + React/ReactDOM 19.3.1 for the
-execution canvas. ECharts remains responsible for analytical charts; the direct
+execution canvas. At that milestone ECharts rendered analytical charts; Plotly supersedes it in the ML showcase iteration. The direct
 D3 map is superseded. The backend stays release 17 / runtime version 16.
 
 - `frontend/workflow/model.mjs`: pure projection of the selected plan and actual
@@ -384,8 +388,30 @@ active child edge. No model execution was required.
 
 ## November 1 audit and continuation
 
-The [ponytail audit](docs/audits/2026-11-01-ponytail-audit.md) reproduced and fixed incomplete DynamoDB pagination, overlapping upload preparation, account switching with a claimed guest cookie and deployment retries through unchanged stacks. Uploads now use a per-workspace conditional lease, reclaimed after 420 seconds if abandoned; a rejected overlap preserves its staged source. The two unused standalone D3/Plotly scripts were removed. ECharts and React Flow remain the supported browser renderers.
+The [ponytail audit](docs/audits/2026-11-01-ponytail-audit.md) reproduced and fixed incomplete DynamoDB pagination, overlapping upload preparation, account switching with a claimed guest cookie and deployment retries through unchanged stacks. Uploads now use a per-workspace conditional lease, reclaimed after 420 seconds if abandoned; a rejected overlap preserves its staged source. The two unused standalone D3/Plotly scripts were removed. At that audit ECharts and React Flow were the supported renderers; the subsequent ML showcase replaces ECharts with Plotly.
 
 The cumulative development admission guard is not reset by deployments. It was at 19 of 20 before this release; verification of this migration uses authentication, upload preparation and read-only checks without additional model analyses. Broader preview usage requires reviewing and deliberately increasing that guard within the authorized spending allowance.
 
 Domain migration verification is complete: `docs/deployment/2026-11-01-domain-verification.json` records both updated stacks, TLS/DNS/callback/CORS checks, hosted auth/upload acceptance and browser Back/draft recovery on the old and new addresses. The initial local negative DNS cache expired before the final browser pass. Implementation commit `55e997d` passed push/PR CI; the final evidence follow-up changes documentation and a signed-out screenshot only.
+
+## ML implementation map and limits
+
+- `analysis_engine/public_datasets.py` and `sample_data/`: immutable attributed snapshots, checksums and bounded reviewed OpenML ARFF imports. `static/dataset-catalog.json` is the matching unauthenticated browse catalog.
+- `planning.py`: inferred fields/features with deterministic readiness/leakage guards; up to five KMeans candidate settings, two nonbaseline supervised/forecast candidates.
+- `tabular.py`: sklearn pipelines and dummy/linear/tree recipes, KMeans/silhouette, PCA and IsolationForest; source checks and deterministic refits. Supervised review independently checks splits, labels, baselines and metrics; it does not independently retrain every supervised candidate.
+- `agent_workflow.py` / `code_policy.py`: sealed execution wrappers, one fresh Interpreter execution, separate numerical and model publication gates. Model review keeps values in its checked metric object.
+- `exports.py`: visible task-specific function bodies, script/notebook, pinned libraries and CSV evidence. Historical bundles use their archived recipe source, retaining the original artifact.
+- `static/experience.js`: Plotly type/style allowlists, bounds, exports and palette rendering. `frontend/workflow/`: compact persistent parent-child monitor and expanded inspection.
+- `scripts/showcase_acceptance.py`: explicitly executed bounded AWS checks, ephemeral no-invite QA users, separate-environment export reproduction and a loopback one-use browser-login helper. No credentials are persisted.
+
+ML inputs are bounded to twenty thousand rows and thirty features; regression/classification require independent observations, complete targets and adequate class counts. No grouped split or hyperparameter search is promised. PCA, KMeans and IsolationForest fit all usable rows and are exploratory; silhouette is an internal separation measure, not external accuracy or stability. Forecasts retain a nonseasonal candidate set without prediction intervals. A future iteration can add feature importance, calibration, grouped/time-aware supervised validation and richer uncertainty after separate method validation.
+
+Principal engineer: copied immutable recipes and typed evidence contracts unify execution, source checks, chart publication and offline reproduction; deterministic gates authorize outputs independently of model narration.
+
+Undergraduate: each method has a prepared input, explicit fitting steps, recorded outputs and a checker. A downloaded script runs those same steps using the same libraries and compares its results.
+
+Non-technical: pick a teaching dataset or upload your own, ask a question, watch the small agent map and open the evidence or downloadable working analysis.
+
+Forecast parity: damped Holt fits twelve fixed smoothing/trend/damping settings with known source initialization and chooses minimum training SSE. Method selection still uses later validation; the test remains untouched. All fitted parameters/cutoffs are recorded and checked. This avoids materially different continuous-optimizer results across the two pinned numerical environments; see `docs/deployment/2026-11-01-forecast-library-parity.json`. Historical exports retain their original optimizer and archived source.
+
+Current acceptance: the compact monitor measured 137px at 1280px desktop and 390px mobile; actual role highlights, keyboard inspection and Expand passed. Plotly tooltips/palettes and all eight download surfaces passed; the downloaded script/notebook reproduced in Python 3.12.13. Standalone HTML made no external requests. Back/reload preserved login without duplicate submission; logout persisted. Temporary QA users/data were removed, sandboxes terminated, and the cumulative development counter is 30/36 (no reset). Source/CI and browser evidence remain distinct.

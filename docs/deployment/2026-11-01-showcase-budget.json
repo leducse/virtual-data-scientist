@@ -1,0 +1,20 @@
+{
+  "authorized_initial_allowance_usd": 10,
+  "region": "us-east-1",
+  "account": "441383083571",
+  "posted_shared_services_estimated_usd_before_release": 0.3983156782,
+  "cost_limitations": "Cost Explorer is delayed and not exact project attribution; admission controls are not an AWS hard spending cap.",
+  "cumulative_admissions_before_release": 20,
+  "configured_cumulative_admission_ceiling": 36,
+  "ledger_reset": false,
+  "scope": "Existing development runtime, gateway and static assets; no unrelated resources or public production launch.",
+  "cumulative_admissions_after_acceptance": 30,
+  "actual_acceptance_admissions": 10,
+  "successful_method_admissions": 6,
+  "confirmed_failed_method_admissions": 3,
+  "successful_browser_upload_analysis_admissions": 1,
+  "remaining_development_admissions": 6,
+  "failed_jobs_kept_in_ledger": true,
+  "planned_method_checks": 6,
+  "planned_browser_checks": 1
+}

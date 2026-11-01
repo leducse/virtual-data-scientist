@@ -11,6 +11,7 @@
 <a class="skip" href="#question">Skip to chat</a>
 <header><a class="brand" href="/">Decision Layer <span>/ Virtual Data Scientist</span></a><span class="badge" id="execution-badge">ANALYTICS WORKSPACE</span><span id="allowance" class="muted"></span><a id="studio-link" href="/studio">Report studio ↗</a><button id="continue-sign-in" class="secondary" hidden>Sign in to continue</button><button id="sign-out" class="secondary" hidden>Sign out</button></header>
 <section id="auth-panel" class="auth-panel" aria-label="Workspace sign-in" hidden><p class="eyebrow">SIGNED-IN PREVIEW</p><h1>Your data. A conversation.</h1><p id="auth-message" role="status">Sign in to open your workspace.</p><button id="sign-in" type="button">Sign in securely →</button><p class="muted">Create an account or sign in for a preview of up to 100,000 model tokens or 20 analyses, whichever comes first. Uploaded data and evidence are retained for seven days. Development capacity limits also apply.</p></section>
+<section id="agent-monitor" aria-label="Agent monitor" hidden><div id="agent-monitor-title" class="agent-monitor-title"></div><div id="agent-map"></div></section>
 <div class="layout">
 <aside class="chat-panel" aria-label="Analysis conversation">
 <div class="section-heading"><h2>Chat with your data</h2><span>Private workspace</span></div>
@@ -21,6 +22,7 @@
 <label class="drop" for="file"><strong>Choose a dataset</strong><span>CSV or Excel · up to 10 MiB</span><input id="file" type="file" accept=".csv,.xlsx"></label>
 <button id="upload" type="submit">Upload & profile</button>
 </form>
+<details class="sample-gallery"><summary>Try a teaching dataset</summary><p class="muted">Load and profile a public or synthetic example. Analysis starts only when you send a question.</p><label>Find an example<input id="sample-search" type="search" placeholder="Iris, regression, clustering, OpenML…"></label><div id="sample-gallery"></div></details>
 <div id="datasets" class="datasets"></div>
 </details>
 <div id="notice" role="status" aria-live="polite"></div>
@@ -42,5 +44,5 @@
 <section class="results" aria-label="Saved analyses"><div class="section-heading"><h2>Selected analysis & evidence</h2><label class="palette-label" for="palette">Chart colors<select id="palette"><option value="decision">Teal & gold</option><option value="ocean">Ocean</option><option value="plum">Plum & amber</option><option value="accessible">Blue & orange</option></select></label></div><div id="runs"><p class="muted">Your results, methods, and checks will appear here.</p></div></section>
 </main>
 </div>
-<script src="/static/vendor/echarts-6.1.0.min.js" defer></script><script src="/static/workflow.js" defer></script><script src="/static/drafts.js" defer></script><script src="/static/experience.js" defer></script><script src="/static/auth.js" defer></script><script src="/static/speech.js" defer></script><script src="/static/workspace.js" defer></script>
+<script src="/static/workflow.js" defer></script><script src="/static/drafts.js" defer></script><script src="/static/experience.js" defer></script><script src="/static/auth.js" defer></script><script src="/static/speech.js" defer></script><script src="/static/workspace.js" defer></script>
 </body></html>

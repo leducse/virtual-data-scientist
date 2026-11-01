@@ -24,13 +24,14 @@ test('unknown chart types and invalid numeric evidence are rejected',()=>{
   }
 });
 
-test('ECharts adapter preserves sparse dates and isolates categorical validation from linked time views',()=>{
-  const history={id:'test',figure:{data:[{type:'scatter',name:'Observed',x:['2025-01','2025-03'],y:[1,3]},{type:'scatter',name:'Forecast',x:['2025-04'],y:[4],line:{dash:'dash'}}],layout:{}}};
-  const option=ui.option(history,'accessible');
-  assert.equal(option.xAxis.type,'time');
-  assert.deepEqual(Array.from(option.series[0].data,p=>p[1]),[1,3]);
-  assert.equal(option.series[1].lineStyle.type,'dashed');
-  assert.equal(option.tooltip.renderMode,'richText');
-  assert.equal(option.aria.enabled,true);
-  assert.equal(ui.option({id:'validation',figure:{data:[{type:'bar',name:'MAE',x:['naive','holt'],y:[2,1]}],layout:{}}}).xAxis.type,'category');
+test('Plotly figures preserve sparse dates, numeric axes and scatter markers',()=>{
+  const visual={id:'test',figure:{data:[{type:'scatter',mode:'markers',name:'Actual',x:[1,2],y:[1.1,2.1]}],layout:{xaxis:{title:'Actual'}}}};
+  const fig=ui.styled(visual,'accessible');
+  assert.deepEqual(Array.from(fig.data[0].x),[1,2]);assert.equal(fig.data[0].mode,'markers');
+  assert.equal(fig.layout.xaxis.title.text,'Actual');assert.equal(fig.layout.hovermode,'closest');
+});
+test('heatmaps validate matrix dimensions and discard executable/remote layout properties',()=>{
+  const visual={id:'confusion',figure:{data:[{type:'heatmap',x:['a','b'],y:['a','b'],z:[[2,1],[0,3]]}],layout:{images:[{source:'https://untrusted.invalid'}],updatemenus:[{}]}}};
+  const fig=ui.styled(visual);assert.equal(fig.data[0].z[1][1],3);assert.equal(fig.layout.images,undefined);assert.equal(fig.layout.updatemenus,undefined);
+  visual.figure.data[0].z=[[1]];assert.throws(()=>ui.styled(visual));
 });

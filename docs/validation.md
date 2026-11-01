@@ -1,6 +1,21 @@
 # Validation record
 
-## Parent–child orchestration map — current frontend
+## ML showcase iteration — current validation
+
+- 96 Python and 27 JavaScript tests pass. The eight ML showcase tests execute all six dataset/task combinations, every exported Python script and notebook code cell. A 20,000-row binary classification case with long labels stays within the sandbox transport bound.
+- Source-based numerical checks reject altered labels, projections, metrics and candidate evidence. Sealed code wrappers reject plan/result mutation. Reviewer metrics and unsupported prose numbers remain publication gates.
+- Missing/mixed Penguins features, target exclusion, curated snapshot hashes and reviewed OpenML metadata changes are covered. Production workflow/streaming dependency audits report zero advisories.
+- Local mobile checks measured a 137px sticky monitor at 390px viewport width, with finite parent-child arrows and no horizontal overflow. Hosted checks are recorded separately.
+- Current runtime image ECR scan: zero critical/high and two medium OS findings; see `deployment/dev-20261101-05-image-scan.json`. This is not a comprehensive dependency/security assessment.
+
+
+- Live AgentCore classification, regression, clustering, PCA, anomaly detection and forecast passed numerical/model review and downloaded-script reproduction. Final release05 additionally passed a real browser CSV upload/classification without column controls; full script and all notebook cells reproduced in Python 3.12.13 with pinned libraries.
+- Gallery browse/sign-in/profile handoff did not start an analysis. Both reviewed OpenML imports passed on AWS; an unreviewed URL was rejected. Exactly one explicit browser analysis was added; Back/reload retained the session and did not resubmit. Logout survived reload.
+- Browser Plotly 4.2.0 rendered three figures under the self-only script policy, without console errors. Hover/palette changes, all figure formats, full analysis/prepared-data downloads, offline HTML with no external requests, keyboard inspection and Expand passed. Monitor height 137px on desktop and 390px mobile; sticky top zero, six finite nodes/arrows, no horizontal overflow.
+- Acceptance found and corrected a reviewer preview-cap mismatch and materially different continuous Holt optimizer fits across numerical versions. The revised training-only twelve-setting grid matches across versions with strict prediction gates unchanged. Three failed admissions remain counted; ledger 30/36. All temporary data/users were removed and managed sessions terminated.
+- [Current evidence](deployment/2026-11-01-ml-showcase-verification.json), [forecast library parity](deployment/2026-11-01-forecast-library-parity.json), [final image scan](deployment/dev-20261101-05-image-scan.json). Existing voice/CloudWatch proofs below remain historical; this iteration did not re-test transcription or production load.
+
+## Earlier parent–child orchestration map
 
 - 25 JavaScript tests pass, including parent ownership, active-child arrows,
   coordinator lifecycle, phase/job durations, terminal behavior and outer paths.
@@ -16,7 +31,7 @@
 
 
 
-## React Flow viewer — current frontend
+## Earlier React Flow viewer
 
 - 79 Python tests and 23 Node tests pass. The frontend build and full dependency
   audit pass; CI rebuilds the self-hosted JS/CSS/licenses for reproducibility.
@@ -39,7 +54,7 @@
 
 
 
-## Chat / preview releases 16–17 — current evidence
+## Earlier chat / preview releases 16–17
 
 - 79 Python tests and 17 Node tests; source compilation, JS syntax, pip check and
   whitespace checks passed. Prior release results below are historical.
