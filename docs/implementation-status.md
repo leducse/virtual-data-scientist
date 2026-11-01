@@ -33,7 +33,7 @@ correction. Source plans in `docs/plans/` describe the larger target.
 
 `docs/deployment/` contains sanitized actual acceptance/scan/cleanup records.
 Detailed generated run evidence remains under ignored `data/` and in S3 subject
-to development retention. The suite has 79 passing Python tests and twenty-three passing Node tests. See validation
+to development retention. The suite has 79 passing Python tests and twenty-five passing Node tests. See validation
 for exact commands, earlier local proof and unverified boundaries.
 
 ## Shortcuts and upgrade conditions
@@ -65,3 +65,8 @@ React Flow replaces the D3 activity map in the latest frontend. Real hosted
 forecast stage highlights, animated handoffs, node inspection, state preservation,
 responsive layout, resize fitting, cleanup and unchanged analytical charts passed.
 See `deployment/react-flow-hosted-acceptance.json` and `plans/react-flow-activity.md`.
+
+The latest activity map uses an orchestrator parent with outward child arrows;
+execution order is retained in the timeline. The root's whole-job status and
+planning status are distinguished. This is a frontend correction verified with
+recorded traces, not new selective agent-routing capability.

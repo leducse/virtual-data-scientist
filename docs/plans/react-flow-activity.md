@@ -24,3 +24,23 @@ Acceptance:
 - Node tests cover route/status/ordering and terminal/repair behavior. Browser
   checks cover controls, selection, update preservation, mobile and actual hosted
   stage rendering. Clearly distinguish local fixture replay from live execution.
+
+## Coordination hierarchy correction
+
+The default map represents parent–child coordination. Every selected agent,
+tool, check and output has an outward arrow from the orchestrator; there are no
+sibling-to-sibling arrows or numbered execution steps. The existing timeline
+remains the source for execution order. The coordinator stays active after its
+planning phase, until the run reaches a terminal state. Planning status/duration
+and whole-job duration are separate facts in the inspector.
+
+The current backend has two supported paths: quick query/check/publication, and
+forecast analyst (including code writing)/Interpreter/check/review/publication.
+The LLM planner selects the path; the application controller invokes its roles.
+A separate code-writer agent and analyst-only explanatory route are not implemented.
+
+Future selective routing could support explaining saved evidence without code
+execution, generating code without executing it, and reusing approved recipes
+without regenerating code. These require explicit task contracts, owner/evidence
+checks, role budgets and validation policies before being exposed. No backend
+capabilities or execution shortcuts are added by the map correction.

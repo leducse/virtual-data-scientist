@@ -193,7 +193,7 @@ these do not establish a temporal/grouped production contract.
 ## Validation and commands
 
 See `docs/validation.md` and `docs/deployment/` for exact evidence. Final suite:
-79 Python tests and twenty-three Node tests passed, plus compile/JS syntax/package
+79 Python tests and twenty-five Node tests passed, plus compile/JS syntax/package
 checks, actual image/CF deployment
 and live synthetic/browser acceptance. The managed interpreter libraries differ
 from the pinned container; cross-version numerical refits passed for the fixture.
@@ -352,3 +352,29 @@ changes only the view; a later server update keeps that view intact.
 
 Non-technical: you can watch the analysis team work, zoom in and inspect each
 step without interrupting the analysis.
+
+## Orchestrator hierarchy correction
+
+`model.mjs` now projects coordination rather than execution order: all selected
+children are connected outward from the orchestrator. Agent, tool, check, output
+and coordinator kinds remain distinct. Outer branches avoid drawing through
+other children's cards. The coordinator follows the whole-job lifecycle; its
+planning phase has separate status/duration. Actual child-stage events still
+determine working highlights. The timeline records chronological execution.
+
+Controlled node dimensions are retained via React Flow's `onNodesChange`, so
+`useNodesInitialized` and geometry-based fitting operate on measured nodes.
+Viewport fitting responds to route, geometry or viewport changes; stage-only
+updates keep zoom and inspection. Browser replay verified fit across desktop/
+mobile changes, no intersected cards, preserved state and terminal highlights.
+
+Backend inspection confirms quick summaries and forecasts only. The analyst
+currently includes code writing; there is no separate code-writer agent or
+general analyst-only/explanation route. Selective future task examples and
+required boundaries are in `docs/plans/react-flow-activity.md`. The existing
+controller-plus-planner is shown as a coordinator; the LLM does not directly
+invoke arbitrary specialist tools in this implementation.
+
+This frontend correction uses recorded trace replay and no new model or
+Interpreter invocation. First-party source: `frontend/workflow/model.mjs`,
+`view.jsx`, `view.css`; generated assets remain reproducible.

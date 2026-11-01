@@ -1,5 +1,21 @@
 # Validation record
 
+## Parent–child orchestration map — current frontend
+
+- 25 JavaScript tests pass, including parent ownership, active-child arrows,
+  coordinator lifecycle, phase/job durations, terminal behavior and outer paths.
+- Recorded forecast replay verified every edge starts at the orchestrator,
+  no edges cross another child's card, and zoom/selection survive event updates.
+  Wide/mobile fit, repeated viewport changes and terminal highlighting passed.
+- Controlled node measurements are now retained; responsive fitting waits for
+  measured dimensions rather than assuming the canvas is initialized.
+- This correction introduces no model execution, Interpreter session or backend
+  routing changes. The earlier live runtime proofs below remain separate.
+- Current quick and forecast paths were verified in `cloud_service.py` and
+  `agent_workflow.py`; general analyst-only/code-only routing is not yet present.
+
+
+
 ## React Flow viewer — current frontend
 
 - 79 Python tests and 23 Node tests pass. The frontend build and full dependency

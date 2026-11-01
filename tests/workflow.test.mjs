@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {graphFor,duration} from '../frontend/workflow/model.mjs';
+import {graphFor,duration,outerBranchPath} from '../frontend/workflow/model.mjs';
 
 test('an undecided route shows only the orchestrator without inventing downstream progress',()=>{
   const graph=graphFor({status:'running',events:[{stage:'planner',status:'started',sequence:1,timestamp:123}]});
@@ -10,7 +10,7 @@ test('an undecided route shows only the orchestrator without inventing downstrea
 test('quick routes omit deep agents and use only recorded completion/duration',()=>{
   const graph=graphFor({plan:{tier:'quick'},status:'running',events:[{stage:'planner',status:'completed',duration_ms:2500,sequence:2},{stage:'query',status:'started',sequence:3,timestamp:123}]});
   assert.deepEqual(graph.nodes.map(n=>n.id),['planner','query','numerical_checks','publication']);
-  assert.equal(graph.nodes[0].data.duration,'2.5s');assert.equal(graph.nodes[2].data.status,'queued');
+  assert.equal(graph.nodes[0].data.planningDuration,'2.5s');assert.equal(graph.nodes[0].data.status,'coordinating');assert.equal(graph.nodes[2].data.status,'queued');
   assert.equal(graph.edges.filter(e=>e.animated).length,1);
   assert.equal(graph.edges.find(e=>e.animated).target,'query');
 });
@@ -40,19 +40,43 @@ test('legacy routes can be recovered from evidence; invalid durations are not fa
 });
 
 
-test('compact layout keeps two columns and directs every handoff toward the next card',()=>{
-  const graph=graphFor({plan:{tier:'deep'},status:'running',events:[]},{compact:true});
-  assert.equal(new Set(graph.nodes.map(n=>n.position.x)).size,2);
-  assert.ok(Math.max(...graph.nodes.map(n=>n.position.x+n.style.width))<500);
-  for(const edge of graph.edges){
-    const source=graph.nodes.find(n=>n.id===edge.source),target=graph.nodes.find(n=>n.id===edge.target);
-    if(source.position.y===target.position.y){
-      const direction=target.position.x>source.position.x ? 'right':'left';
-      assert.equal(source.sourcePosition,direction);
-      assert.equal(target.targetPosition,direction==='right' ? 'left':'right');
-    }else{
-      assert.ok(target.position.y>source.position.y);
-      assert.equal(source.sourcePosition,'bottom');assert.equal(target.targetPosition,'top');
+test('every selected role or tool is a child of the orchestrator, on wide and compact maps',()=>{
+  for(const route of ['quick','deep'])for(const compact of [true,false]){
+    const graph=graphFor({plan:{tier:route},status:'running',events:[]},{compact});
+    const root=graph.nodes.find(n=>n.id==='planner'),children=graph.nodes.filter(n=>n.id!=='planner');
+    assert.equal(graph.edges.length,children.length);
+    for(const child of children){
+      const inbound=graph.edges.filter(e=>e.target===child.id);
+      assert.equal(inbound.length,1);assert.equal(inbound[0].source,'planner');
+      assert.ok(child.position.y>root.position.y);
+      assert.equal(child.targetPosition,'top');assert.equal(child.data.coordinator,'Orchestrator');
+      assert.equal(child.data.hasOutput,false);
+      assert.equal(child.data.step,undefined);
     }
+    assert.equal(root.sourcePosition,'bottom');assert.equal(root.data.hasInput,false);
+    if(compact)assert.ok(Math.max(...graph.nodes.map(n=>n.position.x+n.style.width))<500);
+  }
+});
+
+test('planning completion does not complete the coordinator while a child is working',()=>{
+  const run={plan:{tier:'deep'},status:'running',created_at:100,events:[
+    {stage:'planner',status:'completed',sequence:2,duration_ms:2500},
+    {stage:'interpreter',status:'started',sequence:5,timestamp:105}
+  ]};
+  const graph=graphFor(run),root=graph.nodes[0].data;
+  assert.equal(root.status,'coordinating');assert.equal(root.planningStatus,'Complete');assert.equal(root.duration,null);
+  assert.equal(graph.working,'interpreter');
+  assert.deepEqual(graph.edges.filter(e=>e.animated).map(e=>[e.source,e.target]),[['planner','interpreter']]);
+  run.status='succeeded';run.events.push({stage:'analysis',status:'completed',sequence:14,duration_ms:12000,timestamp:112});
+  const completed=graphFor(run).nodes[0].data;
+  assert.equal(completed.status,'completed');assert.equal(completed.duration,'12s');assert.equal(completed.planningDuration,'2.5s');
+});
+
+test('outer parent branches remain finite and terminate at the child handle',()=>{
+  for(const rail of [-34,730]){
+    const path=outerBranchPath(348,100,rail<0 ? 98:598,380,rail);
+    assert.ok(path.startsWith('M 348 100'));assert.ok(path.endsWith(`L ${rail<0 ? 98:598} 380`));
+    assert.ok(!/NaN|Infinity/.test(path));
+    assert.ok(path.includes(String(rail)));
   }
 });

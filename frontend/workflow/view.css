@@ -6,3 +6,9 @@
 @keyframes vds-flow-pulse{50%{box-shadow:0 0 0 5px #17826c07,0 6px 16px #17826c10}}
 @media(max-width:760px){.vds-flow-heading{padding:12px;gap:8px;align-items:flex-start}.vds-flow-heading-actions{flex-direction:column;align-items:flex-end;gap:7px}.vds-flow-canvas{height:390px}.vds-workflow.is-expanded .vds-flow-canvas{height:560px}.vds-flow-detail{padding:12px}.vds-flow-state{font-size:9px;white-space:normal;max-width:145px;text-align:right}.vds-workflow h4{font-size:13px}}
 @media(prefers-reduced-motion:reduce){.vds-workflow *{animation:none!important;transition:none!important}}
+
+/* Parent arrows express coordination; the separate timeline expresses order. */
+.vds-workflow .vds-coordination-note{margin:0;padding:9px 18px;font-size:10px;line-height:1.5;color:#637d6e;background:#fff;border-bottom:1px solid #e1e8e3}
+.vds-workflow.route-deep .vds-flow-canvas{height:520px}.vds-workflow.is-expanded .vds-flow-canvas{height:680px}
+.vds-flow-card.is-coordinating{border-color:#398775;box-shadow:0 0 0 3px #17826c08}.is-coordinating .vds-state-dot{background:#16856b}.kind-coordinator .vds-node-icon{color:#146659}
+@media(max-width:760px){.vds-workflow.route-deep .vds-flow-canvas{height:620px}.vds-workflow.route-quick .vds-flow-canvas{height:450px}.vds-workflow.is-expanded .vds-flow-canvas{height:780px}.vds-workflow .vds-coordination-note{padding:9px 12px;font-size:9px}}

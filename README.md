@@ -150,7 +150,7 @@ node --check static/workspace.js
 The last two commands only describe actions. Their `--execute` forms perform
 billable cloud work; use them within an explicitly authorized scope.
 [Cloud operations](docs/cloud-trial.md) records the actual approval and commands.
-The 79-test Python suite and 23 Node tests include mocked AWS state, lifecycle,
+The 79-test Python suite and 25 Node tests include mocked AWS state, lifecycle,
 quota and browser contracts; live cloud proof is recorded separately. The final
 Amazon Linux image scan reports no critical/high findings and two medium OS
 findings. [Image review](docs/deployment/dev-v2-image-risk-review.md) and
@@ -165,7 +165,7 @@ and [source plans](docs/plans/implementation-plan.md) retain older context.
 
 The activity canvas uses React Flow 12.12.0 as a small React island inside the
 existing workspace. It supports custom role cards, actual working/completed
-states, animated active handoffs, node inspection, pan/zoom/Fit, larger view,
+states, parent–child coordination arrows, node inspection, pan/zoom/Fit, larger view,
 compact mobile routing and reduced motion. Manual inspection and viewport state
 survive streamed events. ECharts remains the analytical chart engine.
 
@@ -181,4 +181,10 @@ they reproduce exactly. No React migration of the rest of the app is required.
 [Flow acceptance](docs/deployment/react-flow-hosted-acceptance.json) ·
 [Implementation plan](docs/plans/react-flow-activity.md)
 
-![Agent flow on the hosted workspace](docs/agent-flow-react-flow.png)
+![Parent-child orchestration map replaying a recorded forecast](docs/agent-hierarchy-preview.png)
+
+The orchestrator is the parent of the selected roles, tools and checks. The map
+shows who coordinates each capability; the timeline shows execution order. The
+coordinator remains active after planning while its children work. The current
+backend supports quick summaries and reviewed forecasts. Analyst-only explanation
+and separate code-writer routing remain future task contracts.
