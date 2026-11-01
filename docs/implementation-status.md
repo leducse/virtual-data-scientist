@@ -1,6 +1,6 @@
 # Implementation status — November 1, 2026
 
-Current deployment: `dev-20261101-05`, runtime version 21. All six method checks, export reproduction, real browser CSV upload/classification, gallery sign-in, chart interactions and compact monitor checks passed. Open
+Current deployment: `dev-20261101-06`, runtime version 22. All six method checks, export reproduction, real browser CSV upload/classification, gallery sign-in, chart interactions and compact monitor checks passed. Open
 https://mlworkbench.decision-layer.com/ with a signed-in preview account. Code is pushed to
 `feat/product-experience-v2`; the original website/runtime are preserved.
 
@@ -22,7 +22,7 @@ correction. Source plans in `docs/plans/` describe the larger target.
 | Plotly, React Flow and palettes | Three complementary forecast figures; hover, four palettes, exact tables, PNG/SVG/HTML/JavaScript/Python downloads, and mobile layout verified |
 | Chat and login continuity | Left conversation / right selected evidence; actual Back, question/file preservation, one automatic job after sign-in, reload without repeat submission, and logout revocation verified |
 | Learning and suggestions | Reviewed method catalog and profile-driven eligible questions; no technical mapping or automatic paid analysis |
-| Agent activity and streaming | Real ordered stage events, active highlights, persisted replay and single-use tickets; native Lambda SSE through CloudFront verified |
+| Agent activity and streaming | A 42px chat status strip uses actual working points and hover details; Map opens the parent–child viewer with keyboard/modal/mobile checks. Persisted replay and authenticated SSE remain verified |
 | Reproduction | ZIP includes support modules/notebook/SQL/tables; prepared data is an explicit separate export. Downloaded code reproduced exact test MAE in a fresh stopped managed Interpreter |
 | Speech | Twenty-second recording limit, real browser AudioWorklet/PCM path with synthetic microphone, Transcribe partial/final text; no automatic analysis submission |
 | Trial and login claim | Private AWS test: five analyses succeeded, sixth rejected, account + trial work preserved, member continued, other account denied. Public guests remain off; self-service signed-in preview is enabled with a persistent 100k-token / twenty-analysis account limit |
@@ -33,11 +33,13 @@ correction. Source plans in `docs/plans/` describe the larger target.
 | Research | Not implemented; required research rejects finalization |
 | Hosted login / production cutover | Restricted Cognito development login deployed and tested; owner account provisioned/invitation accepted; first sign-in pending; production website/runtime unchanged |
 
-[Current showcase verification](deployment/2026-11-01-ml-showcase-verification.json) links method-specific live runs, browser metrics and cleanup. All temporary test datasets/accounts were removed; Interpreter sessions were confirmed terminated. The cumulative development ledger is 30/36 and was not reset.
+[Current showcase verification](deployment/2026-11-01-ml-showcase-verification.json) links method-specific live runs, browser metrics and cleanup. All temporary test datasets/accounts were removed; Interpreter sessions were confirmed terminated. The cumulative development ledger is 33/36 and was not reset.
+
+[Latest status-bar verification](deployment/2026-11-01-chat-statusbar-verification.json) and [input/model audit](audits/2026-11-01-analysis-authenticity.md) add a real Wine upload, primary-source comparison, reproduction and local negative control.
 
 `docs/deployment/` contains sanitized actual acceptance/scan/cleanup records.
 Detailed generated run evidence remains under ignored `data/` and in S3 subject
-to development retention. The suite has 96 passing Python tests and 27 passing Node tests. See validation
+to development retention. The suite has 97 passing Python tests and 30 passing Node tests. See validation
 for exact commands, earlier local proof and unverified boundaries.
 
 ## Shortcuts and upgrade conditions

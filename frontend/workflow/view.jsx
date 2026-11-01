@@ -1,4 +1,4 @@
-import React,{memo,useEffect,useRef,useState} from 'react';
+import React,{memo,useEffect,useId,useRef,useState} from 'react';
 import {createRoot} from 'react-dom/client';
 import {ReactFlow,Background,Controls,Handle,Position,useNodesInitialized,useReactFlow,useStore,BaseEdge,getSmoothStepPath,useUpdateNodeInternals} from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
@@ -13,7 +13,7 @@ const StepNode=memo(function StepNode({id,data,sourcePosition,targetPosition}){
   return <div className={`vds-flow-card is-${data.status} kind-${data.kind.toLowerCase()} ${data.inspected ? 'is-inspected':''}`}>
     {data.hasInput && <Handle type="target" position={targetPosition || Position.Left} isConnectable={false}/>}
     <button type="button" className="vds-node-button nodrag" onClick={data.inspect} title={`${data.title}: ${data.statusLabel}${data.duration ? ` · ${data.duration}`:""}`} aria-pressed={data.inspected} aria-label={`${data.title}: ${data.statusLabel}. Inspect details.`}>
-      <span className="vds-mini-node"><Icon name={data.icon}/><span>{({interpreter:"Python",numerical_checks:"Checks",reviewer:"Review",publication:"Evidence",query:"Query"})[id] || data.title}</span><i className="vds-state-dot"/></span><span className="vds-node-top"><span className="vds-node-icon"><Icon name={data.icon}/></span><span className="vds-node-kind">{data.kind}</span></span>
+      <span className="vds-node-top"><span className="vds-node-icon"><Icon name={data.icon}/></span><span className="vds-node-kind">{data.kind}</span></span>
       <strong>{data.title}</strong>
       <span className="vds-node-bottom"><span className="vds-state-dot"/>{data.statusLabel}<span className="vds-node-time">{data.duration || (data.status==='started' ? 'In progress':data.status==='coordinating' ? 'Active':'')}{data.attempt>1 ? ` · attempt ${data.attempt}`:''}</span></span>
     </button>
@@ -32,12 +32,43 @@ function FitLayout({route,compact,geometryKey,mini}){
   useEffect(()=>{if(ready && width && height)void fitView({padding:mini ? .02:compact ? .18:.12,maxZoom:1,duration:0});},[ready,width,height,route,compact,geometryKey,mini,fitView]);
   return null;
 }
+const shortNames={planner:'Plan',analyst:'Analyst',interpreter:'Python',numerical_checks:'Check',reviewer:'Review',publication:'Save',query:'Query'};
+function StatusPoint({node,selected,inspect,scope}){
+  const {id,data}=node,tooltip=scope+'-'+id;
+  return <button type="button" className={`vds-status-point is-${data.status}`} data-agent={id} aria-label={`${data.title}: ${data.statusLabel}. Inspect details.`} aria-describedby={tooltip} aria-pressed={selected===id} onClick={()=>inspect(id)}>
+    <span className="vds-status-light" aria-hidden="true"/><span className="vds-status-name">{shortNames[id]}</span>
+    <span id={tooltip} className="vds-point-tooltip" role="tooltip"><strong>{data.title}</strong><span>{data.statusLabel}{data.duration ? ` · ${data.duration}`:''}</span></span>
+  </button>;
+}
 function Workflow({run}){
-  const host=useRef(null),[compact,setCompact]=useState(()=>window.innerWidth<760);
+  const host=useRef(null),toggle=useRef(null),scope=useId(),[compact,setCompact]=useState(()=>window.innerWidth<760);
   useEffect(()=>{const observer=new ResizeObserver(entries=>setCompact(entries[0].contentRect.width<500));observer.observe(host.current);return ()=>observer.disconnect();},[]);
   const [measurements,setMeasurements]=useState({});
   const [expanded,setExpanded]=useState(false),[selected,setSelected]=useState(null);
-  const graph=graphFor(run,{compact,mini:!expanded});
+  useEffect(()=>{
+    if(!expanded)return;
+    const background=[],previousOverflow=document.body.style.overflow;
+    for(let branch=host.current;branch && branch!==document.body;branch=branch.parentElement){
+      for(const sibling of branch.parentElement.children){
+        if(sibling!==branch && !sibling.inert){background.push(sibling);sibling.inert=true;}
+      }
+    }
+    document.body.style.overflow='hidden';
+    toggle.current?.focus();
+    function keepFocus(event){if(!host.current.contains(event.target))toggle.current?.focus();}
+    function keydown(event){
+      if(event.key==='Escape'){event.preventDefault();setExpanded(false);setSelected(null);requestAnimationFrame(()=>toggle.current?.focus());}
+      if(event.key==='Tab'){
+        const targets=[...host.current.querySelectorAll('button:not([disabled]),a[href],[tabindex="0"]')].filter(n=>n.getClientRects().length);
+        const first=targets[0],last=targets.at(-1);
+        if(event.shiftKey && document.activeElement===first){event.preventDefault();last?.focus();}
+        else if(!event.shiftKey && document.activeElement===last){event.preventDefault();first?.focus();}
+      }
+    }
+    document.addEventListener('keydown',keydown);document.addEventListener('focusin',keepFocus);
+    return ()=>{document.removeEventListener('keydown',keydown);document.removeEventListener('focusin',keepFocus);for(const sibling of background)sibling.inert=false;document.body.style.overflow=previousOverflow;};
+  },[expanded]);
+  const graph=graphFor(run,{compact});
   const selectedId=graph.nodes.some(n=>n.id===selected) ? selected:null;
   const inspected=graph.nodes.find(n=>n.id===(selectedId || graph.working || 'planner'));
   const nodes=graph.nodes.map(n=>({...n,measured:measurements[n.id],data:{...n.data,inspected:n.id===selectedId,inspect:()=>setSelected(n.id)}}));
@@ -54,23 +85,31 @@ function Workflow({run}){
     });
   }
   const step=inspected?.data;
-  return <section ref={host} className={`vds-workflow route-${graph.route} ${expanded ? 'is-expanded':'is-mini'}`} aria-label="Agent activity flow">
-    <div className="vds-flow-heading"><div><span className="vds-flow-eyebrow">ORCHESTRATION MAP</span><h4>Orchestrator & specialists</h4></div><div className="vds-flow-heading-actions"><span className={`vds-flow-state ${graph.active ? 'is-live':''}`} role="status">{graph.complete ? 'Complete':graph.active ? graph.working ? `${graph.nodes.find(n=>n.id===graph.working).data.title} working`:graph.coordinating ? 'Coordinating':'Waiting':run.status==='cancelled' ? 'Cancelled':'Stopped'}</span><button type="button" className="secondary vds-expand" onClick={()=>setExpanded(v=>!v)} aria-expanded={expanded}>{expanded ? 'Collapse':'Expand'}</button></div></div>
-    <p className="vds-coordination-note">Arrows show parent–child coordination. See the timeline below for execution order.</p>
-    <div className="vds-flow-canvas" aria-label="Pan and zoom the analysis flow">
-      <ReactFlow nodes={nodes} onNodesChange={recordMeasurements} edges={graph.edges} nodeTypes={nodeTypes} edgeTypes={edgeTypes} fitView fitViewOptions={{padding:compact ? .18:.12,maxZoom:1}} minZoom={.3} maxZoom={expanded ? 1.6:1} panOnDrag={expanded} zoomOnPinch={expanded}
-        nodesDraggable={false} nodesConnectable={false} edgesReconnectable={false} nodesFocusable={false} edgesFocusable={false}
-        deleteKeyCode={null} selectionOnDrag={false} selectNodesOnDrag={false} zoomOnScroll={false} zoomOnDoubleClick={false} preventScrolling={false}
-        onNodeClick={(_,node)=>setSelected(node.id)} ariaLabelConfig={{'controls.zoomIn.ariaLabel':'Zoom in on analysis flow','controls.zoomOut.ariaLabel':'Zoom out of analysis flow','controls.fitView.ariaLabel':'Fit analysis flow to view'}}>
-        <FitLayout mini={!expanded} route={graph.route+String(expanded)} compact={compact} geometryKey={geometryKey}/>
-        {expanded && <Background gap={22} size={1} color="#c6d3cb"/>}
-        {expanded && <Controls showInteractive={false} orientation="horizontal" position="top-left"/>}
-      </ReactFlow>
-      {graph.route==='planning' && <p className="vds-route-pending">The orchestrator will reveal the analysis path after planning.</p>}
-    </div>
+  const status=graph.complete ? 'Complete':graph.active ? graph.working ? `${graph.nodes.find(n=>n.id===graph.working).data.title} working`:graph.coordinating ? 'Coordinating':'Waiting':run.status==='cancelled' ? 'Cancelled':'Stopped';
+  function collapse(){setExpanded(false);setSelected(null);requestAnimationFrame(()=>toggle.current?.focus());}
+  return <section ref={host} className={`vds-workflow route-${graph.route} ${expanded ? 'is-expanded':'is-status'}`} aria-label={expanded ? 'Agent map':'Agent activity status'} role={expanded ? 'dialog':undefined} aria-modal={expanded ? true:undefined}>
+    {expanded ? <div className="vds-flow-heading"><div><span className="vds-flow-eyebrow">ORCHESTRATION MAP</span><h4>Orchestrator & specialists</h4></div><div className="vds-flow-heading-actions"><span className={`vds-flow-state ${graph.active ? 'is-live':''}`} role="status">{status}</span><button ref={toggle} type="button" className="secondary vds-expand" onClick={collapse} aria-expanded="true">Close map</button></div></div>:
+      null}
+
+    {expanded ? <>
+      <p className="vds-coordination-note">{run.question}<br/>Arrows show parent–child coordination. The activity timeline records execution order.</p>
+      <div className="vds-flow-canvas" aria-label="Pan and zoom the analysis flow">
+        <ReactFlow nodes={nodes} onNodesChange={recordMeasurements} edges={graph.edges} nodeTypes={nodeTypes} edgeTypes={edgeTypes} fitView fitViewOptions={{padding:compact ? .18:.12,maxZoom:1}} minZoom={.3} maxZoom={1.6} panOnDrag zoomOnPinch
+          nodesDraggable={false} nodesConnectable={false} edgesReconnectable={false} nodesFocusable={false} edgesFocusable={false}
+          deleteKeyCode={null} selectionOnDrag={false} selectNodesOnDrag={false} zoomOnScroll={false} zoomOnDoubleClick={false} preventScrolling={false}
+          onNodeClick={(_,node)=>setSelected(node.id)} ariaLabelConfig={{'controls.zoomIn.ariaLabel':'Zoom in on analysis flow','controls.zoomOut.ariaLabel':'Zoom out of analysis flow','controls.fitView.ariaLabel':'Fit analysis flow to view'}}>
+          <FitLayout route={graph.route} compact={compact} geometryKey={geometryKey}/>
+          <Background gap={22} size={1} color="#c6d3cb"/><Controls showInteractive={false} orientation="horizontal" position="top-left"/>
+        </ReactFlow>
+        {graph.route==='planning' && <p className="vds-route-pending">The orchestrator will reveal the analysis path after planning.</p>}
+      </div>
+    </>:<div className="vds-status-bar"><div className="vds-status-hierarchy" role="group" aria-label="Orchestrator and its selected capabilities">
+      <StatusPoint node={graph.nodes[0]} selected={selectedId} inspect={setSelected} scope={scope}/>
+      {graph.nodes.length>1 && <div className="vds-status-children" role="group" aria-label="Coordinated by Orchestrator">{graph.nodes.slice(1).map(node=><StatusPoint key={node.id} node={node} selected={selectedId} inspect={setSelected} scope={scope}/>)}</div>}
+    </div><span className="vds-status-announcement" role="status">{status}</span><button ref={toggle} type="button" className="vds-map-toggle" onClick={()=>setExpanded(true)} aria-expanded="false" aria-label="Agent map" title={status+' · Open agent map'}>Map <svg viewBox="0 0 12 12" aria-hidden="true"><path d="M3 4.5 6 7.5 9 4.5"/></svg></button></div>}
     {(expanded || selectedId) && <div className="vds-flow-detail" aria-label="Selected step details"><div className="vds-detail-heading"><span className={`vds-detail-icon kind-${step.kind.toLowerCase()}`}><Icon name={step.icon}/></span><div><strong>{step.title}</strong><span>{step.kind} · {step.statusLabel}{step.duration ? ` · ${step.duration}`:''}{step.attempt>1 ? ` · attempt ${step.attempt}`:''}</span></div>{selectedId && <button type="button" className="secondary" onClick={()=>setSelected(null)}>Follow activity</button>}</div><p>{step.description}</p>{step.coordinator && <p className="vds-detail-time">Coordinated by {step.coordinator}</p>}{step.planningStatus && <p className="vds-detail-time">Planning: {step.planningStatus}{step.planningDuration ? ` · ${step.planningDuration}`:''}</p>}
       {step.startedAt && <p className="vds-detail-time">Started {new Date(step.startedAt*1000).toLocaleTimeString()}{step.finishedAt ? ` · Last recorded ${new Date(step.finishedAt*1000).toLocaleTimeString()}`:''}</p>}
-      <p className="vds-flow-hint">Select a step to inspect it. Drag the canvas to explore; use + / − or Fit to change the view.</p>
+      <p className="vds-flow-hint">Select a step to inspect it. Open the agent map for parent–child relationships and pan/zoom controls.</p>
     </div>}
   </section>;
 }

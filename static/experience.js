@@ -91,5 +91,22 @@ window.vdsExperience=(()=>{
       save(name+'.html',`<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>Saved analytical figure</title><div id="chart" style="width:100%;min-height:450px;height:85vh"></div><script>${library}</script><script>const figure=${payload};Plotly.newPlot('chart',figure.data,figure.layout,{responsive:true,displaylogo:false});</script><!-- Plotly MIT license\n${license}\n--></html>`,'text/html');
     }
   }
-  return {palettes,figures,styled,render,dispose,workflow,disposeWorkflow,save,exportFigure,loadPlotly};
+  function receipt(run,dataset){
+    const result=run.result || {},task=result.task || run.plan?.task,candidates=Object.keys(result.candidates || {}),publicData=dataset?.public_dataset;
+    const supervised=task==='classification' || task==='regression';
+    const names=task==='classification' ? {dummy:'DummyClassifier baseline',linear:'LogisticRegression',tree:'RandomForestClassifier'}:task==='regression' ? {dummy:'DummyRegressor baseline',linear:'Ridge regression',tree:'RandomForestRegressor'}:{naive:'Last-value baseline',holt:'Damped Holt',linear_trend:'Linear trend'};
+    const models=supervised || task==='forecast' ? candidates.map(key=>names[key] || key):task==='clustering' && candidates.length ? ['KMeans (k = '+candidates.join(', ')+')',...(result.projection ? ['PCA for the chart projection']:[])]:task==='pca' && result.selected_method==='pca' ? ['PCA']:task==='anomaly_detection' && result.selected_method==='isolation_forest' ? ['IsolationForest',...(result.projection ? ['PCA for the chart projection']:[])]:task==='monthly_summary' ? ['DuckDB aggregation (no fitted model)']:[];
+    const sourceKind=publicData?.synthetic===true ? 'Synthetic teaching example':publicData ? 'Public dataset':dataset ? 'Uploaded file':'Source not recorded';
+    const rows=Number.isInteger(dataset?.profile?.rows) ? dataset.profile.rows:null;
+    const split=result.split;
+    const partition=supervised && split ? `Training ${split.train?.length ?? 'not recorded'} / validation ${split.validation?.length ?? 'not recorded'} / test ${split.test?.length ?? 'not recorded'}`:task==='forecast' && split ? `${result.series?.length} monthly totals; training ${split.train_end}, validation ${split.validation_end-split.train_end}, test ${split.count-split.validation_end}`:['clustering','pca','anomaly_detection'].includes(task) ? 'Exploratory fit on all usable input rows; no predictive holdout':task==='monthly_summary' ? 'Aggregation of the prepared source rows':'Not recorded';
+    const execution=result.execution==='agentcore_code_interpreter' ? 'AWS AgentCore Code Interpreter':result.evidence?.runtime==='agentcore_container' ? 'AWS AgentCore container':result.execution==='trusted_local_recipe' ? 'Local verification':'Execution not recorded';
+    const sourceHash=result.evidence?.source_sha256,parquetHash=result.evidence?.parquet_sha256;
+    const hashesMatch=sourceHash && parquetHash && dataset?.sha256 && dataset?.parquet_sha256 ? sourceHash===dataset.sha256 && parquetHash===dataset.parquet_sha256:null;
+    const ms=result.timing_ms?.end_to_end;
+    const seconds=typeof ms==='number' && Number.isFinite(ms) && ms>=0 ? ms/1000:null;
+    const comparison=supervised ? `${candidates.length} estimators compared`:task==='forecast' ? `${candidates.length} forecast methods compared`:task==='clustering' ? `${candidates.length} cluster settings compared`:task==='monthly_summary' ? 'Exact aggregation':models.length ? models[0]:'Methods not recorded';
+    return {sourceKind,source:publicData?.title || dataset?.name || 'Dataset record unavailable',rows,models,partition,execution,seconds,comparison,sourceHash,parquetHash,hashesMatch};
+  }
+  return {palettes,figures,styled,render,dispose,workflow,disposeWorkflow,save,exportFigure,loadPlotly,receipt};
 })();

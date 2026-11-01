@@ -1,6 +1,16 @@
 # Validation record
 
-## ML showcase iteration — current validation
+## Chat status strip and execution authenticity — current validation
+
+- 97 Python and 30 JavaScript tests pass, including compact evidence allowlisting/bounds/full-record preservation and receipt source/model/split/missing-evidence contracts. Build, syntax, package consistency and pre-commit review pass.
+- One fresh real Wine CSV upload/classification succeeded in hosted AgentCore, using all 178 source rows across recorded partitions and three compared estimators. Actual working dots/pulses, hover names/duration, expanded parent edges, keyboard focus containment, Escape/close restoration, reduced motion, 42px desktop/mobile sizing and no horizontal overflow passed.
+- Source and prepared fingerprints display and match after reload; only one browser job exists. The full record retains its original 14.095-second compute time. Temporary QA datasets/users were deleted and Interpreter termination confirmed.
+- Independent UCI numeric/label comparison, stored-byte hashes, actual sandbox stdout and exact exported-code reproduction verified the real data path. A separate local label-shuffle control changes the classifier outcome from 97.8% to 33.3% balanced accuracy; it is explicitly a verification control, never customer input.
+- Release06 / runtime22 updates compact evidence transport only; the numerical recipe is unchanged. Existing runtime sessions can retain a prior image, so only the completed temporary QA runtime was stopped/resumed to check current health and the compact response.
+- [Current browser evidence](deployment/2026-11-01-chat-statusbar-verification.json), [authenticity audit](audits/2026-11-01-analysis-authenticity.md), [current image scan](deployment/dev-20261101-06-image-scan.json). Earlier transcription and full six-method acceptance retain their original scope below.
+
+
+## ML showcase iteration — earlier validation
 
 - 96 Python and 27 JavaScript tests pass. The eight ML showcase tests execute all six dataset/task combinations, every exported Python script and notebook code cell. A 20,000-row binary classification case with long labels stays within the sandbox transport bound.
 - Source-based numerical checks reject altered labels, projections, metrics and candidate evidence. Sealed code wrappers reject plan/result mutation. Reviewer metrics and unsupported prose numbers remain publication gates.

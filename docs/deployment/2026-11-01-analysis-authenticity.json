@@ -1,0 +1,147 @@
+{
+  "checked_on": "2026-11-01",
+  "primary_source_comparison": {
+    "source": "https://archive.ics.uci.edu/static/public/109/wine.zip",
+    "primary_description": "https://archive.ics.uci.edu/dataset/109/wine",
+    "rows": 178,
+    "features": 13,
+    "all_feature_values_match_original": true,
+    "target_matches_original_after_one_based_to_zero_based_mapping": true,
+    "original_wine_data_sha256": "6be6b1203f3d51df0b553a70e57b8a723cd405683958204f96d23d7cd6aea659",
+    "bundled_snapshot_sha256": "9823017997cff0e628fbc81e9fc0867152879a6799a5068b03b508f8ea30a052"
+  },
+  "observed_cloud_runs": [
+    {
+      "dataset": "UCI Wine snapshot",
+      "synthetic": false,
+      "task": "classification",
+      "source_bytes_sha256_verified": "9823017997cff0e628fbc81e9fc0867152879a6799a5068b03b508f8ea30a052",
+      "prepared_bytes_sha256_verified": "43d3d952801c05c18fc3531bb287a290c09f67d5049759a693972610a0eda188",
+      "rows": 178,
+      "source_rows_are_not_generated_by_execution": true,
+      "approved_program": "import json\nfrom types import SimpleNamespace\nfrom vds_recipe import supervised_result\nwith open('plan.json') as source:\n    plan=SimpleNamespace(**json.load(source))\nresult=supervised_result('dataset.parquet',plan)\nprint('VDS_RESULT='+json.dumps(result))",
+      "sandbox_status": "TERMINATED",
+      "sandbox_stdout_matches_published_candidates": true,
+      "candidate_scores": {
+        "dummy": 0.3333333333333333,
+        "linear": 0.9761904761904763,
+        "tree": 0.9761904761904763
+      },
+      "primary_metric": 0.9777777777777779,
+      "selected_method": "linear",
+      "end_to_end_ms": 11369.12,
+      "fit_ms": null,
+      "model_roles": [
+        "planner",
+        "analyst",
+        "reviewer"
+      ]
+    },
+    {
+      "dataset": "UCI Wine snapshot",
+      "synthetic": false,
+      "task": "clustering",
+      "source_bytes_sha256_verified": "9823017997cff0e628fbc81e9fc0867152879a6799a5068b03b508f8ea30a052",
+      "prepared_bytes_sha256_verified": "43d3d952801c05c18fc3531bb287a290c09f67d5049759a693972610a0eda188",
+      "rows": 178,
+      "source_rows_are_not_generated_by_execution": true,
+      "approved_program": "import json\nfrom types import SimpleNamespace\nfrom vds_recipe import unsupervised_result\nwith open('plan.json') as source:\n    plan=SimpleNamespace(**json.load(source))\nresult=unsupervised_result('dataset.parquet',plan)\nprint('VDS_RESULT='+json.dumps(result))",
+      "sandbox_status": "TERMINATED",
+      "sandbox_stdout_matches_published_candidates": true,
+      "candidate_scores": {
+        "2": 0.25931695553182543,
+        "3": 0.2848589191898987,
+        "4": 0.2601703522370452,
+        "5": 0.20161908294074093,
+        "6": 0.23716725754166543
+      },
+      "primary_metric": 0.2848589191898987,
+      "selected_method": "kmeans",
+      "end_to_end_ms": 13859.08,
+      "fit_ms": 888.06,
+      "model_roles": [
+        "planner",
+        "analyst",
+        "reviewer"
+      ]
+    }
+  ],
+  "export_reproduction": {
+    "recorded_package_versions": true,
+    "python": "3.12.13",
+    "script_reproduced_saved_test_metric": true
+  },
+  "local_negative_control": {
+    "purpose": "Local negative control only: real Wine feature rows with intentionally shuffled class labels. Never used for a customer result.",
+    "original_rows": 178,
+    "original_test_balanced_accuracy": 0.9777777777777779,
+    "control_test_balanced_accuracy": 0.3333333333333333,
+    "original_candidate_scores": {
+      "dummy": 0.3333333333333333,
+      "linear": 0.9761904761904763,
+      "tree": 0.9761904761904763
+    },
+    "control_candidate_scores": {
+      "dummy": 0.3333333333333333,
+      "linear": 0.2507936507936508,
+      "tree": 0.30793650793650795
+    },
+    "original_source_unchanged": true,
+    "execution": "Offline replay of the exact exported AgentCore recipe in Python 3.12.13 with recorded package versions."
+  },
+  "scope": "Only public Wine observations were read for row-level verification. The deliberately shuffled-label control was executed locally in a separate file; it was never used for a customer result.",
+  "fresh_hosted_upload": {
+    "task": "classification",
+    "run_id": "4f4a7315bb39e02d8083235f09d904ea",
+    "rows": 178,
+    "predictor_count": 13,
+    "predictors": [
+      "alcohol",
+      "malic_acid",
+      "ash",
+      "alcalinity_of_ash",
+      "magnesium",
+      "total_phenols",
+      "flavanoids",
+      "nonflavanoid_phenols",
+      "proanthocyanins",
+      "color_intensity",
+      "hue",
+      "od280/od315_of_diluted_wines",
+      "proline"
+    ],
+    "candidate_scores": {
+      "dummy": 0.3333333333333333,
+      "linear": 0.9761904761904763,
+      "tree": 0.9761904761904763
+    },
+    "test_balanced_accuracy": 0.9777777777777779,
+    "partitions": {
+      "train": 106,
+      "validation": 36,
+      "test": 36
+    },
+    "execution": "agentcore_code_interpreter",
+    "execution_session_id": "01M6C13AYS68V97ESVAC7DQ9F0",
+    "end_to_end_ms": 14094.73,
+    "recipe_sha256": "5357831b185f665d820ad5535c691259fbc5f664221e11fe1a8633889f013a1e",
+    "source_sha256": "9823017997cff0e628fbc81e9fc0867152879a6799a5068b03b508f8ea30a052",
+    "parquet_sha256": "43d3d952801c05c18fc3531bb287a290c09f67d5049759a693972610a0eda188",
+    "library_versions": {
+      "pyarrow": "17.0.0",
+      "duckdb": "1.3.2",
+      "numpy": "1.26.4",
+      "pandas": "2.3.1",
+      "scipy": "1.16.0",
+      "scikit-learn": "1.5.0",
+      "statsmodels": "0.14.5"
+    },
+    "numerical_review_passed": true,
+    "independent_review_decision": "accept",
+    "measured_model_roles": [
+      "planner",
+      "analyst",
+      "reviewer"
+    ]
+  }
+}

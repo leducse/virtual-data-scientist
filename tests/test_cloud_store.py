@@ -86,6 +86,18 @@ class CloudStoreTests(unittest.TestCase):
         hidden=next(r for r in saved if not r.get('result'))
         self.assertEqual(self.store.run(self.alice,hidden['id'])['result']['evidence']['source'],'trusted')
 
+    def test_compact_result_retains_fingerprints_without_full_audit_payload(self):
+        key=f'{self.dataset}/runs/{self.run}.json'
+        evidence={'source_sha256':'a'*64,'parquet_sha256':'b'*64,'runtime':'agentcore_container','release':'test','plan':{'large':'x'*10000},'owner_scope':'full audit only'}
+        original={'evidence':evidence,'executed_code':'not a polling field','sandbox':{'results':['large output']},'model_usage':[{'role':'reviewer'}]}
+        self.store.put_blob(self.alice,key,json.dumps(original).encode())
+        self.store.update_run(self.alice,self.run,status='succeeded',result_key=key)
+        compact=self.store.workspace(self.alice,compact=True)['runs'][0]['result']
+        self.assertEqual(set(compact['evidence']),{'source_sha256','parquet_sha256','runtime','release'})
+        self.assertEqual(compact['evidence']['parquet_sha256'],'b'*64)
+        self.assertTrue({'executed_code','sandbox','model_usage'}.isdisjoint(compact))
+        self.assertEqual(self.store.run(self.alice,self.run)['result'],original)
+
 
 class AutomaticPreparationTests(unittest.TestCase):
     def test_title_delimiter_currency_percentage_and_identifier(self):

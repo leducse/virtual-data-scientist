@@ -5,7 +5,7 @@ Canonical repository: `/Users/scottleduc/Projects/virtual-data-scientist`.
 
 ## ML showcase iteration
 
-The November 1 implementation adds a compact sticky React Flow monitor, Plotly.js Cartesian 4.2.0 analytical charts, readable task-specific analysis scripts/notebooks, an eight-snapshot teaching gallery and two reviewed OpenML imports. New regression, classification, clustering, PCA and anomaly routes cross the same AgentCore execution, numerical review and independent model-review boundaries as forecasting. See [implementation plan](docs/plans/ml-showcase-and-exports.md) and [renderer decision](docs/research/visualization-engine.md). 96 Python and 27 JavaScript tests pass. All six methods, two reviewed OpenML imports and browser gallery/login/upload/classification/exports passed on AWS; current evidence is `docs/deployment/2026-11-01-ml-showcase-verification.json`. The final image is release05 / runtime version 21.
+The November 1 implementation adds a 42px chat status strip with an optional React Flow map, Plotly.js Cartesian 4.2.0 analytical charts, readable task-specific analysis scripts/notebooks, an eight-snapshot teaching gallery and two reviewed OpenML imports. New regression, classification, clustering, PCA and anomaly routes cross the same AgentCore execution, numerical review and independent model-review boundaries as forecasting. See [implementation plan](docs/plans/ml-showcase-and-exports.md) and [renderer decision](docs/research/visualization-engine.md). 97 Python and 30 JavaScript tests pass. All six methods, two reviewed OpenML imports and browser gallery/login/upload/classification/exports passed on AWS; current evidence is `docs/deployment/2026-11-01-ml-showcase-verification.json`. The current image is release06 / runtime version 22.
 
 ## Purpose and verified status
 
@@ -14,9 +14,9 @@ not configure technical columns or algorithms. Automatic preparation plus a
 checked Strands plan selects the appropriate supported tool.
 
 Separate AWS development stack `VirtualDataScientistV2Dev` is deployed in
-account `441383083571`, `us-east-1`, release `dev-20261101-05`. Actual CSV and Excel
+account `441383083571`, `us-east-1`, release `dev-20261101-06`. Actual CSV and Excel
 chart/forecast runs, narrative review, imports/plot transfer, stopped sessions,
-reconnect, owner isolation, cancellation and deletion passed. Current runtime and web outputs are in `docs/deployment/dev-20261101-05.json`;
+reconnect, owner isolation, cancellation and deletion passed. Current runtime and web outputs are in `docs/deployment/dev-20261101-06.json`;
 the earlier `2026-10-31-agentcore-dev.json` remains historical evidence.
 
 The actual HTTPS workspace is https://mlworkbench.decision-layer.com/.
@@ -29,8 +29,7 @@ users were removed without sending invitations. The owner account is provisioned
 First sign-in/password change remains unconfirmed. The optional loopback bridge remains available.
 
 The consulting website and original runtime were preserved. No production
-cutover was performed. Source is pushed on `feat/product-experience-v2`; no merge to main was performed. No additional chats or
-subagents were created.
+cutover was performed. Source is pushed on `feat/product-experience-v2`; no merge to main was performed.
 
 ## Architecture
 
@@ -69,7 +68,7 @@ sheet/date context for another upload.
 Core experience changes are implemented and deployed in the existing development
 stacks. Source and acceptance are linked from `docs/implementation-status.md`.
 
-- Plotly.js Cartesian 4.2.0 renders checked browser figures; React Flow 12.12.0 draws compact persistent activity.
+- Plotly.js Cartesian 4.2.0 renders checked browser figures; React renders compact chat activity points; React Flow 12.12.0 provides the optional parent–child map.
   Python figure reproduction pins the sandbox version, Plotly 5.22.0. The left chat selects the
   evidence view on the right; forecast follow-ups retain prior-plan context.
   Four palettes preserve numbers and apply to individual exports and code bundles.
@@ -414,4 +413,14 @@ Non-technical: pick a teaching dataset or upload your own, ask a question, watch
 
 Forecast parity: damped Holt fits twelve fixed smoothing/trend/damping settings with known source initialization and chooses minimum training SSE. Method selection still uses later validation; the test remains untouched. All fitted parameters/cutoffs are recorded and checked. This avoids materially different continuous-optimizer results across the two pinned numerical environments; see `docs/deployment/2026-11-01-forecast-library-parity.json`. Historical exports retain their original optimizer and archived source.
 
-Current acceptance: the compact monitor measured 137px at 1280px desktop and 390px mobile; actual role highlights, keyboard inspection and Expand passed. Plotly tooltips/palettes and all eight download surfaces passed; the downloaded script/notebook reproduced in Python 3.12.13. Standalone HTML made no external requests. Back/reload preserved login without duplicate submission; logout persisted. Temporary QA users/data were removed, sandboxes terminated, and the cumulative development counter is 30/36 (no reset). Source/CI and browser evidence remain distinct.
+Earlier ML showcase acceptance: the compact monitor measured 137px at 1280px desktop and 390px mobile; actual role highlights, keyboard inspection and Expand passed. Plotly tooltips/palettes and all eight download surfaces passed; the downloaded script/notebook reproduced in Python 3.12.13. Standalone HTML made no external requests. Back/reload preserved login without duplicate submission; logout persisted. Temporary QA users/data were removed, sandboxes terminated, and the cumulative development counter is 30/36 (no reset). Source/CI and browser evidence remain distinct.
+
+## Current continuation: chat status strip and execution authenticity
+
+The default agent UI is now a single 42px row inside the chat. Each point shows a short role label and actual recorded status; hover/focus exposes the full name and duration, and click opens role details. Map opens the retained parent–child React Flow viewer. The expanded dialog makes background branches inert, contains focus, supports Escape, and restores focus/background/scrolling on close. The canvas is mounted only when the map is opened.
+
+Result Run details show source kind (uploaded, public or explicitly synthetic), input row count, actual compared estimators/settings, train/validation/test partitions, original compute duration, runtime/libraries and source/Parquet fingerprints. Compact cloud polling now preserves only four small evidence fields; full code, sandbox output and other audit payload remain excluded and the transport budget is unchanged. Legacy responses without those fields direct users to the full saved evidence without claiming the hashes were never recorded.
+
+The [authenticity audit](docs/audits/2026-11-01-analysis-authenticity.md) independently compared all Wine observations/labels with UCI's original data, rehashed actual stored source/Parquet, checked real Interpreter stdout/sessions, reproduced the exact exported classifier, and ran a separate local shuffled-label negative control. The supported models execute real library fitting. Synthetic teaching examples remain intentional and labeled; uploads are not replaced with generated data.
+
+[Current browser verification](docs/deployment/2026-11-01-chat-statusbar-verification.json) records one fresh real Wine upload/classification, actual working-point pulses, hover, Map parent edges, modal/mobile/keyboard behavior, source fingerprints and reload without duplicate work. Temporary data/users were removed and Interpreter termination confirmed. The development counter is 33/36; its cumulative ledger was not reset. Existing runtime sessions can keep a prior image until their compute stops; a completed QA session alone was restarted to verify release06, without terminating user work.

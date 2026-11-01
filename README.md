@@ -7,16 +7,16 @@ forecasts and reviewed ML recipes run in AgentCore Code Interpreter, pass indepe
 and receive a separate model review. Sources, typed Parquet, results and audit
 artifacts live in S3; job state lives in DynamoDB.
 
-![Workspace using the AWS development runtime](docs/workspace-ml-showcase.png)
+![Workspace using the AWS development runtime](docs/chat-agent-status.png)
 
 ## Deployed development environment
 
 The separate `VirtualDataScientistV2Dev` stack is deployed in `us-east-1`.
-Release `dev-20261101-05` uses an immutable ARM64 Docker image in ECR and
+Release `dev-20261101-06` uses an immutable ARM64 Docker image in ECR and
 `us.amazon.nova-pro-v1:0`. CSV and Excel chart/forecast tests passed against the
 real runtime. The new six-method showcase and a real browser upload/classification/export path also passed; the deployment evidence distinguishes releases used for each check. The original runtime and consulting website were not switched.
 
-[Deployment manifest](docs/deployment/dev-20261101-05.json) ·
+[Deployment manifest](docs/deployment/dev-20261101-06.json) ·
 [ML showcase acceptance](docs/deployment/2026-11-01-ml-showcase-verification.json) ·
 [Validation](docs/validation.md) · [Architecture and continuation](project_context.md)
 
@@ -47,6 +47,8 @@ selectors. Preparation asks a short business clarification when necessary. Inclu
 the clarification in the question before another upload. Inferred definitions,
 units and analytical limits remain visible.
 
+[Input/model authenticity audit](docs/audits/2026-11-01-analysis-authenticity.md) ·
+[Chat status-bar acceptance](docs/deployment/2026-11-01-chat-statusbar-verification.json) ·
 [Visualization engine research and decision](docs/research/visualization-engine.md) ·
 [Chat and login acceptance](docs/deployment/2026-10-31-chat-hosted-acceptance.json) ·
 [Final release verification](docs/deployment/dev-v3-chat-verification.json)
@@ -57,12 +59,12 @@ After profiling, supported analysis suggestions explain why they fit the data.
 Chat sits on the left; selected evidence sits on the right. Follow-up analysis
 questions preserve the previous plan context. Results include reviewed
 methodology lessons, interactive Plotly figures, four
-palettes, exact values and a compact persistent React Flow monitor driven by real agent/tool activity. Expand opens the detailed agent view. Forecasts include history,
+palettes, exact values and a 42px status bar inside the chat, driven by real agent/tool activity. Points light up while working; hover shows the full role and status. Map opens the React Flow parent–child diagram. Forecasts include history,
 untouched test predictions and validation-only model comparison.
 
 Download PNG/SVG, self-contained chart HTML, Plotly JSON/JavaScript and Python, full evidence,
 or a ZIP with analysis code, support modules, notebook, SQL and result tables.
-Readable task-specific scripts/notebooks expose preprocessing, library imports, fitting, validation and numerical checks. Figure code recreates a visual; the full bundle reproduces the analysis. Prepared Parquet is a separate explicit download.
+Readable task-specific scripts/notebooks expose preprocessing, library imports, fitting, validation and numerical checks. Figure code recreates a visual; the full bundle reproduces the analysis. Prepared Parquet is a separate explicit download. Result run details identify the source, compared estimators, data partitions, execution environment, original compute duration and input fingerprints.
 
 The teaching gallery includes eight frozen, attributed datasets: Iris, Wine, breast cancer, diabetes, Penguins, blobs, moons and seasonal sales. Two reviewed OpenML IDs/versions can also be imported. Loading profiles the data and suggests a question without consuming an analysis; users explicitly send the question. No technical column selection is required.
 
@@ -152,7 +154,7 @@ node --check static/workspace.js
 The last two commands only describe actions. Their `--execute` forms perform
 billable cloud work; use them within an explicitly authorized scope.
 [Cloud operations](docs/cloud-trial.md) records the actual approval and commands.
-The 96-test Python suite and 27 Node tests include mocked AWS state, lifecycle,
+The 97-test Python suite and 30 Node tests include mocked AWS state, lifecycle,
 quota and browser contracts; live cloud proof is recorded separately. The final
 Amazon Linux image scan reports no critical/high findings and two medium OS
 findings. [Image review](docs/deployment/dev-v2-image-risk-review.md) and
@@ -165,7 +167,7 @@ and [source plans](docs/plans/implementation-plan.md) retain older context.
 
 ## Build the agent flow viewer
 
-The activity canvas uses React Flow 12.12.0 as a small React island inside the
+The chat status strip and optional activity canvas use React Flow 12.12.0 in a small React island inside the
 existing workspace. It supports custom role cards, actual working/completed
 states, parent–child coordination arrows, node inspection, pan/zoom/Fit, larger view,
 compact mobile routing and reduced motion. Manual inspection and viewport state

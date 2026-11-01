@@ -75,7 +75,8 @@ class CloudServiceTests(unittest.TestCase):
         with self.assertRaises(InputError):self.service.submit(self.owner,{'dataset_id':d['id'],'question':'Different','request_key':'test'})
         self.assertEqual(self.service.store.workspace('b'*64)['datasets'],[])
         compact=self.service.store.workspace(self.owner,compact=True)['runs'][0]
-        self.assertNotIn('evidence',compact['result'])
+        self.assertEqual(set(compact['result']['evidence']),{'source_sha256','parquet_sha256','runtime','release'})
+        self.assertEqual(compact['result']['evidence']['source_sha256'],d['sha256'])
         self.assertIn('evidence',self.service.store.run(self.owner,r['id'])['result'])
         with patch.object(self.service.store.s3,'generate_presigned_url',return_value='https://example.test/authorized') as sign:
             data=self.service.dispatch({'owner':self.owner,'action':'prepared_data','payload':{'run_id':r['id']}})

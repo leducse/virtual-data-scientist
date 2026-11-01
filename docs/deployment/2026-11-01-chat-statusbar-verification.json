@@ -1,0 +1,266 @@
+{
+  "checked_on": "2026-11-01",
+  "backend_release": "dev-20261101-06",
+  "runtime_version": 22,
+  "analysis_execution_release": "dev-20261101-05",
+  "static_release": "5f712232465a7392887d",
+  "origin": "https://mlworkbench.decision-layer.com/",
+  "tests": {
+    "python": 97,
+    "javascript": 30,
+    "workflow_build": "passed",
+    "pip_consistency": "passed"
+  },
+  "browser": {
+    "status": "succeeded",
+    "states": [
+      [
+        {
+          "id": "planner",
+          "status": "vds-status-point is-coordinating",
+          "pulse": "none"
+        }
+      ],
+      [
+        {
+          "id": "planner",
+          "status": "vds-status-point is-started",
+          "pulse": "vds-status-glow"
+        }
+      ],
+      [
+        {
+          "id": "planner",
+          "status": "vds-status-point is-coordinating",
+          "pulse": "none"
+        },
+        {
+          "id": "analyst",
+          "status": "vds-status-point is-started",
+          "pulse": "vds-status-glow"
+        },
+        {
+          "id": "interpreter",
+          "status": "vds-status-point is-queued",
+          "pulse": "none"
+        },
+        {
+          "id": "numerical_checks",
+          "status": "vds-status-point is-queued",
+          "pulse": "none"
+        },
+        {
+          "id": "reviewer",
+          "status": "vds-status-point is-queued",
+          "pulse": "none"
+        },
+        {
+          "id": "publication",
+          "status": "vds-status-point is-queued",
+          "pulse": "none"
+        }
+      ],
+      [
+        {
+          "id": "planner",
+          "status": "vds-status-point is-coordinating",
+          "pulse": "none"
+        },
+        {
+          "id": "analyst",
+          "status": "vds-status-point is-completed",
+          "pulse": "none"
+        },
+        {
+          "id": "interpreter",
+          "status": "vds-status-point is-started",
+          "pulse": "vds-status-glow"
+        },
+        {
+          "id": "numerical_checks",
+          "status": "vds-status-point is-queued",
+          "pulse": "none"
+        },
+        {
+          "id": "reviewer",
+          "status": "vds-status-point is-queued",
+          "pulse": "none"
+        },
+        {
+          "id": "publication",
+          "status": "vds-status-point is-queued",
+          "pulse": "none"
+        }
+      ],
+      [
+        {
+          "id": "planner",
+          "status": "vds-status-point is-coordinating",
+          "pulse": "none"
+        },
+        {
+          "id": "analyst",
+          "status": "vds-status-point is-completed",
+          "pulse": "none"
+        },
+        {
+          "id": "interpreter",
+          "status": "vds-status-point is-completed",
+          "pulse": "none"
+        },
+        {
+          "id": "numerical_checks",
+          "status": "vds-status-point is-completed",
+          "pulse": "none"
+        },
+        {
+          "id": "reviewer",
+          "status": "vds-status-point is-started",
+          "pulse": "vds-status-glow"
+        },
+        {
+          "id": "publication",
+          "status": "vds-status-point is-queued",
+          "pulse": "none"
+        }
+      ],
+      [
+        {
+          "id": "planner",
+          "status": "vds-status-point is-coordinating",
+          "pulse": "none"
+        },
+        {
+          "id": "analyst",
+          "status": "vds-status-point is-completed",
+          "pulse": "none"
+        },
+        {
+          "id": "interpreter",
+          "status": "vds-status-point is-completed",
+          "pulse": "none"
+        },
+        {
+          "id": "numerical_checks",
+          "status": "vds-status-point is-completed",
+          "pulse": "none"
+        },
+        {
+          "id": "reviewer",
+          "status": "vds-status-point is-completed",
+          "pulse": "none"
+        },
+        {
+          "id": "publication",
+          "status": "vds-status-point is-completed",
+          "pulse": "none"
+        }
+      ],
+      [
+        {
+          "id": "planner",
+          "status": "vds-status-point is-completed",
+          "pulse": "none"
+        },
+        {
+          "id": "analyst",
+          "status": "vds-status-point is-completed",
+          "pulse": "none"
+        },
+        {
+          "id": "interpreter",
+          "status": "vds-status-point is-completed",
+          "pulse": "none"
+        },
+        {
+          "id": "numerical_checks",
+          "status": "vds-status-point is-completed",
+          "pulse": "none"
+        },
+        {
+          "id": "reviewer",
+          "status": "vds-status-point is-completed",
+          "pulse": "none"
+        },
+        {
+          "id": "publication",
+          "status": "vds-status-point is-completed",
+          "pulse": "none"
+        }
+      ]
+    ],
+    "receipt": "Uploaded file Run details · 178 input rows · 3 estimators compared · computed in 14.095s\nInput\nwine.csv · 178 rows\nMethods actually run\nDummyClassifier baseline · LogisticRegression · RandomForestClassifier\nData used\nTraining 106 / validation 36 / test 36\nExecution\nAWS AgentCore Code Interpreter\nRecorded duration\n14.095 seconds end to end\nInput verification\nInput hashes were not recorded for this run\nLibraries\npyarrow 17.0.0 · duckdb 1.3.2 · numpy 1.26.4 · pandas 2.3.1 · scipy 1.16.0 · scikit-learn 1.5.0 · statsmodels 0.14.5\n\nOpening a saved result reuses its recorded output. Sending a new analysis fits the methods for its selected task; it does not run every available technique.",
+    "barHeight": 42,
+    "inChat": 1,
+    "tooltip": "Code Interpreter\nComplete · 4.5s",
+    "parents": [
+      "planner-analyst",
+      "planner-interpreter",
+      "planner-numerical_checks",
+      "planner-reviewer",
+      "planner-publication"
+    ],
+    "escapeFocus": "Agent map",
+    "mobile": {
+      "height": 42,
+      "overflow": false,
+      "pointCount": 6,
+      "barInsideChat": true
+    },
+    "mobileMap": {
+      "x": 12,
+      "y": 12,
+      "width": 366,
+      "height": 820
+    },
+    "reducedMotion": "none",
+    "helper": {
+      "ok": true,
+      "jobs": 1,
+      "successful": 1,
+      "tokens_measured": 5875
+    },
+    "fingerprint_verification": {
+      "receipt": "Uploaded file Run details · 178 input rows · 3 estimators compared · computed in 14.095s\nInput\nwine.csv · 178 rows\nMethods actually run\nDummyClassifier baseline · LogisticRegression · RandomForestClassifier\nData used\nTraining 106 / validation 36 / test 36\nExecution\nAWS AgentCore Code Interpreter\nRecorded duration\n14.095 seconds end to end\nInput verification\nRecorded input hashes match this dataset version\nSource SHA-256: 9823017997cff0e628fbc81e9fc0867152879a6799a5068b03b508f8ea30a052\nPrepared SHA-256: 43d3d952801c05c18fc3531bb287a290c09f67d5049759a693972610a0eda188\nLibraries\npyarrow 17.0.0 · duckdb 1.3.2 · numpy 1.26.4 · pandas 2.3.1 · scipy 1.16.0 · scikit-learn 1.5.0 · statsmodels 0.14.5\n\nOpening a saved result reuses its recorded output. Sending a new analysis fits the methods for its selected task; it does not run every available technique.",
+      "hashFields": 2,
+      "helper": {
+        "ok": true,
+        "jobs": 1,
+        "successful": 1,
+        "tokens_measured": 5875
+      },
+      "staticScript": "/static/releases/5f712232465a7392887d/workspace.js"
+    },
+    "verified": {
+      "ok": true,
+      "jobs": 1,
+      "successful": 1,
+      "tokens_measured": 5875
+    },
+    "logoutPersisted": true,
+    "finish": {
+      "finished": true
+    },
+    "console_errors": 0,
+    "dialog_background_inert": true,
+    "dialog_outside_focus_blocked": true,
+    "dialog_tab_contained": true,
+    "dialog_close_restores_focus": true,
+    "viewport_desktop": [
+      1280,
+      1000
+    ],
+    "viewport_mobile": [
+      390,
+      844
+    ],
+    "bar_height_px": 42
+  },
+  "acceptance": "2026-11-01-statusbar-hosted-acceptance.json",
+  "input_and_models_audit": "2026-11-01-analysis-authenticity.json",
+  "notes": [
+    "The fresh hosted classification preceded the compact-fingerprint transport update. Its numerical recipe is unchanged in release06.",
+    "Only the completed temporary QA runtime session was restarted to verify the new release with an existing saved result; user runtimes were not stopped.",
+    "The prior six-method acceptance file was preserved unchanged."
+  ]
+}

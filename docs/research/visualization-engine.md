@@ -20,6 +20,6 @@ Bundles are pinned, self-hosted and license-preserving. `static/vendor/manifest.
 
 ## Agent monitor
 
-[React Flow](https://reactflow.dev/) retains parent-to-child arrows from the orchestrator to the actual participating agents, tools and checks. The default monitor is compact and sticky; Expand opens the detailed viewer. Status comes from persisted workflow events. Selection, keyboard details, reduced motion and viewport preservation are supported. It is an activity viewer, not a user-authored execution graph.
+[React Flow](https://reactflow.dev/) retains parent-to-child arrows from the orchestrator to the actual participating agents, tools and checks. The default view is a single 42px status strip within the chat: labeled points use actual event states and expose full names/durations on hover/focus. Map mounts the detailed React Flow viewer. Status comes from persisted workflow events. Selection, keyboard details, reduced motion and viewport preservation are supported. It is an activity viewer, not a user-authored execution graph.
 
 The build uses pinned dependencies and retains open-source license notices. See `frontend/workflow/`, `docs/plans/ml-showcase-and-exports.md` and the release acceptance evidence.

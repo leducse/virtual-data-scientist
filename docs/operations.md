@@ -79,3 +79,9 @@ data/user pools and namespace mapping. Redeploy compatible static/gateway assets
 together. Rebuild Lambda ZIPs from pinned manifests if the seven-day deployment
 object has expired. Do not delete data or lower/release quota reservations as part
 of a code rollback. The original CloudFront URL remains an allowed sign-in origin.
+
+## Runtime/session verification after updates
+
+An already-running AgentCore runtime session can retain its image across a deployment. Check a fresh session's health release when accepting a change. For this release only the completed temporary QA session was stopped/resumed; no user session was terminated. The numerical recipe remains unchanged. See [AWS session lifecycle](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/runtime-sessions.html).
+
+After this continuation the cumulative ledger is 33/36: two member analyses since the earlier acceptance plus one new bounded QA classification. No counter reset or guard increase occurred. New QA accounts/data were removed. Source/model evidence is in `deployment/2026-11-01-analysis-authenticity.json`.

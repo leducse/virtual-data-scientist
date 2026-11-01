@@ -158,7 +158,9 @@ class CloudStore:
             try:
                 run=self.run(owner,r['id'])
                 if compact and run.get('result'):
+                    fingerprints={k:v for k,v in run['result'].get('evidence',{}).items() if k in {'source_sha256','parquet_sha256','runtime','release'}}
                     run['result']={k:v for k,v in run['result'].items() if k not in {'sandbox','executed_code','evidence','model_usage'}}
+                    if fingerprints:run['result']['evidence']=fingerprints
                     size=len(json.dumps(run['result']).encode())
                     run['result_available']=True
                     if size>remaining:run['result']=None
