@@ -1,13 +1,15 @@
 import React,{memo,useEffect,useRef,useState} from 'react';
 import {createRoot} from 'react-dom/client';
-import {ReactFlow,Background,Controls,Handle,Position,useNodesInitialized,useReactFlow,useStore,BaseEdge,getSmoothStepPath} from '@xyflow/react';
+import {ReactFlow,Background,Controls,Handle,Position,useNodesInitialized,useReactFlow,useStore,BaseEdge,getSmoothStepPath,useUpdateNodeInternals} from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import './view.css';
 import {graphFor,outerBranchPath} from './model.mjs';
 
 const paths={orchestrator:'M12 5v5M6 19v-4h12v4M6 15v-2h12v2M12 10v3',analyst:'M4 18h16M5 14l4-4 4 2 6-7',query:'M4 5h16v14H4zM4 10h16M10 5v14',interpreter:'M4 5h16v14H4zM7 9l3 3-3 3M13 15h4',checks:'M12 3l8 4v6c0 4-8 8-8 8s-8-4-8-8V7zM8 12l3 3 5-6',reviewer:'M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12zM9 12a3 3 0 106 0 3 3 0 10-6 0',publication:'M5 3h10l4 4v14H5zM14 3v5h5M8 13h8M8 17h6'};
 const Icon=({name})=><svg viewBox="0 0 24 24" width="21" height="21" aria-hidden="true"><path d={paths[name]} fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>{name==='orchestrator' && <><circle cx="12" cy="4" r="2" fill="currentColor"/><circle cx="6" cy="20" r="2" fill="currentColor"/><circle cx="18" cy="20" r="2" fill="currentColor"/></>}</svg>;
-const StepNode=memo(function StepNode({data,sourcePosition,targetPosition}){
+const StepNode=memo(function StepNode({id,data,sourcePosition,targetPosition}){
+  const updateNodeInternals=useUpdateNodeInternals();
+  useEffect(()=>{updateNodeInternals(id);},[id,data.hasInput,data.hasOutput,sourcePosition,targetPosition,updateNodeInternals]);
   return <div className={`vds-flow-card is-${data.status} kind-${data.kind.toLowerCase()} ${data.inspected ? 'is-inspected':''}`}>
     {data.hasInput && <Handle type="target" position={targetPosition || Position.Left} isConnectable={false}/>}
     <button type="button" className="vds-node-button nodrag" onClick={data.inspect} aria-pressed={data.inspected} aria-label={`${data.title}: ${data.statusLabel}. Inspect details.`}>

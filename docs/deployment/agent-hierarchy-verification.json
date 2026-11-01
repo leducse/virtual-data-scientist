@@ -1,7 +1,7 @@
 {
   "validation_mode": "recorded_trace_replay",
   "trace_fixture": "tests/fixtures/workflow-forecast.json",
-  "frontend_asset_release": "1d0d2d695cb342783b75",
+  "frontend_asset_release": "028331a32e2016e3a612",
   "checks": {
     "all_children_coordinated_by_orchestrator": true,
     "no_sibling_execution_arrows": true,
@@ -12,14 +12,15 @@
     "controlled_dimensions_retained": true,
     "desktop_mobile_refit": true,
     "mobile_no_horizontal_overflow": true,
-    "completed_run_stops_active_edges": true
+    "completed_run_stops_active_edges": true,
+    "planning_to_children_refreshes_handles": true
   },
   "routing_changes": false,
   "model_invocations": 0,
   "interpreter_sessions": 0,
   "node_tests": 25,
   "files": {
-    "workflow.js": "771541f9ebca2154caabc770c557b67a9eadcc58f4b4f9ff6c8208d91dc34f2e",
+    "workflow.js": "49b27c7f0f85f4308c5e376800eb12564fadb7d7c27331e49473390d78057b00",
     "workflow.css": "2edc50131b9c889ef6e70448349b8d6d4774f87427fa510c93a6b65856e92138"
   }
 }

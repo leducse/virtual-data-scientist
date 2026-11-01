@@ -378,3 +378,8 @@ invoke arbitrary specialist tools in this implementation.
 This frontend correction uses recorded trace replay and no new model or
 Interpreter invocation. First-party source: `frontend/workflow/model.mjs`,
 `view.jsx`, `view.css`; generated assets remain reproducible.
+
+Dynamic planner-to-children transitions explicitly refresh React Flow node
+internals when handles are added. A hosted recorded-trace transition verified
+one planning node expands to six cards and five parent paths, with the correct
+active child edge. No model execution was required.
