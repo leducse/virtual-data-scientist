@@ -74,5 +74,36 @@
   },
   "authentication_upload_evidence": "2026-11-01-domain-auth-acceptance.json",
   "verification_dns": "New hostname resolved using its published public DNS answer from 1.1.1.1, scoped to the verification process. HTTPS hostname and certificate validation remained enabled. No system DNS settings or hosts file were changed.",
-  "browser_verification": "Pending expiry of a cached negative DNS answer on the local resolver."
+  "browser_verification": "Passed using normal browser DNS/HTTPS at https://mlworkbench.decision-layer.com/ after public DNS propagation. No browser DNS override or certificate bypass was used.",
+  "retained_origin_browser_checks": {
+    "origin": "https://analyst.decision-layer.com",
+    "cognito_sign_in_page_loaded": true,
+    "back_preserved_draft": true,
+    "sign_in_enabled_after_back": true,
+    "synthetic_draft_cleared": true,
+    "model_analyses_submitted": 0
+  },
+  "implementation_commit": "55e997d1e3adf3000cccde4b3fa831ef8f56577f",
+  "implementation_ci": {
+    "push": {
+      "url": "https://github.com/leducse/virtual-data-scientist/actions/runs/41304143887",
+      "conclusion": "success"
+    },
+    "pull_request": {
+      "url": "https://github.com/leducse/virtual-data-scientist/actions/runs/41304145845",
+      "conclusion": "success"
+    }
+  },
+  "new_origin_browser_checks": {
+    "url": "https://mlworkbench.decision-layer.com/",
+    "chat_workspace_rendered": true,
+    "cognito_sign_in_page_loaded": true,
+    "new_redirect_uri_accepted": true,
+    "back_preserved_draft": true,
+    "sign_in_enabled_after_back": true,
+    "synthetic_draft_cleared": true,
+    "model_analyses_submitted": 0,
+    "screenshot": "../workspace-mlworkbench-hosted.png"
+  },
+  "dns_note": "The upstream negative answer expired and the normal DNS lookup returned the CloudFront addresses. One OS process resolver retained a negative answer longer; the browser loaded the app and its configuration/session endpoints normally."
 }
