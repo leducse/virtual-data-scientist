@@ -1,0 +1,99 @@
+{
+  "verified_at": "2026-11-02T23:10:11.301343+00:00",
+  "scope": "Static agent-activity viewer; no new analytical workflow or model quality claim",
+  "source_base_commit": "809db7305b5525df5777e86656ab04b6c29c8e88",
+  "branch": "feat/product-experience-v2",
+  "deployment": {
+    "web_url": "https://mlworkbench.decision-layer.com",
+    "static_release": "c753408540858c65cb02",
+    "stack": "VirtualDataScientistV2DevWeb",
+    "distribution_id": "E3K5TU1GM2AOW4",
+    "invalidation": {
+      "id": "IEPK44G9ICASXMU5ATOLMMMQ9Q",
+      "status": "Completed",
+      "created_at": "2026-11-02T23:08:12.933000+00:00"
+    },
+    "index_https_status": 200,
+    "assets": {
+      "workflow.js": {
+        "path": "/static/releases/c753408540858c65cb02/workflow.js",
+        "sha256": "9ac8f21adc27ad900f69ee0f8e04f8f59e439088905fe594310e26290e2e1b5d",
+        "bytes": 419620,
+        "matches_local": true
+      },
+      "workflow.css": {
+        "path": "/static/releases/c753408540858c65cb02/workflow.css",
+        "sha256": "06bd1131868bafcf3bdea14c4d7f18143e76667715cb4d0c79a1ae29d5678eff",
+        "bytes": 23719,
+        "matches_local": true
+      }
+    }
+  },
+  "checks": {
+    "javascript_suite": {
+      "command": "node --test tests/*.test.cjs tests/*.test.mjs",
+      "passed": 30,
+      "failed": 0
+    },
+    "build": {
+      "command": "npm run build",
+      "cwd": "frontend/workflow",
+      "passed": true
+    },
+    "dependency_audit": {
+      "command": "npm audit --omit=dev",
+      "cwd": "frontend/workflow",
+      "vulnerabilities": 0
+    },
+    "browser": {
+      "tool": "Playwright MCP",
+      "input": "Explicit UI event fixtures, including failure/quick/deep/planning transitions; no backend submission",
+      "local_url": "http://127.0.0.1:8788/",
+      "viewport_widths": [
+        320,
+        390,
+        1440
+      ],
+      "collapsed_monitor_height_px": 42,
+      "checks_passed": [
+        "Exactly one active branch and moving dot for a single started child",
+        "Event updates preserve expansion and selected inspector for the same run",
+        "Follow activity selects the current working role",
+        "Failed run stops stale highlights and leaves untouched output unrecorded",
+        "Selecting another run resets expansion and inspection",
+        "Quick route omits analyst, interpreter and reviewer",
+        "Planning route shows only the orchestrator",
+        "Hover and keyboard focus expose full-name tooltips",
+        "Escape closes map and restores toggle focus",
+        "Map toggle closes the map and selected inspector completely",
+        "Expanded map remains inline without a modal or body scroll lock",
+        "All nodes fit desktop and small-screen canvases without page overflow",
+        "Live reduced-motion preference change removes SVG motion and CSS animation",
+        "Hosted CSP allows the published viewer styles and active SVG dot"
+      ],
+      "local_console_errors": 0,
+      "hosted_console_errors": 0,
+      "hosted_fixture": {
+        "node_count": 6,
+        "active_dots": 1,
+        "background": "rgb(17, 28, 34)",
+        "position": "relative",
+        "removed_by_reload": true
+      },
+      "hosted_release_loaded": true,
+      "screenshots": {
+        "desktop": "docs/agent-org-tree-desktop.png",
+        "mobile": "docs/agent-org-tree-mobile.png"
+      },
+      "screenshot_scope": "Local UI fixtures; these images do not represent new AWS analysis runs"
+    }
+  },
+  "not_run": [
+    "Python suite: backend unchanged",
+    "New authenticated AgentCore analytical acceptance run",
+    "Paid model evaluation or latency/cost benchmark"
+  ],
+  "backend_changes": false,
+  "paid_analysis_invocations_for_this_verification": 0,
+  "ranked_backend_recommendations_implemented": false
+}

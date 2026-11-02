@@ -1,7 +1,34 @@
 # Virtual Data Scientist project context
 
-Updated November 1, 2026. Mode: productionization of the hosted development preview.
+Updated November 2, 2026. Mode: productionization of the hosted development preview.
 Canonical repository: `/Users/scottleduc/Projects/virtual-data-scientist`.
+
+## Inline org-tree activity iteration
+
+The November 2 change adapts the supplied dark org-tree template into the existing
+42px chat status strip's expandable map. It expands inline, with the orchestrator
+above one row of smaller role-colored children, curved delegation arrows, recorded
+timings and active-only traveling dots. Reduced motion removes animation. Tools,
+checks and saved evidence retain their correct kinds. Event semantics and actual
+AgentCore execution are unchanged. Source: `frontend/workflow/view.jsx` and
+`view.css`; `model.mjs` projects persisted events. The former fullscreen map and
+pan/zoom interaction are replaced by an automatically fitted chat inspector.
+Published static release `c753408540858c65cb02` is verified at the hosted URL,
+with matching JS/CSS hashes and a completed CloudFront invalidation. Thirty
+JavaScript tests, the build, dependency audit and local/hosted fixture browser
+checks passed. No new paid analytical run was executed; these checks establish
+viewer behavior, not new model-quality or backend acceptance. See the
+[verification record](docs/deployment/2026-11-02-agent-org-tree-verification.json).
+
+The [ranked quality roadmap](docs/plans/agent-activity-and-quality-roadmap.md)
+separates recommended evaluations, failure investigation, calibration, cost,
+durability and caching from deferred RAG/multimodal/fine-tuning work. Those backend
+recommendations and the proposed Evidence Studio companion are not implemented.
+
+Principal engineer: this is a read-only event projection; presentation never
+infers a tool call or a successful result. Undergraduate: saved stage events
+decide which node is working and which duration can be shown. Non-technical:
+the small activity strip opens to show who is doing the work without leaving chat.
 
 ## ML showcase iteration
 

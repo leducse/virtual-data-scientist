@@ -59,7 +59,7 @@ After profiling, supported analysis suggestions explain why they fit the data.
 Chat sits on the left; selected evidence sits on the right. Follow-up analysis
 questions preserve the previous plan context. Results include reviewed
 methodology lessons, interactive Plotly figures, four
-palettes, exact values and a 42px status bar inside the chat, driven by real agent/tool activity. Points light up while working; hover shows the full role and status. Map opens the React Flow parent–child diagram. Forecasts include history,
+palettes, exact values and a 42px status bar inside the chat, driven by real agent/tool activity. Points light up while working; hover shows the full role and status. Map expands an inline dark org tree with curved delegation arrows, role colors and active-only traveling dots. It uses React Flow and respects reduced motion. Forecasts include history,
 untouched test predictions and validation-only model comparison.
 
 Download PNG/SVG, self-contained chart HTML, Plotly JSON/JavaScript and Python, full evidence,
