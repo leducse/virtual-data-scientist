@@ -1,0 +1,30 @@
+{
+  "runtime_arn": "arn:aws:bedrock-agentcore:us-east-1:441383083571:runtime/VirtualDataScientistV2Dev-Tr4IBoExJp",
+  "status": "READY",
+  "runtime_version": "5",
+  "artifact": {
+    "containerConfiguration": {
+      "containerUri": "441383083571.dkr.ecr.us-east-1.amazonaws.com/virtual-data-scientist-v2-dev@sha256:5e6b76f59bb56523e4f04d60270f32406ccdd6fd0339682a14782af644e42f4f"
+    }
+  },
+  "release": "dev-20261031-05",
+  "model_id": "us.amazon.nova-pro-v1:0",
+  "health": {
+    "ok": true,
+    "service": "virtual-data-scientist-v2",
+    "release": "dev-20261031-05"
+  },
+  "stack_status": "UPDATE_COMPLETE",
+  "active_global_leases": 0,
+  "browser_run": {
+    "id": "b352a1e7f07cccb5047d14e18dc12fb8",
+    "release": "dev-20261031-05",
+    "status": "succeeded",
+    "session_id": "01M69EMNVD4AHRJ8PP51NSF1MJ",
+    "timing_ms": {
+      "analysis": 1960.61,
+      "end_to_end": 13545.86
+    },
+    "sandbox_status": "TERMINATED"
+  }
+}

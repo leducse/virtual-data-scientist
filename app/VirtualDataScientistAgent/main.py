@@ -240,7 +240,8 @@ async def process_message(session_id: str, prompt: str, request: dict[str, Any] 
 async def stream_text(text: str) -> AsyncIterator[str]:
     for token in text.split(" "):
         yield token + " "
-        await asyncio.sleep(0.01)
+        # Emit available content without an artificial word delay.
+        await asyncio.sleep(0)
 
 
 @app.entrypoint

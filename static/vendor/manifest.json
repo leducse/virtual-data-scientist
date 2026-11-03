@@ -1,0 +1,23 @@
+{
+  "checked_on": "2026-11-01",
+  "audit_vulnerabilities": {
+    "info": 0,
+    "low": 0,
+    "moderate": 0,
+    "high": 0,
+    "critical": 0,
+    "total": 0
+  },
+  "bundles": [
+    {
+      "name": "plotly.js-cartesian-dist-min",
+      "version": "4.2.0",
+      "license": "MIT",
+      "source": "https://registry.npmjs.org/plotly.js-cartesian-dist-min/-/plotly.js-cartesian-dist-min-4.2.0.tgz",
+      "file": "plotly-cartesian-4.2.0.min.js",
+      "sha256": "71f93d302d8da7fe46ee9ca4cde3ddd2da65291782500ad323c500d27c8fa7c3",
+      "package_integrity": "sha512-bAnVTRac2uCrhWhEDAY8KqvQyuJNwoQo099elhnB8gM5QJchNMuDTljXFgJpsA2PKgMh+xAKUSZ+2aWEXASzKQ=="
+    }
+  ],
+  "audit_note": "Pinned vendor package integrity checked; npm advisory checks do not exhaustively scan dependencies embedded in a prebuilt distribution."
+}

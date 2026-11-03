@@ -1,0 +1,1013 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Restricted VDS development web access; existing public site unchanged",
+  "Parameters": {
+    "RuntimeArn": {
+      "Type": "String"
+    },
+    "DataBucket": {
+      "Type": "String"
+    },
+    "CodeKey": {
+      "Type": "String"
+    },
+    "AppOrigin": {
+      "Type": "String",
+      "Default": "https://localhost"
+    },
+    "StateTable": {
+      "Type": "String",
+      "Default": ""
+    },
+    "PreviousDomain": {
+      "Type": "String",
+      "Default": ""
+    },
+    "PreviousOrigin": {
+      "Type": "String",
+      "Default": ""
+    },
+    "CustomDomain": {
+      "Type": "String",
+      "Default": ""
+    },
+    "CertificateArn": {
+      "Type": "String",
+      "Default": ""
+    },
+    "LegacyOrigin": {
+      "Type": "String",
+      "Default": "https://d19bkp3wlr8r7k.cloudfront.net"
+    },
+    "StreamCodeKey": {
+      "Type": "String",
+      "Default": ""
+    },
+    "PreviewEnabled": {
+      "Type": "String",
+      "Default": "false",
+      "AllowedValues": [
+        "false",
+        "true"
+      ]
+    },
+    "GuestEnabled": {
+      "Type": "String",
+      "Default": "false",
+      "AllowedValues": [
+        "false",
+        "true"
+      ]
+    }
+  },
+  "Conditions": {
+    "HasPreviousDomain": {
+      "Fn::Not": [
+        {
+          "Fn::Equals": [
+            {
+              "Ref": "PreviousDomain"
+            },
+            ""
+          ]
+        }
+      ]
+    },
+    "HasStreaming": {
+      "Fn::Not": [
+        {
+          "Fn::Equals": [
+            {
+              "Ref": "StreamCodeKey"
+            },
+            ""
+          ]
+        }
+      ]
+    },
+    "HasPreview": {
+      "Fn::Equals": [
+        {
+          "Ref": "PreviewEnabled"
+        },
+        "true"
+      ]
+    },
+    "HasGuests": {
+      "Fn::Equals": [
+        {
+          "Ref": "GuestEnabled"
+        },
+        "true"
+      ]
+    },
+    "HasDomain": {
+      "Fn::Not": [
+        {
+          "Fn::Equals": [
+            {
+              "Ref": "CustomDomain"
+            },
+            ""
+          ]
+        }
+      ]
+    }
+  },
+  "Resources": {
+    "Site": {
+      "Type": "AWS::S3::Bucket",
+      "DeletionPolicy": "Retain",
+      "Properties": {
+        "PublicAccessBlockConfiguration": {
+          "BlockPublicAcls": true,
+          "BlockPublicPolicy": true,
+          "IgnorePublicAcls": true,
+          "RestrictPublicBuckets": true
+        },
+        "BucketEncryption": {
+          "ServerSideEncryptionConfiguration": [
+            {
+              "ServerSideEncryptionByDefault": {
+                "SSEAlgorithm": "AES256"
+              }
+            }
+          ]
+        }
+      }
+    },
+    "Users": {
+      "Type": "AWS::Cognito::UserPool",
+      "DeletionPolicy": "Retain",
+      "Properties": {
+        "UserPoolName": "VdsV2DevUsers",
+        "UserPoolTier": "LITE",
+        "DeletionProtection": "ACTIVE",
+        "AdminCreateUserConfig": {
+          "AllowAdminCreateUserOnly": {
+            "Fn::If": [
+              "HasPreview",
+              false,
+              true
+            ]
+          }
+        },
+        "AutoVerifiedAttributes": [
+          "email"
+        ],
+        "Policies": {
+          "PasswordPolicy": {
+            "MinimumLength": 14,
+            "RequireLowercase": true,
+            "RequireUppercase": true,
+            "RequireNumbers": true,
+            "RequireSymbols": true
+          }
+        },
+        "MfaConfiguration": "OFF"
+      }
+    },
+    "Client": {
+      "Type": "AWS::Cognito::UserPoolClient",
+      "Properties": {
+        "UserPoolId": {
+          "Ref": "Users"
+        },
+        "ClientName": "vds-dev-browser",
+        "GenerateSecret": false,
+        "AllowedOAuthFlowsUserPoolClient": true,
+        "AllowedOAuthFlows": [
+          "code"
+        ],
+        "AllowedOAuthScopes": [
+          "openid",
+          "profile"
+        ],
+        "SupportedIdentityProviders": [
+          "COGNITO"
+        ],
+        "CallbackURLs": {
+          "Fn::If": [
+            "HasDomain",
+            [
+              {
+                "Fn::Sub": "${AppOrigin}/"
+              },
+              {
+                "Fn::Sub": "${LegacyOrigin}/"
+              },
+              {
+                "Fn::If": [
+                  "HasPreviousDomain",
+                  {
+                    "Fn::Sub": "${PreviousOrigin}/"
+                  },
+                  {
+                    "Ref": "AWS::NoValue"
+                  }
+                ]
+              }
+            ],
+            [
+              {
+                "Fn::Sub": "${AppOrigin}/"
+              }
+            ]
+          ]
+        },
+        "LogoutURLs": {
+          "Fn::If": [
+            "HasDomain",
+            [
+              {
+                "Fn::Sub": "${AppOrigin}/"
+              },
+              {
+                "Fn::Sub": "${LegacyOrigin}/"
+              },
+              {
+                "Fn::If": [
+                  "HasPreviousDomain",
+                  {
+                    "Fn::Sub": "${PreviousOrigin}/"
+                  },
+                  {
+                    "Ref": "AWS::NoValue"
+                  }
+                ]
+              }
+            ],
+            [
+              {
+                "Fn::Sub": "${AppOrigin}/"
+              }
+            ]
+          ]
+        },
+        "ExplicitAuthFlows": [
+          "ALLOW_ADMIN_USER_PASSWORD_AUTH",
+          "ALLOW_REFRESH_TOKEN_AUTH"
+        ],
+        "PreventUserExistenceErrors": "ENABLED",
+        "EnableTokenRevocation": true,
+        "AccessTokenValidity": 15,
+        "IdTokenValidity": 15,
+        "RefreshTokenValidity": 1,
+        "TokenValidityUnits": {
+          "AccessToken": "minutes",
+          "IdToken": "minutes",
+          "RefreshToken": "days"
+        }
+      }
+    },
+    "LoginDomain": {
+      "Type": "AWS::Cognito::UserPoolDomain",
+      "Properties": {
+        "UserPoolId": {
+          "Ref": "Users"
+        },
+        "Domain": {
+          "Fn::Sub": "vds-v2-dev-${AWS::AccountId}"
+        }
+      }
+    },
+    "GatewayRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "lambda.amazonaws.com"
+              },
+              "Action": "sts:AssumeRole"
+            }
+          ]
+        },
+        "Policies": [
+          {
+            "PolicyName": "HostedWorkspace",
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "bedrock-agentcore:InvokeAgentRuntime"
+                  ],
+                  "Resource": [
+                    {
+                      "Ref": "RuntimeArn"
+                    },
+                    {
+                      "Fn::Sub": "${RuntimeArn}/runtime-endpoint/DEFAULT"
+                    }
+                  ]
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "s3:PutObject"
+                  ],
+                  "Resource": {
+                    "Fn::Sub": "arn:${AWS::Partition}:s3:::${DataBucket}/*/incoming/*"
+                  }
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "dynamodb:GetItem",
+                    "dynamodb:PutItem",
+                    "dynamodb:UpdateItem",
+                    "dynamodb:DeleteItem"
+                  ],
+                  "Resource": {
+                    "Fn::Sub": "arn:${AWS::Partition}:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${StateTable}"
+                  }
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "logs:CreateLogStream",
+                    "logs:PutLogEvents"
+                  ],
+                  "Resource": {
+                    "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/vds-v2-dev-web:*"
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "Logs": {
+      "Type": "AWS::Logs::LogGroup",
+      "Properties": {
+        "LogGroupName": "/aws/lambda/vds-v2-dev-web",
+        "RetentionInDays": 7
+      }
+    },
+    "Gateway": {
+      "Type": "AWS::Lambda::Function",
+      "DependsOn": "Logs",
+      "Properties": {
+        "FunctionName": "vds-v2-dev-web",
+        "Runtime": "python3.13",
+        "Architectures": [
+          "arm64"
+        ],
+        "Handler": "web_gateway.handler",
+        "Role": {
+          "Fn::GetAtt": [
+            "GatewayRole",
+            "Arn"
+          ]
+        },
+        "Code": {
+          "S3Bucket": {
+            "Ref": "DataBucket"
+          },
+          "S3Key": {
+            "Ref": "CodeKey"
+          }
+        },
+        "Timeout": 75,
+        "MemorySize": 256,
+        "Environment": {
+          "Variables": {
+            "VDS_RUNTIME_ARN": {
+              "Ref": "RuntimeArn"
+            },
+            "VDS_DATA_BUCKET": {
+              "Ref": "DataBucket"
+            },
+            "VDS_ISSUER": {
+              "Fn::Sub": "https://cognito-idp.${AWS::Region}.amazonaws.com/${Users}"
+            },
+            "VDS_CLIENT_ID": {
+              "Ref": "Client"
+            },
+            "VDS_STREAMING_ENABLED": {
+              "Fn::If": [
+                "HasStreaming",
+                "true",
+                "false"
+              ]
+            },
+            "VDS_STATE_TABLE": {
+              "Ref": "StateTable"
+            },
+            "VDS_GUEST_ENABLED": {
+              "Ref": "GuestEnabled"
+            },
+            "VDS_APP_ORIGIN": {
+              "Ref": "AppOrigin"
+            },
+            "VDS_LEGACY_ORIGIN": {
+              "Ref": "LegacyOrigin"
+            },
+            "VDS_PREVIOUS_ORIGIN": {
+              "Ref": "PreviousOrigin"
+            }
+          }
+        }
+      }
+    },
+    "GatewayUrl": {
+      "Type": "AWS::Lambda::Url",
+      "Properties": {
+        "TargetFunctionArn": {
+          "Ref": "Gateway"
+        },
+        "AuthType": "AWS_IAM"
+      }
+    },
+    "StaticOac": {
+      "Type": "AWS::CloudFront::OriginAccessControl",
+      "Properties": {
+        "OriginAccessControlConfig": {
+          "Name": "vds-v2-dev-static",
+          "OriginAccessControlOriginType": "s3",
+          "SigningBehavior": "always",
+          "SigningProtocol": "sigv4"
+        }
+      }
+    },
+    "GatewayOac": {
+      "Type": "AWS::CloudFront::OriginAccessControl",
+      "Properties": {
+        "OriginAccessControlConfig": {
+          "Name": "vds-v2-dev-gateway",
+          "OriginAccessControlOriginType": "lambda",
+          "SigningBehavior": "always",
+          "SigningProtocol": "sigv4"
+        }
+      }
+    },
+    "SecurityHeaders": {
+      "Type": "AWS::CloudFront::ResponseHeadersPolicy",
+      "Properties": {
+        "ResponseHeadersPolicyConfig": {
+          "Name": "vds-v2-dev-security",
+          "SecurityHeadersConfig": {
+            "ContentTypeOptions": {
+              "Override": true
+            },
+            "FrameOptions": {
+              "FrameOption": "DENY",
+              "Override": true
+            },
+            "ReferrerPolicy": {
+              "ReferrerPolicy": "no-referrer",
+              "Override": true
+            },
+            "StrictTransportSecurity": {
+              "AccessControlMaxAgeSec": 31536000,
+              "Override": true
+            },
+            "ContentSecurityPolicy": {
+              "Override": true,
+              "ContentSecurityPolicy": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; connect-src 'self' https://*.amazoncognito.com https://*.amazonaws.com; img-src 'self' data: blob:; frame-ancestors 'none'; base-uri 'none'; form-action 'none'; object-src 'none'"
+            }
+          }
+        }
+      }
+    },
+    "Distribution": {
+      "Type": "AWS::CloudFront::Distribution",
+      "Properties": {
+        "DistributionConfig": {
+          "Enabled": true,
+          "Comment": "Restricted Virtual Data Scientist development workspace",
+          "DefaultRootObject": "index.html",
+          "PriceClass": "PriceClass_100",
+          "HttpVersion": "http2",
+          "ViewerCertificate": {
+            "Fn::If": [
+              "HasDomain",
+              {
+                "AcmCertificateArn": {
+                  "Ref": "CertificateArn"
+                },
+                "SslSupportMethod": "sni-only",
+                "MinimumProtocolVersion": "TLSv1.2_2021"
+              },
+              {
+                "CloudFrontDefaultCertificate": true
+              }
+            ]
+          },
+          "Origins": [
+            {
+              "Id": "site",
+              "DomainName": {
+                "Fn::GetAtt": [
+                  "Site",
+                  "RegionalDomainName"
+                ]
+              },
+              "S3OriginConfig": {
+                "OriginAccessIdentity": ""
+              },
+              "OriginAccessControlId": {
+                "Ref": "StaticOac"
+              }
+            },
+            {
+              "Id": "gateway",
+              "DomainName": {
+                "Fn::Select": [
+                  2,
+                  {
+                    "Fn::Split": [
+                      "/",
+                      {
+                        "Fn::GetAtt": [
+                          "GatewayUrl",
+                          "FunctionUrl"
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              },
+              "CustomOriginConfig": {
+                "OriginProtocolPolicy": "https-only",
+                "OriginSSLProtocols": [
+                  "TLSv1.2"
+                ],
+                "OriginReadTimeout": 60
+              },
+              "OriginAccessControlId": {
+                "Ref": "GatewayOac"
+              }
+            },
+            {
+              "Fn::If": [
+                "HasStreaming",
+                {
+                  "Id": "stream",
+                  "DomainName": {
+                    "Fn::Select": [
+                      2,
+                      {
+                        "Fn::Split": [
+                          "/",
+                          {
+                            "Fn::GetAtt": [
+                              "StreamUrl",
+                              "FunctionUrl"
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  "CustomOriginConfig": {
+                    "OriginProtocolPolicy": "https-only",
+                    "OriginSSLProtocols": [
+                      "TLSv1.2"
+                    ],
+                    "OriginReadTimeout": 35
+                  },
+                  "OriginAccessControlId": {
+                    "Ref": "GatewayOac"
+                  }
+                },
+                {
+                  "Ref": "AWS::NoValue"
+                }
+              ]
+            }
+          ],
+          "DefaultCacheBehavior": {
+            "TargetOriginId": "site",
+            "ViewerProtocolPolicy": "redirect-to-https",
+            "Compress": true,
+            "CachePolicyId": "658327ea-f89d-4fab-a63d-7e88639e58f6",
+            "ResponseHeadersPolicyId": {
+              "Ref": "SecurityHeaders"
+            }
+          },
+          "CacheBehaviors": [
+            {
+              "Fn::If": [
+                "HasStreaming",
+                {
+                  "PathPattern": "/api/v2/speech/transcribe",
+                  "TargetOriginId": "stream",
+                  "ViewerProtocolPolicy": "https-only",
+                  "AllowedMethods": [
+                    "GET",
+                    "HEAD",
+                    "OPTIONS",
+                    "PUT",
+                    "PATCH",
+                    "POST",
+                    "DELETE"
+                  ],
+                  "CachedMethods": [
+                    "GET",
+                    "HEAD"
+                  ],
+                  "CachePolicyId": "4135ea2d-6df8-44a3-9df3-4b5a84be39ad",
+                  "OriginRequestPolicyId": "b689b0a8-53d0-40ab-baf2-68738e2966ac",
+                  "ResponseHeadersPolicyId": {
+                    "Ref": "SecurityHeaders"
+                  }
+                },
+                {
+                  "Ref": "AWS::NoValue"
+                }
+              ]
+            },
+            {
+              "Fn::If": [
+                "HasStreaming",
+                {
+                  "PathPattern": "/api/v2/events/stream",
+                  "TargetOriginId": "stream",
+                  "ViewerProtocolPolicy": "https-only",
+                  "AllowedMethods": [
+                    "GET",
+                    "HEAD",
+                    "OPTIONS",
+                    "PUT",
+                    "PATCH",
+                    "POST",
+                    "DELETE"
+                  ],
+                  "CachedMethods": [
+                    "GET",
+                    "HEAD"
+                  ],
+                  "CachePolicyId": "4135ea2d-6df8-44a3-9df3-4b5a84be39ad",
+                  "OriginRequestPolicyId": "b689b0a8-53d0-40ab-baf2-68738e2966ac",
+                  "ResponseHeadersPolicyId": {
+                    "Ref": "SecurityHeaders"
+                  }
+                },
+                {
+                  "Ref": "AWS::NoValue"
+                }
+              ]
+            },
+            {
+              "PathPattern": "/api/v2/*",
+              "TargetOriginId": "gateway",
+              "ViewerProtocolPolicy": "https-only",
+              "AllowedMethods": [
+                "GET",
+                "HEAD",
+                "OPTIONS",
+                "PUT",
+                "PATCH",
+                "POST",
+                "DELETE"
+              ],
+              "CachedMethods": [
+                "GET",
+                "HEAD"
+              ],
+              "CachePolicyId": "4135ea2d-6df8-44a3-9df3-4b5a84be39ad",
+              "OriginRequestPolicyId": "b689b0a8-53d0-40ab-baf2-68738e2966ac",
+              "ResponseHeadersPolicyId": {
+                "Ref": "SecurityHeaders"
+              }
+            }
+          ],
+          "Aliases": {
+            "Fn::If": [
+              "HasDomain",
+              [
+                {
+                  "Ref": "CustomDomain"
+                },
+                {
+                  "Fn::If": [
+                    "HasPreviousDomain",
+                    {
+                      "Ref": "PreviousDomain"
+                    },
+                    {
+                      "Ref": "AWS::NoValue"
+                    }
+                  ]
+                }
+              ],
+              {
+                "Ref": "AWS::NoValue"
+              }
+            ]
+          }
+        }
+      }
+    },
+    "SitePolicy": {
+      "Type": "AWS::S3::BucketPolicy",
+      "Properties": {
+        "Bucket": {
+          "Ref": "Site"
+        },
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "cloudfront.amazonaws.com"
+              },
+              "Action": "s3:GetObject",
+              "Resource": {
+                "Fn::Sub": "${Site.Arn}/*"
+              },
+              "Condition": {
+                "StringEquals": {
+                  "AWS:SourceArn": {
+                    "Fn::Sub": "arn:${AWS::Partition}:cloudfront::${AWS::AccountId}:distribution/${Distribution}"
+                  }
+                }
+              }
+            },
+            {
+              "Effect": "Deny",
+              "Principal": "*",
+              "Action": "s3:*",
+              "Resource": [
+                {
+                  "Fn::GetAtt": [
+                    "Site",
+                    "Arn"
+                  ]
+                },
+                {
+                  "Fn::Sub": "${Site.Arn}/*"
+                }
+              ],
+              "Condition": {
+                "Bool": {
+                  "aws:SecureTransport": "false"
+                }
+              }
+            }
+          ]
+        }
+      }
+    },
+    "AllowCloudFrontUrl": {
+      "Type": "AWS::Lambda::Permission",
+      "Properties": {
+        "FunctionName": {
+          "Ref": "Gateway"
+        },
+        "Action": "lambda:InvokeFunctionUrl",
+        "Principal": "cloudfront.amazonaws.com",
+        "SourceArn": {
+          "Fn::Sub": "arn:${AWS::Partition}:cloudfront::${AWS::AccountId}:distribution/${Distribution}"
+        },
+        "FunctionUrlAuthType": "AWS_IAM"
+      }
+    },
+    "AllowCloudFrontInvoke": {
+      "Type": "AWS::Lambda::Permission",
+      "Properties": {
+        "FunctionName": {
+          "Ref": "Gateway"
+        },
+        "Action": "lambda:InvokeFunction",
+        "Principal": "cloudfront.amazonaws.com",
+        "SourceArn": {
+          "Fn::Sub": "arn:${AWS::Partition}:cloudfront::${AWS::AccountId}:distribution/${Distribution}"
+        },
+        "InvokedViaFunctionUrl": true
+      }
+    },
+    "StreamLogs": {
+      "Type": "AWS::Logs::LogGroup",
+      "Properties": {
+        "LogGroupName": "/aws/lambda/vds-v2-dev-stream",
+        "RetentionInDays": 7
+      },
+      "Condition": "HasStreaming"
+    },
+    "StreamRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "lambda.amazonaws.com"
+              },
+              "Action": "sts:AssumeRole"
+            }
+          ]
+        },
+        "Policies": [
+          {
+            "PolicyName": "ReadVerifiedStream",
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "dynamodb:GetItem",
+                    "dynamodb:DeleteItem"
+                  ],
+                  "Resource": {
+                    "Fn::Sub": "arn:${AWS::Partition}:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${StateTable}"
+                  }
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "s3:GetObject"
+                  ],
+                  "Resource": {
+                    "Fn::Sub": "arn:${AWS::Partition}:s3:::${DataBucket}/*/*/runs/*.json"
+                  }
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "transcribe:StartStreamTranscription"
+                  ],
+                  "Resource": "*"
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "logs:CreateLogStream",
+                    "logs:PutLogEvents"
+                  ],
+                  "Resource": {
+                    "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/vds-v2-dev-stream:*"
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "Condition": "HasStreaming"
+    },
+    "Stream": {
+      "Type": "AWS::Lambda::Function",
+      "DependsOn": "StreamLogs",
+      "Properties": {
+        "FunctionName": "vds-v2-dev-stream",
+        "Runtime": "nodejs22.x",
+        "Architectures": [
+          "arm64"
+        ],
+        "Handler": "index.handler",
+        "Role": {
+          "Fn::GetAtt": [
+            "StreamRole",
+            "Arn"
+          ]
+        },
+        "Code": {
+          "S3Bucket": {
+            "Ref": "DataBucket"
+          },
+          "S3Key": {
+            "Ref": "StreamCodeKey"
+          }
+        },
+        "Timeout": 35,
+        "MemorySize": 128,
+        "Environment": {
+          "Variables": {
+            "VDS_STATE_TABLE": {
+              "Ref": "StateTable"
+            },
+            "VDS_DATA_BUCKET": {
+              "Ref": "DataBucket"
+            }
+          }
+        }
+      },
+      "Condition": "HasStreaming"
+    },
+    "StreamUrl": {
+      "Type": "AWS::Lambda::Url",
+      "Properties": {
+        "TargetFunctionArn": {
+          "Ref": "Stream"
+        },
+        "AuthType": "AWS_IAM",
+        "InvokeMode": "RESPONSE_STREAM"
+      },
+      "Condition": "HasStreaming"
+    },
+    "AllowCloudFrontStreamUrl": {
+      "Type": "AWS::Lambda::Permission",
+      "Properties": {
+        "FunctionName": {
+          "Ref": "Stream"
+        },
+        "Action": "lambda:InvokeFunctionUrl",
+        "Principal": "cloudfront.amazonaws.com",
+        "SourceArn": {
+          "Fn::Sub": "arn:${AWS::Partition}:cloudfront::${AWS::AccountId}:distribution/${Distribution}"
+        },
+        "FunctionUrlAuthType": "AWS_IAM"
+      },
+      "Condition": "HasStreaming"
+    },
+    "AllowCloudFrontStreamInvoke": {
+      "Type": "AWS::Lambda::Permission",
+      "Properties": {
+        "FunctionName": {
+          "Ref": "Stream"
+        },
+        "Action": "lambda:InvokeFunction",
+        "Principal": "cloudfront.amazonaws.com",
+        "SourceArn": {
+          "Fn::Sub": "arn:${AWS::Partition}:cloudfront::${AWS::AccountId}:distribution/${Distribution}"
+        },
+        "InvokedViaFunctionUrl": true
+      },
+      "Condition": "HasStreaming"
+    }
+  },
+  "Outputs": {
+    "SiteBucket": {
+      "Value": {
+        "Ref": "Site"
+      }
+    },
+    "WebUrl": {
+      "Value": {
+        "Fn::If": [
+          "HasDomain",
+          {
+            "Fn::Sub": "https://${CustomDomain}"
+          },
+          {
+            "Fn::Sub": "https://${Distribution.DomainName}"
+          }
+        ]
+      }
+    },
+    "LegacyWebUrl": {
+      "Value": {
+        "Fn::Sub": "https://${Distribution.DomainName}"
+      }
+    },
+    "DistributionId": {
+      "Value": {
+        "Ref": "Distribution"
+      }
+    },
+    "UserPoolId": {
+      "Value": {
+        "Ref": "Users"
+      }
+    },
+    "ClientId": {
+      "Value": {
+        "Ref": "Client"
+      }
+    },
+    "LoginDomain": {
+      "Value": {
+        "Fn::Sub": "https://${LoginDomain}.auth.${AWS::Region}.amazoncognito.com"
+      }
+    },
+    "GatewayOriginUrl": {
+      "Value": {
+        "Fn::GetAtt": [
+          "GatewayUrl",
+          "FunctionUrl"
+        ]
+      }
+    },
+    "PreviewEnabled": {
+      "Value": {
+        "Ref": "PreviewEnabled"
+      }
+    },
+    "GuestEnabled": {
+      "Value": {
+        "Ref": "GuestEnabled"
+      }
+    },
+    "StreamOriginUrl": {
+      "Condition": "HasStreaming",
+      "Value": {
+        "Fn::GetAtt": [
+          "StreamUrl",
+          "FunctionUrl"
+        ]
+      }
+    }
+  }
+}

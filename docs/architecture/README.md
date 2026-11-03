@@ -1,6 +1,10 @@
 # Architecture Diagrams
 
-Primary project architecture:
+The currently deployed development flow and its trust boundaries are documented
+in [project context](../../project_context.md) and the actual resource manifest
+in [deployment evidence](../deployment/README.md).
+
+The following diagrams preserve the broader earlier architecture/design:
 
 - `virtual-data-scientist-architecture.svg`: rendered diagram for GitHub and
   portfolio use.

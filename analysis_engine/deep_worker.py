@@ -9,6 +9,7 @@ changing the analysis run lifecycle.
 from __future__ import annotations
 
 import datetime as dt
+from contextlib import closing
 import re
 import sqlite3
 from pathlib import Path
@@ -32,7 +33,7 @@ def utc_now() -> str:
 
 
 def fetch_rows(db_path: Path, sql: str, params: tuple[Any, ...] = ()) -> list[dict[str, Any]]:
-    with sqlite3.connect(db_path) as con:
+    with closing(sqlite3.connect(db_path)) as con:
         con.row_factory = sqlite3.Row
         return [dict(row) for row in con.execute(sql, params).fetchall()]
 

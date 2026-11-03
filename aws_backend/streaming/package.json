@@ -1,0 +1,14 @@
+{
+  "name": "vds-development-streaming",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test ../../tests/streaming.test.mjs"
+  },
+  "dependencies": {
+    "@aws-sdk/client-dynamodb": "3.1161.0",
+    "@aws-sdk/client-s3": "3.1161.0",
+    "@aws-sdk/client-transcribe-streaming": "3.1161.0"
+  }
+}

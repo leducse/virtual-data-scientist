@@ -1,0 +1,54 @@
+{
+  "runtime_arn": "arn:aws:bedrock-agentcore:us-east-1:441383083571:runtime/VirtualDataScientistV2Dev-Tr4IBoExJp",
+  "checks": {
+    "malformed_csv": {
+      "passed": true,
+      "code": "clarification_required",
+      "message": "I could not find a usable data table. Please provide a table export with records beneath its header."
+    },
+    "ambiguous_workbook": {
+      "passed": true,
+      "code": "clarification_required",
+      "message": "This workbook contains several comparable data tables: Sheet, Other business. Which business dataset should I analyze?"
+    },
+    "idempotent_submission": {
+      "passed": true,
+      "run_id": "a9018acf80d4bdd7293e16dbe4d55c26"
+    },
+    "idempotency_conflict": {
+      "passed": true,
+      "code": "idempotency_conflict",
+      "message": "Request identifier already belongs to another question."
+    },
+    "other_owner_run": {
+      "passed": true,
+      "code": "not_found",
+      "message": "The requested data or analysis is not available."
+    },
+    "other_owner_delete": {
+      "passed": true,
+      "code": "not_found",
+      "message": "The requested data or analysis is not available."
+    },
+    "cancel_no_late_publication": {
+      "passed": true,
+      "run_id": "a9018acf80d4bdd7293e16dbe4d55c26",
+      "observed_after_seconds": 8
+    },
+    "deleted_dataset_run": {
+      "passed": true,
+      "code": "not_found",
+      "message": "The requested data or analysis is not available."
+    },
+    "delete_reconnect": {
+      "passed": true,
+      "dataset_id": "df9cdaa2ca0f470d93122620fc538d76"
+    },
+    "s3_deleted_prefix_empty": {
+      "passed": true
+    },
+    "owner_lease_released": {
+      "passed": true
+    }
+  }
+}

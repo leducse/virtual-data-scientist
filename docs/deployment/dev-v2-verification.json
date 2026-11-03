@@ -1,0 +1,43 @@
+{
+  "url": "https://analyst.decision-layer.com/",
+  "health": {
+    "ok": true,
+    "service": "virtual-data-scientist-v2",
+    "release": "dev-20261031-15"
+  },
+  "python_tests": 71,
+  "node_tests": 12,
+  "hosted_excel_profile": {
+    "sheet": "Transactions",
+    "header_row": 3,
+    "rows": 72,
+    "units": "USD",
+    "technical_mapping_controls": 0
+  },
+  "browser_checks": {
+    "forecast_figures": 3,
+    "palettes_preserve_values": true,
+    "hover_tooltips": true,
+    "learning_methods": 6,
+    "code_notebook_zip": true,
+    "prepared_parquet_download": true,
+    "png_html_python_downloads": true,
+    "reload_preserves_results_and_palette": true,
+    "desktop_1440_and_mobile_390_no_overflow": true,
+    "console_errors": 0,
+    "console_warnings": 0
+  },
+  "speech": {
+    "provider": "Amazon Transcribe",
+    "browser_audio_pipeline": "Synthetic microphone MediaStream through the actual AudioWorklet/PCM path",
+    "expected_and_observed": "Show monthly revenue for the last year.",
+    "no_analysis_automatically_submitted": true,
+    "physical_microphone_tested": false
+  },
+  "guest_trial": "Five successes, sixth denied, account claim and member continuation verified through a temporary IAM-only Lambda; anonymous launch remains off.",
+  "observability": "Private dashboard/alarms deployed; workflow and usage records observed; outbound notifications not configured.",
+  "runtime_version": "14",
+  "browser_tested_analysis_release": "dev-20261031-12",
+  "prepared_export_tested_release": "dev-20261031-13",
+  "final_quota_cleanup_guards": "Dedicated tests retain reservations for unknown execution and unconfirmed cleanup."
+}

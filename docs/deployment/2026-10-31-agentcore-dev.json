@@ -1,0 +1,20 @@
+{
+  "date": "2026-10-31",
+  "account": "441383083571",
+  "region": "us-east-1",
+  "stack_name": "VirtualDataScientistV2Dev",
+  "stack_status": "UPDATE_COMPLETE",
+  "outputs": {
+    "DataBucket": "virtualdatascientistv2dev-data-rq97bezpykb7",
+    "StateTable": "VirtualDataScientistV2Dev-State-1WS9FXC3D4GBA",
+    "ImageRepository": "441383083571.dkr.ecr.us-east-1.amazonaws.com/virtual-data-scientist-v2-dev",
+    "RuntimeArn": "arn:aws:bedrock-agentcore:us-east-1:441383083571:runtime/VirtualDataScientistV2Dev-Tr4IBoExJp"
+  },
+  "image_digest": "sha256:0817211625b3242653fdc28239fc4322b82ee9512f95f4eb6e494cfc7341bcc0",
+  "release": "dev-20261031-08",
+  "model_id": "us.amazon.nova-pro-v1:0",
+  "test_allowance_usd": 10,
+  "scope": "Separate IAM-authenticated development runtime; public website unchanged",
+  "retention_days": 7,
+  "web_origin": "https://d19bkp3wlr8r7k.cloudfront.net"
+}

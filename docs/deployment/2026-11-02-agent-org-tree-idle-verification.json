@@ -1,0 +1,61 @@
+{
+  "verified_at": "2026-11-03T02:04:57.613498+00:00",
+  "scope": "Ready-state mounting of the published activity viewer, without starting an analysis",
+  "source_base_commit": "5a9006ac01e78f029cfa025265c5e752d6a44a9b",
+  "web_url": "https://mlworkbench.decision-layer.com/",
+  "static_release": "df882437320af25be7d4",
+  "assets": {
+    "workflow.js": {
+      "path": "/static/releases/df882437320af25be7d4/workflow.js",
+      "matches_local": true,
+      "sha256": "214a060a5bc62fcc60ff8e4245361bcb5572cce2449fcad02ac42c35db46bf3e"
+    },
+    "workflow.css": {
+      "path": "/static/releases/df882437320af25be7d4/workflow.css",
+      "matches_local": true,
+      "sha256": "4fef817a85604fc406f558efa58509a4802ff2bf3509b37d440bf46a9dda4e99"
+    },
+    "workspace.js": {
+      "path": "/static/releases/df882437320af25be7d4/workspace.js",
+      "matches_local": true,
+      "sha256": "5d8d5207f3f01a0b5d8571908c6efa513fc389fb9ed087351b8e9e2d5086864e"
+    }
+  },
+  "invalidation": {
+    "id": "IE7HS94GLWIO7EQTKS3ZO6HHGX",
+    "status": "Completed",
+    "created_at": "2026-11-03T02:03:52.033000+00:00"
+  },
+  "checks": {
+    "javascript_tests_passed": 31,
+    "build_passed": true,
+    "static_workspace_syntax_passed": true,
+    "browser": {
+      "initial_workspace_mounts_idle_viewer": true,
+      "ready_node_count": 1,
+      "idle_edges": 0,
+      "idle_working_dots": 0,
+      "ready_label": "Ready for your question",
+      "quick_route_fixture": {
+        "nodes": 4,
+        "working_branches": 1
+      },
+      "desktop_width": 1200,
+      "mobile_width": 390,
+      "mobile_overflow": false,
+      "local_console_errors": 0,
+      "hosted_ready_view_verified": true,
+      "hosted_panel_color": "rgb(17, 28, 34)",
+      "user_tab_refreshed_with_draft_preserved": true,
+      "user_tab_final_width": 1200,
+      "user_tab_map_expanded": true,
+      "mobile_test_page_closed": true
+    }
+  },
+  "analysis_submissions_for_this_verification": 0,
+  "backend_execution_changes": false,
+  "limitations": [
+    "Active-route browser transitions used explicit UI event fixtures",
+    "No new paid AgentCore model or analytical acceptance run"
+  ]
+}

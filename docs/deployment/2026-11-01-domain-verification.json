@@ -1,0 +1,109 @@
+{
+  "release": "dev-20261101-01",
+  "runtime_version": "17",
+  "image_digest": "sha256:a09d2b53cc3625906173c55c77c3dd898c07bfb52243778e8f7f2e1383a8f98f",
+  "primary_origin": "https://mlworkbench.decision-layer.com",
+  "retained_origins": [
+    "https://analyst.decision-layer.com",
+    "https://d19bkp3wlr8r7k.cloudfront.net"
+  ],
+  "stacks": {
+    "VirtualDataScientistV2Dev": "UPDATE_COMPLETE",
+    "VirtualDataScientistV2DevWeb": "UPDATE_COMPLETE"
+  },
+  "resource_changes": {
+    "VirtualDataScientistV2Dev": [
+      {
+        "LogicalResourceId": "DataPolicy",
+        "Action": "Modify",
+        "Replacement": "False"
+      },
+      {
+        "LogicalResourceId": "Data",
+        "Action": "Modify",
+        "Replacement": "False"
+      },
+      {
+        "LogicalResourceId": "RuntimeRole",
+        "Action": "Modify",
+        "Replacement": "False"
+      },
+      {
+        "LogicalResourceId": "Runtime",
+        "Action": "Modify",
+        "Replacement": "False"
+      }
+    ],
+    "VirtualDataScientistV2DevWeb": [
+      {
+        "LogicalResourceId": "Client",
+        "Action": "Modify",
+        "Replacement": "False"
+      },
+      {
+        "LogicalResourceId": "Distribution",
+        "Action": "Modify",
+        "Replacement": "False"
+      },
+      {
+        "LogicalResourceId": "Gateway",
+        "Action": "Modify",
+        "Replacement": "False"
+      }
+    ]
+  },
+  "verified_s3_cors_origins": [
+    "https://mlworkbench.decision-layer.com",
+    "https://d19bkp3wlr8r7k.cloudfront.net",
+    "https://analyst.decision-layer.com"
+  ],
+  "verified_callback_and_logout_urls": [
+    "https://analyst.decision-layer.com/",
+    "https://d19bkp3wlr8r7k.cloudfront.net/",
+    "https://mlworkbench.decision-layer.com/"
+  ],
+  "python_tests": 87,
+  "javascript_tests": 25,
+  "production_npm_vulnerabilities": 0,
+  "admissions_before": 19,
+  "admissions_after": 20,
+  "model_analyses_submitted": 0,
+  "runtime_health": {
+    "release": "dev-20261101-01",
+    "ok": true
+  },
+  "authentication_upload_evidence": "2026-11-01-domain-auth-acceptance.json",
+  "verification_dns": "New hostname resolved using its published public DNS answer from 1.1.1.1, scoped to the verification process. HTTPS hostname and certificate validation remained enabled. No system DNS settings or hosts file were changed.",
+  "browser_verification": "Passed using normal browser DNS/HTTPS at https://mlworkbench.decision-layer.com/ after public DNS propagation. No browser DNS override or certificate bypass was used.",
+  "retained_origin_browser_checks": {
+    "origin": "https://analyst.decision-layer.com",
+    "cognito_sign_in_page_loaded": true,
+    "back_preserved_draft": true,
+    "sign_in_enabled_after_back": true,
+    "synthetic_draft_cleared": true,
+    "model_analyses_submitted": 0
+  },
+  "implementation_commit": "55e997d1e3adf3000cccde4b3fa831ef8f56577f",
+  "implementation_ci": {
+    "push": {
+      "url": "https://github.com/leducse/virtual-data-scientist/actions/runs/41304143887",
+      "conclusion": "success"
+    },
+    "pull_request": {
+      "url": "https://github.com/leducse/virtual-data-scientist/actions/runs/41304145845",
+      "conclusion": "success"
+    }
+  },
+  "new_origin_browser_checks": {
+    "url": "https://mlworkbench.decision-layer.com/",
+    "chat_workspace_rendered": true,
+    "cognito_sign_in_page_loaded": true,
+    "new_redirect_uri_accepted": true,
+    "back_preserved_draft": true,
+    "sign_in_enabled_after_back": true,
+    "synthetic_draft_cleared": true,
+    "model_analyses_submitted": 0,
+    "screenshot": "../workspace-mlworkbench-hosted.png"
+  },
+  "dns_note": "The upstream negative answer expired and the normal DNS lookup returned the CloudFront addresses. One OS process resolver retained a negative answer longer; the browser loaded the app and its configuration/session endpoints normally."
+}

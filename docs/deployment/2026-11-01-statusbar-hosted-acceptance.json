@@ -1,0 +1,17 @@
+{
+  "release": "dev-20261101-05",
+  "origin": "https://mlworkbench.decision-layer.com",
+  "admissions_before": 32,
+  "cases": [],
+  "checks": {
+    "reviewed_openml_imports": true,
+    "unreviewed_import_denied": true,
+    "browser_job_count": 1,
+    "browser_successful_jobs": 1,
+    "synthetic_datasets_deleted": true
+  },
+  "temporary_users_removed": true,
+  "temporary_users_remaining": 0,
+  "admissions_after": 33,
+  "cleanup_errors": []
+}

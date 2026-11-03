@@ -1,0 +1,27 @@
+{
+  "runtime_status": "READY",
+  "runtime_version": "7",
+  "release": "dev-20261031-08",
+  "web_stack": "UPDATE_COMPLETE",
+  "gateway_last_update": "Successful",
+  "gateway_code_matches": true,
+  "gateway_url_auth": "AWS_IAM",
+  "only_cloudfront_resource_principal": true,
+  "open_signup_disabled": true,
+  "callback_origin": "https://d19bkp3wlr8r7k.cloudfront.net",
+  "cors_allowed_origins": [
+    "https://d19bkp3wlr8r7k.cloudfront.net"
+  ],
+  "temporary_users_removed": true,
+  "browser_reload_reconnect": true,
+  "browser_logout_hides_workspace": true,
+  "evidence_download": "analysis-24aba759.json",
+  "desktop_width": 1440,
+  "mobile_width": 390,
+  "overflow": false,
+  "application_console_errors": 0,
+  "application_console_warnings": 0,
+  "local_test_containers_stopped": true,
+  "local_bridge_stopped": true,
+  "https_sign_in_ready_after_local_shutdown": true
+}

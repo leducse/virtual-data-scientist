@@ -1,0 +1,83 @@
+{
+  "stack_name": "VirtualDataScientistV2DevWeb",
+  "change_set_id": "arn:aws:cloudformation:us-east-1:441383083571:changeSet/hosted-access-initial/d363c297-6081-484e-954b-6b6ea2f76cb5",
+  "code_sha256": "b17e7b7c7e5e1163d8bd34f7d53cf50cf89e743d71301c5ccbc1c66a54bd9b77",
+  "code_key": "deployment/web-gateway/b17e7b7c7e5e1163d8bd34f7d53cf50cf89e743d71301c5ccbc1c66a54bd9b77.zip",
+  "changes": [
+    {
+      "action": "Add",
+      "id": "AllowCloudFrontInvoke",
+      "type": "AWS::Lambda::Permission"
+    },
+    {
+      "action": "Add",
+      "id": "AllowCloudFrontUrl",
+      "type": "AWS::Lambda::Permission"
+    },
+    {
+      "action": "Add",
+      "id": "Client",
+      "type": "AWS::Cognito::UserPoolClient"
+    },
+    {
+      "action": "Add",
+      "id": "Distribution",
+      "type": "AWS::CloudFront::Distribution"
+    },
+    {
+      "action": "Add",
+      "id": "GatewayOac",
+      "type": "AWS::CloudFront::OriginAccessControl"
+    },
+    {
+      "action": "Add",
+      "id": "GatewayRole",
+      "type": "AWS::IAM::Role"
+    },
+    {
+      "action": "Add",
+      "id": "GatewayUrl",
+      "type": "AWS::Lambda::Url"
+    },
+    {
+      "action": "Add",
+      "id": "Gateway",
+      "type": "AWS::Lambda::Function"
+    },
+    {
+      "action": "Add",
+      "id": "LoginDomain",
+      "type": "AWS::Cognito::UserPoolDomain"
+    },
+    {
+      "action": "Add",
+      "id": "Logs",
+      "type": "AWS::Logs::LogGroup"
+    },
+    {
+      "action": "Add",
+      "id": "SecurityHeaders",
+      "type": "AWS::CloudFront::ResponseHeadersPolicy"
+    },
+    {
+      "action": "Add",
+      "id": "SitePolicy",
+      "type": "AWS::S3::BucketPolicy"
+    },
+    {
+      "action": "Add",
+      "id": "Site",
+      "type": "AWS::S3::Bucket"
+    },
+    {
+      "action": "Add",
+      "id": "StaticOac",
+      "type": "AWS::CloudFront::OriginAccessControl"
+    },
+    {
+      "action": "Add",
+      "id": "Users",
+      "type": "AWS::Cognito::UserPool"
+    }
+  ]
+}

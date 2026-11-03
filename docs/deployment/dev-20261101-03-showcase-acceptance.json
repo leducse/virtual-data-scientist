@@ -1,0 +1,56 @@
+{
+  "release": "dev-20261101-03",
+  "origin": "https://mlworkbench.decision-layer.com",
+  "admissions_before": 23,
+  "cases": [],
+  "checks": {
+    "synthetic_datasets_deleted": true
+  },
+  "temporary_users_removed": true,
+  "failures": [
+    {
+      "task": "clustering",
+      "run_id": "0b71da1c9a16d109fe525d8d203f1474",
+      "status": "failed",
+      "error": {
+        "code": "review_rejected",
+        "message": "The narrative introduced an unsupported number."
+      },
+      "numerical_review": {
+        "passed": true,
+        "kind": "independent_deterministic",
+        "checks": [
+          "source_measurements",
+          "covariance_eigenspectrum",
+          "orthonormal_axes",
+          "source_projection",
+          "recomputed_silhouette",
+          "cluster_centers_counts",
+          "trusted_cluster_refit"
+        ],
+        "limitations": "Independent numerical checks completed; the separate narrative review is recorded below."
+      },
+      "independent_review": {
+        "decision": "accept",
+        "explanation": "The clustering results are robust, supported by a high silhouette score and comprehensive checks. The process involved deterministic independent checks on source measurements, covariance eigenspectrum, orthonormal axes, source projection, recomputed silhouette, cluster centers counts, and trusted cluster refit. The results are reliable within the context of exploratory analysis.",
+        "metrics": {
+          "silhouette": 0.9009469779803083,
+          "groups": 3.0,
+          "rows": 300.0,
+          "projection_dimensions": 2.0
+        },
+        "limitations": [
+          "Exploratory fits describe this dataset; they do not establish predictive performance or causation.",
+          "The 2D view uses at most 600 deterministically sampled rows; downloads retain complete assignments/scores.",
+          "K-means favors roughly compact groups; a high silhouette does not prove real-world categories or stability."
+        ]
+      },
+      "execution": {
+        "session_id": "01M6BKKQEJDGDTGKDPQJDT2XA7",
+        "trace_id": "5b4c11ade6524ed4b0f8aac9b44df22d",
+        "status": "TERMINATED"
+      }
+    }
+  ],
+  "admissions_after": 24
+}

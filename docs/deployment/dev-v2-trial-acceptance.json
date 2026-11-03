@@ -1,0 +1,12 @@
+{
+  "private_guest_lambda_only": true,
+  "no_anonymous_launch": true,
+  "guest_completed_analyses": 5,
+  "sixth_denied": true,
+  "existing_and_trial_workspaces_preserved": true,
+  "member_continued": true,
+  "other_account_denied": true,
+  "incremental_sse_and_single_use_ticket": true,
+  "reproduction_bundle_downloaded": true,
+  "temporary_resources_removed_on_exit": true
+}

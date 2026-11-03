@@ -1,0 +1,255 @@
+{
+  "checked_on": "2026-11-01",
+  "release": "dev-20261101-05",
+  "runtime_version": 21,
+  "origin": "https://mlworkbench.decision-layer.com/",
+  "local_validation": {
+    "python_tests": 96,
+    "javascript_tests": 27,
+    "workflow_build": "passed",
+    "pip_check": "passed",
+    "production_npm_advisories": 0
+  },
+  "method_evidence": {
+    "classification_and_regression": "dev-20261101-02-showcase-acceptance.json",
+    "clustering_pca_anomaly_detection": "dev-20261101-04-showcase-acceptance.json",
+    "forecast_and_browser_account": "dev-20261101-05-showcase-acceptance.json"
+  },
+  "browser": {
+    "states": [
+      [
+        {
+          "id": "planner",
+          "status": "vds-flow-card is-started kind-coordinator "
+        }
+      ],
+      [
+        {
+          "id": "planner",
+          "status": "vds-flow-card is-coordinating kind-coordinator "
+        },
+        {
+          "id": "analyst",
+          "status": "vds-flow-card is-started kind-agent "
+        },
+        {
+          "id": "interpreter",
+          "status": "vds-flow-card is-queued kind-tool "
+        },
+        {
+          "id": "numerical_checks",
+          "status": "vds-flow-card is-queued kind-check "
+        },
+        {
+          "id": "reviewer",
+          "status": "vds-flow-card is-queued kind-agent "
+        },
+        {
+          "id": "publication",
+          "status": "vds-flow-card is-queued kind-output "
+        }
+      ],
+      [
+        {
+          "id": "planner",
+          "status": "vds-flow-card is-coordinating kind-coordinator "
+        },
+        {
+          "id": "analyst",
+          "status": "vds-flow-card is-completed kind-agent "
+        },
+        {
+          "id": "interpreter",
+          "status": "vds-flow-card is-started kind-tool "
+        },
+        {
+          "id": "numerical_checks",
+          "status": "vds-flow-card is-queued kind-check "
+        },
+        {
+          "id": "reviewer",
+          "status": "vds-flow-card is-queued kind-agent "
+        },
+        {
+          "id": "publication",
+          "status": "vds-flow-card is-queued kind-output "
+        }
+      ],
+      [
+        {
+          "id": "planner",
+          "status": "vds-flow-card is-coordinating kind-coordinator "
+        },
+        {
+          "id": "analyst",
+          "status": "vds-flow-card is-completed kind-agent "
+        },
+        {
+          "id": "interpreter",
+          "status": "vds-flow-card is-completed kind-tool "
+        },
+        {
+          "id": "numerical_checks",
+          "status": "vds-flow-card is-started kind-check "
+        },
+        {
+          "id": "reviewer",
+          "status": "vds-flow-card is-queued kind-agent "
+        },
+        {
+          "id": "publication",
+          "status": "vds-flow-card is-queued kind-output "
+        }
+      ],
+      [
+        {
+          "id": "planner",
+          "status": "vds-flow-card is-coordinating kind-coordinator "
+        },
+        {
+          "id": "analyst",
+          "status": "vds-flow-card is-completed kind-agent "
+        },
+        {
+          "id": "interpreter",
+          "status": "vds-flow-card is-completed kind-tool "
+        },
+        {
+          "id": "numerical_checks",
+          "status": "vds-flow-card is-completed kind-check "
+        },
+        {
+          "id": "reviewer",
+          "status": "vds-flow-card is-started kind-agent "
+        },
+        {
+          "id": "publication",
+          "status": "vds-flow-card is-queued kind-output "
+        }
+      ],
+      [
+        {
+          "id": "planner",
+          "status": "vds-flow-card is-coordinating kind-coordinator "
+        },
+        {
+          "id": "analyst",
+          "status": "vds-flow-card is-completed kind-agent "
+        },
+        {
+          "id": "interpreter",
+          "status": "vds-flow-card is-completed kind-tool "
+        },
+        {
+          "id": "numerical_checks",
+          "status": "vds-flow-card is-completed kind-check "
+        },
+        {
+          "id": "reviewer",
+          "status": "vds-flow-card is-completed kind-agent "
+        },
+        {
+          "id": "publication",
+          "status": "vds-flow-card is-completed kind-output "
+        }
+      ],
+      [
+        {
+          "id": "planner",
+          "status": "vds-flow-card is-completed kind-coordinator "
+        },
+        {
+          "id": "analyst",
+          "status": "vds-flow-card is-completed kind-agent "
+        },
+        {
+          "id": "interpreter",
+          "status": "vds-flow-card is-completed kind-tool "
+        },
+        {
+          "id": "numerical_checks",
+          "status": "vds-flow-card is-completed kind-check "
+        },
+        {
+          "id": "reviewer",
+          "status": "vds-flow-card is-completed kind-agent "
+        },
+        {
+          "id": "publication",
+          "status": "vds-flow-card is-completed kind-output "
+        }
+      ]
+    ],
+    "plotlyVersion": "4.2.0",
+    "status": "succeeded",
+    "runId": "f0209986664fbc355bf89918be6bde02",
+    "monitorHeight": 137,
+    "mobile": {
+      "monitorHeight": 137,
+      "stickyTop": 0,
+      "overflow": false,
+      "nodes": 6,
+      "plots": [
+        328,
+        328,
+        328
+      ],
+      "invalidArrows": false
+    },
+    "expanded": true,
+    "offline": {
+      "plots": 1,
+      "externalRequests": []
+    },
+    "paletteAfterReload": "ocean",
+    "helper": {
+      "ok": true,
+      "jobs": 2,
+      "successful": 2,
+      "tokens_measured": 9890
+    },
+    "verified": {
+      "ok": true,
+      "jobs": 2,
+      "successful": 2,
+      "tokens_measured": 9890
+    },
+    "logoutPersistsAfterReload": true,
+    "finished": {
+      "finished": true
+    },
+    "back_from_login_controls_restored": true,
+    "gallery_browse_cards": 10,
+    "sample_login_resumed_profile_without_analysis": true,
+    "real_csv_upload_profiled_without_column_controls": true,
+    "exactly_one_browser_analysis": true,
+    "tooltip": "balanced_accuracy dummy 0.333",
+    "palette_change": {
+      "before": "#146659",
+      "after": "#155f99"
+    },
+    "keyboard_node_inspection": true,
+    "downloads": [
+      "PNG",
+      "SVG",
+      "standalone HTML",
+      "figure JSON",
+      "figure JavaScript",
+      "figure Python",
+      "full analysis ZIP",
+      "prepared Parquet"
+    ],
+    "downloaded_script_reproduced": true,
+    "all_downloaded_notebook_code_cells_reproduced": true,
+    "reproduction_python": "3.12.13",
+    "screenshots": [
+      "../workspace-ml-showcase.png",
+      "../agent-monitor-mobile.png"
+    ]
+  },
+  "scope_limits": [
+    "Source analysis libraries in AgentCore Code Interpreter differ from runtime; forecast cross-library parity is recorded separately.",
+    "Classification/regression and exploratory methods were first verified across release02/release04; final release05 changes Holt fitting and includes a new real-upload classification check.",
+    "No owner-account first sign-in, new speech test, production load or public launch is claimed by this acceptance."
+  ]
+}

@@ -1,0 +1,60 @@
+{
+  "origin": "https://d19bkp3wlr8r7k.cloudfront.net",
+  "checks": {
+    "anonymous_denied": true,
+    "invalid_and_id_tokens_denied": true,
+    "direct_lambda_denied": true,
+    "direct_static_bucket_denied": true,
+    "owner_spoof_ignored": true,
+    "post_key_tampering_denied": true,
+    "other_user_staged_upload_denied": true,
+    "other_user_workspace_isolated": true,
+    "oversize_rejected": true,
+    "exact_ten_mib_prepared_and_deleted": true,
+    "hosted_browser_chart_forecast": true,
+    "other_user_result_denied": true,
+    "sandbox_terminated": true
+  },
+  "run_id": "24aba75962a2dfb446257277ebf61f5f",
+  "execution": "agentcore_code_interpreter",
+  "release": "dev-20261031-08",
+  "timing_ms": {
+    "analysis": 2326.09,
+    "end_to_end": 14047.49
+  },
+  "sandbox_session": "01M69GGEHGSK5C0VQTMEH4GE3W",
+  "sandbox_status": "TERMINATED",
+  "test": {
+    "actual": [
+      21790.0,
+      22220.0,
+      22650.0
+    ],
+    "predictions": [
+      21560.909090909092,
+      21915.828877005348,
+      22270.748663101607
+    ],
+    "mae": 304.17112299465106,
+    "baseline_predictions": [
+      21360.0,
+      21360.0,
+      21360.0
+    ],
+    "baseline_mae": 860.0
+  },
+  "independent_review": {
+    "decision": "accept",
+    "explanation": "The selected method 'linear_trend' has a test MAE of 304.17, which is significantly lower than the baseline MAE of 860.0. All independent deterministic checks have passed, indicating that the method performs well compared to the baseline. Limitations include the reliance on independent numerical checks and the need for a separate narrative review.",
+    "test_mae": 304.17112299465106,
+    "baseline_mae": 860.0,
+    "limitations": [
+      "Reliance on independent numerical checks",
+      "Need for separate narrative review",
+      "Results are specific to the 'linear_trend' method",
+      "MAE values are in USD",
+      "Baseline MAE is significantly higher than test MAE",
+      "Checks passed but narrative review is recorded separately"
+    ]
+  }
+}

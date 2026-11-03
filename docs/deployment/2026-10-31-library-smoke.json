@@ -1,0 +1,52 @@
+{
+  "session_id": "01M69EAD0R53X2H430RJ3G25MG",
+  "timing_ms": {
+    "session_start": 943.86,
+    "input_ready": 1047.25,
+    "total": 6010.07
+  },
+  "cleanup_error": null,
+  "manifest": {
+    "rows": 72,
+    "total": 579060.0,
+    "months": 36,
+    "versions": {
+      "pyarrow": "17.0.0",
+      "duckdb": "1.3.2",
+      "openpyxl": "3.1.3",
+      "numpy": "1.26.4",
+      "pandas": "2.3.1",
+      "scipy": "1.16.0",
+      "scikit-learn": "1.5.0",
+      "statsmodels": "0.14.5",
+      "matplotlib": "3.9.0",
+      "plotly": "5.22.0"
+    }
+  },
+  "plan": {
+    "dataset_version": "synthetic-v1",
+    "revision": 1,
+    "question": "Show monthly revenue",
+    "tier": "quick",
+    "task": "monthly_summary",
+    "metric": "revenue",
+    "clarification": null,
+    "time_column": "date",
+    "features": [],
+    "horizon": 3,
+    "units": "source units (unconfirmed)",
+    "definition": "Sum of the selected measure; each row contributes once.",
+    "calendar": "calendar_month",
+    "validation": "exact_aggregation",
+    "methods": [
+      "duckdb_monthly_sum"
+    ],
+    "max_seconds": 120,
+    "max_candidates": 2,
+    "research_requirement": "none",
+    "reason": "To show the monthly revenue as requested by the user.",
+    "planner": "strands",
+    "release": "tabular-local-v1"
+  },
+  "plot_bytes": 27625
+}

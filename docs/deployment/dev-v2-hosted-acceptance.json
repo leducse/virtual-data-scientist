@@ -1,0 +1,55 @@
+{
+  "origin": "https://analyst.decision-layer.com",
+  "checks": {
+    "anonymous_denied": true,
+    "invalid_and_id_tokens_denied": true,
+    "direct_lambda_denied": true,
+    "direct_static_bucket_denied": true,
+    "owner_spoof_ignored": true,
+    "post_key_tampering_denied": true,
+    "other_user_staged_upload_denied": true,
+    "other_user_workspace_isolated": true,
+    "oversize_rejected": true,
+    "exact_ten_mib_prepared_and_deleted": true,
+    "hosted_browser_chart_forecast": true,
+    "other_user_result_denied": true,
+    "sandbox_terminated": true
+  },
+  "run_id": "2576c5e9b105d520c3c27683c96d2f8b",
+  "execution": "agentcore_code_interpreter",
+  "release": "dev-20261031-12",
+  "timing_ms": {
+    "analysis": 1846.75,
+    "end_to_end": 13147.39
+  },
+  "sandbox_session": "01M69YKDP1JHG40SAM10NWE7AN",
+  "sandbox_status": "TERMINATED",
+  "test": {
+    "actual": [
+      21790.0,
+      22220.0,
+      22650.0
+    ],
+    "predictions": [
+      21560.909090909092,
+      21915.828877005348,
+      22270.748663101607
+    ],
+    "mae": 304.17112299465106,
+    "baseline_predictions": [
+      21360.0,
+      21360.0,
+      21360.0
+    ],
+    "baseline_mae": 860.0
+  },
+  "independent_review": {
+    "decision": "accept",
+    "explanation": "The selected method 'linear_trend' has a test MAE of 304.17, which is significantly lower than the baseline MAE of 860.0. This indicates that the method performs better than the baseline. The checks have passed, and the limitations are noted.",
+    "test_mae": 304.17,
+    "baseline_mae": 860.0,
+    "limitations": [
+      "Independent numerical checks completed; the separate narrative review is recorded below."
+    ]
+  }
+}

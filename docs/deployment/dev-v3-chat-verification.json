@@ -1,0 +1,41 @@
+{
+  "runtime_release": "dev-20261031-17",
+  "runtime_status": "READY",
+  "runtime_version": "16",
+  "hosted_chat_flow_release": "dev-20261031-16",
+  "frontend_asset_release": "3e359247d0eea4b6e78f",
+  "image_scan_status": "COMPLETE",
+  "image_findings": {
+    "MEDIUM": 2
+  },
+  "python_tests": 79,
+  "node_tests": 17,
+  "browser_checks": {
+    "left_chat_right_evidence": true,
+    "back_restores_controls_question_and_file": true,
+    "sign_in_resumes_one_job": true,
+    "session_and_draft_survive_reload": true,
+    "exactly_two_hosted_jobs": true,
+    "forecast_charts": 3,
+    "linked_time_views": 2,
+    "categorical_comparison_unlinked": true,
+    "all_four_palettes": true,
+    "no_horizontal_overflow_390px": true,
+    "cookie_secure_httponly_samesite_lax": true,
+    "logout_cookie_replay_401": true,
+    "logout_clears_draft": true,
+    "self_signup_form_present": true,
+    "registration_email_verification_not_submitted": true
+  },
+  "quota_test": {
+    "method": "synthetic acceptance account temporarily set to 100000 tokens, then restored to measured usage",
+    "status": 429,
+    "code": "quota_exceeded",
+    "charts_and_downloads_accessible": true,
+    "no_added_admission": true
+  },
+  "global_admissions_consumed": 15,
+  "global_admission_limit": 20,
+  "admission_ledger_reset": false,
+  "temporary_acceptance_users_removed": true
+}

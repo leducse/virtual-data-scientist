@@ -1,0 +1,32 @@
+{
+  "release": "dev-20261031-17",
+  "run_id": "27bc8dba82abc012c229343afa327eae",
+  "execution": "trusted_duckdb",
+  "source_total": 579060.0,
+  "review_passed": true,
+  "measured_usage": [
+    {
+      "role": "planner",
+      "usage": {
+        "inputTokens": 1778,
+        "outputTokens": 230,
+        "totalTokens": 2008
+      },
+      "model_id": "us.amazon.nova-pro-v1:0"
+    }
+  ],
+  "allowance": {
+    "kind": "member",
+    "limit": 20,
+    "remaining": 19,
+    "token_limit": 100000,
+    "tokens_measured": 2008,
+    "tokens_committed": 2008,
+    "tokens_reserved": 0,
+    "tokens_remaining": 97992,
+    "can_submit": true,
+    "note": "Input and output tokens across all agents count toward this account preview. In-flight and unknown usage stays reserved. A small remainder may not cover another bounded request. Development capacity limits also apply."
+  },
+  "duplicate_submission_same_job": true,
+  "synthetic_dataset_and_results_deleted": true
+}

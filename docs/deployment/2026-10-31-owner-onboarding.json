@@ -1,0 +1,10 @@
+{
+  "recorded_at": "2026-10-31T20:04:14.874248+00:00",
+  "owner_account_provisioned": true,
+  "invitation_request_accepted": true,
+  "delivery_medium": "EMAIL",
+  "user_status": "FORCE_CHANGE_PASSWORD",
+  "password_handled_by": "Cognito directly to account owner",
+  "inbox_delivery_confirmed": false,
+  "first_sign_in_confirmed": false
+}

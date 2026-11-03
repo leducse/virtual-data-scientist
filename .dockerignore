@@ -1,0 +1,8 @@
+**
+!Dockerfile
+!requirements-demo.lock.txt
+!analysis_engine/
+!analysis_engine/*.py
+!app/
+!app/CloudDataScientist/
+!app/CloudDataScientist/*.py

@@ -1,0 +1,167 @@
+{
+  "run_id": "f44d676dda903049d74dd76ca53d1f01",
+  "dataset_id": "13e0cc308b7447228d0883f7e32e3dfc",
+  "release": "dev-20261031-17",
+  "status": "succeeded",
+  "execution": "agentcore_code_interpreter",
+  "review": true,
+  "independent_review": "accept",
+  "test_mae": 304.17112299465106,
+  "sandbox": {
+    "session_id": "01M6A5QM3M3EM5Y69J2D09CPC0",
+    "status": "TERMINATED"
+  },
+  "model_usage": [
+    {
+      "role": "planner",
+      "usage": {
+        "inputTokens": 1789,
+        "outputTokens": 334,
+        "totalTokens": 2123
+      },
+      "model_id": "us.amazon.nova-pro-v1:0"
+    },
+    {
+      "role": "analyst",
+      "usage": {
+        "inputTokens": 1164,
+        "outputTokens": 160,
+        "totalTokens": 1324
+      },
+      "model_id": "us.amazon.nova-pro-v1:0"
+    },
+    {
+      "role": "reviewer",
+      "usage": {
+        "inputTokens": 849,
+        "outputTokens": 272,
+        "totalTokens": 1121
+      },
+      "model_id": "us.amazon.nova-pro-v1:0"
+    }
+  ],
+  "events": [
+    {
+      "stage": "planner",
+      "status": "started",
+      "sequence": 1
+    },
+    {
+      "stage": "planner",
+      "status": "completed",
+      "sequence": 2
+    },
+    {
+      "stage": "analyst",
+      "status": "started",
+      "sequence": 3
+    },
+    {
+      "stage": "analyst",
+      "status": "completed",
+      "sequence": 4
+    },
+    {
+      "stage": "interpreter",
+      "status": "started",
+      "sequence": 5
+    },
+    {
+      "stage": "interpreter",
+      "status": "completed",
+      "sequence": 6
+    },
+    {
+      "stage": "cleanup",
+      "status": "completed",
+      "sequence": 7
+    },
+    {
+      "stage": "numerical_checks",
+      "status": "started",
+      "sequence": 8
+    },
+    {
+      "stage": "numerical_checks",
+      "status": "completed",
+      "sequence": 9
+    },
+    {
+      "stage": "reviewer",
+      "status": "started",
+      "sequence": 10
+    },
+    {
+      "stage": "reviewer",
+      "status": "completed",
+      "sequence": 11
+    },
+    {
+      "stage": "publication",
+      "status": "started",
+      "sequence": 12
+    },
+    {
+      "stage": "publication",
+      "status": "completed",
+      "sequence": 13
+    },
+    {
+      "stage": "analysis",
+      "status": "completed",
+      "sequence": 14
+    }
+  ],
+  "observed_working_stages": [
+    "Orchestrator",
+    "Analyst",
+    "Code Interpreter",
+    "Independent reviewer"
+  ],
+  "animated_handoff_observed": true,
+  "charts": 3,
+  "mobile_overflow": false,
+  "reload_preserved_job": true,
+  "global_admissions": 18,
+  "model_tokens": 4568,
+  "frontend_asset_release": "7668cbb7f51806819516",
+  "renderer": {
+    "react_flow": "12.12.0",
+    "react": "19.3.1",
+    "react_dom": "19.3.1",
+    "esbuild": "0.28.2"
+  },
+  "checks": {
+    "pan_zoom_fit": true,
+    "larger_compact_all_cards_fit": true,
+    "keyboard_node_inspection": true,
+    "viewport_and_selection_survive_events": true,
+    "react_canvas_identity_preserved": true,
+    "reduced_motion_stops_animations": true,
+    "mobile_two_column_layout": true,
+    "same_result_charts": 3,
+    "terminal_stops_animated_handoffs": true,
+    "deletion_unmounts_root": true
+  },
+  "cleanup": {
+    "synthetic_dataset_and_results_deleted": true,
+    "temporary_users_removed": true,
+    "signed_out": true
+  },
+  "python_tests": 79,
+  "node_tests": 23,
+  "build_reproduced_after_npm_ci": true,
+  "dependency_audit": {
+    "info": 0,
+    "low": 0,
+    "moderate": 0,
+    "high": 0,
+    "critical": 0,
+    "total": 0
+  },
+  "artifacts": {
+    "workflow.js": "e721147770d0b12ab62312bc4b4bace97e74c2c59257d61ebc698ac04950c010",
+    "workflow.css": "d2cb3e581dc4f781da4aedc035625037640b9ec4959cd35fc564855f8daf8e91",
+    "workflow-LICENSE.txt": "83925bb978dc797fff70a4a4b2c249d62675bb45ea688a71dddebc276dc6cde7"
+  }
+}
