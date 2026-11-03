@@ -71,7 +71,7 @@ function Workflow({run}){
     });
   }
   const step=inspected.data;
-  const status=graph.complete ? 'Complete':graph.active ? graph.working ? `${graph.nodes.find(n=>n.id===graph.working).data.title} working`:graph.coordinating ? 'Coordinating':'Waiting':run.status==='cancelled' ? 'Cancelled':'Stopped';
+  const status=graph.idle ? 'Ready for your question':graph.complete ? 'Complete':graph.active ? graph.working ? `${graph.nodes.find(n=>n.id===graph.working).data.title} working`:graph.coordinating ? 'Coordinating':'Waiting':run.status==='cancelled' ? 'Cancelled':'Stopped';
   function dismiss(event){if(event.key==='Escape' && (expanded || selectedId)){event.preventDefault();setExpanded(false);setSelected(null);toggle.current?.focus();}}
   return <section ref={host} className={`vds-workflow route-${graph.route} ${expanded ? 'is-expanded':'is-status'}`} aria-label="Agent activity status" onKeyDown={dismiss}>
     <div className="vds-status-bar"><div className="vds-status-hierarchy" role="group" aria-label="Orchestrator and its selected capabilities">
@@ -88,7 +88,7 @@ function Workflow({run}){
           <FitLayout geometryKey={geometryKey}/>
         </ReactFlow>
       </div>
-      <p className="vds-coordination-note">{graph.route==='planning' ? 'The orchestrator is selecting the analysis path.':'Arrows show delegation. Moving dots follow recorded work.'}</p>
+      <p className="vds-coordination-note">{graph.idle ? 'Send a question to reveal its agents, tools and checks.':graph.route==='planning' ? 'The orchestrator is selecting the analysis path.':'Arrows show delegation. Moving dots follow recorded work.'}</p>
       <StepDetail step={step} selected={selectedId} follow={()=>setSelected(null)}/>
     </div>}
     {!expanded && selectedId && <div className="vds-status-inspector"><StepDetail step={step} selected={selectedId} follow={()=>setSelected(null)}/></div>}

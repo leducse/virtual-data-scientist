@@ -65,7 +65,7 @@ function render() {
   const monitored=state.runs.find(active) || runs[0];
   $('#agent-monitor').hidden=false;
   if(monitored){$('#agent-monitor-title').textContent=monitored.question;experience.workflow(monitored,$('#agent-map'));}
-  else {experience.disposeWorkflow($('#agent-map'));$('#agent-map').innerHTML='<p class="agent-ready">Agents <span>Ready for your question</span></p>';}
+  else {$('#agent-monitor-title').textContent='';experience.workflow({id:'workspace-idle',status:'idle',events:[]},$('#agent-map'));}
   $('#agent-monitor').setAttribute('aria-label',monitored ? 'Agent activity: '+monitored.question:'Agent activity');
   updateRoute();
 }

@@ -20,7 +20,7 @@
 .vds-org-panel{--org-bg:#111c22;--org-surface:#1a2a33;--org-raised:#22353f;--org-text:#e8e2da;--org-muted:#a8bcc4;background:var(--org-bg);color:var(--org-text);border:1px solid #304650;border-radius:12px;margin-top:7px;overflow:hidden;animation:vds-panel-in .2s ease-out both}
 .vds-org-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:13px 14px 0;font:600 9px ui-monospace,monospace;letter-spacing:.08em;color:var(--org-muted)}
 .vds-org-status{letter-spacing:0;font:400 10px Inter,system-ui,sans-serif;text-align:right;color:#c2ede6}
-.vds-flow-canvas{height:242px;width:100%;position:relative}.route-planning .vds-flow-canvas{height:125px}
+.vds-flow-canvas{height:242px;width:100%;position:relative}.route-planning .vds-flow-canvas,.route-idle .vds-flow-canvas{height:125px}
 .vds-org-panel .react-flow{background:transparent}.vds-org-panel .react-flow__attribution{background:#111c22;color:#a8bcc4;font-size:8px;border-radius:3px}.vds-org-panel .react-flow__attribution a{color:inherit}
 .vds-org-panel .react-flow__node-activity{background:transparent;border:0}
 .vds-org-card{position:relative;border:1px solid color-mix(in srgb,var(--role) 20%,transparent);border-radius:9px;background:var(--org-surface);color:var(--org-text);overflow:visible;transition:border-color .2s,box-shadow .2s}

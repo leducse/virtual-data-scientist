@@ -20,6 +20,16 @@ checks passed. No new paid analytical run was executed; these checks establish
 viewer behavior, not new model-quality or backend acceptance. See the
 [verification record](docs/deployment/2026-11-02-agent-org-tree-verification.json).
 
+The same-day idle follow-up publishes static release `df882437320af25be7d4`.
+The chat now mounts the viewer before any analysis is selected, replacing the
+legacy ready-text placeholder. Map opens a ready orchestrator with no execution
+events, timers or implied children; the chosen route supplies children after a
+run starts. Thirty-one JavaScript tests and desktop/mobile browser checks pass;
+the hosted JS/CSS/workspace script match the build. The current browser was
+refreshed with its draft preserved and kept at desktop width. Subsequent mobile
+checks use a temporary page, which is closed after verification. See
+[idle follow-up evidence](docs/deployment/2026-11-02-agent-org-tree-idle-verification.json).
+
 The [ranked quality roadmap](docs/plans/agent-activity-and-quality-roadmap.md)
 separates recommended evaluations, failure investigation, calibration, cost,
 durability and caching from deferred RAG/multimodal/fine-tuning work. Those backend

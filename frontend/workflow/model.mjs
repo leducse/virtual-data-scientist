@@ -9,12 +9,13 @@ export const STEPS={
   reviewer:{title:'Independent reviewer',kind:'Agent',icon:'reviewer',description:'Reviews the checked evidence and the limitations before publication.'},
   publication:{title:'Saved evidence',kind:'Output',icon:'publication',description:'Saves the checked result, visualizations and reproducible analysis artifacts.'}
 };
-export const STATUS={coordinating:'Coordinating',started:'Working',completed:'Complete',failed:'Failed',cancelled:'Cancelled',skipped:'Skipped',queued:'Waiting',unrecorded:'Not recorded',interrupted:'Stopped'};
+export const STATUS={ready:'Ready',coordinating:'Coordinating',started:'Working',completed:'Complete',failed:'Failed',cancelled:'Cancelled',skipped:'Skipped',queued:'Waiting',unrecorded:'Not recorded',interrupted:'Stopped'};
 export function duration(ms){return Number.isFinite(ms) && ms>=0 ? `${(ms/1000).toLocaleString('en-US',{maximumFractionDigits:1})}s`:null;}
 export function graphFor(run,{compact=false,mini=false}={}){
-  const events=(run.events || []).filter(e=>e && typeof e.stage==='string').map((e,i)=>({...e,order:i})).sort((a,b)=>(a.sequence || a.order)-(b.sequence || b.order));
+  const idle=run.status==='idle';
+  const events=(idle ? []:run.events || []).filter(e=>e && typeof e.stage==='string').map((e,i)=>({...e,order:i})).sort((a,b)=>(a.sequence || a.order)-(b.sequence || b.order));
   const latest=new Map(events.map(e=>[e.stage,e]));
-  let route=run.plan?.tier;
+  let route=idle ? null:run.plan?.tier;
   if(!['quick','deep'].includes(route))route=latest.has('query') ? 'quick':events.some(e=>['analyst','interpreter','reviewer'].includes(e.stage)) ? 'deep':null;
   const keys=route==='quick' ? ['planner','query','numerical_checks','publication']:route==='deep' ? ['planner','analyst','interpreter','numerical_checks','reviewer','publication']:['planner'];
   const positions=compact ? [[105,0],[0,180],[210,180],[0,350],[210,350],[105,520]]:
@@ -34,12 +35,13 @@ export function graphFor(run,{compact=false,mini=false}={}){
     if(id==='planner'){
       data.planningStatus=planning ? STATUS[planning.status] || 'Not recorded':'Not recorded';
       data.planningDuration=duration(planning?.duration_ms);
-      data.status=run.status==='succeeded' ? 'completed':run.status==='failed' ? 'failed':run.status==='cancelled' ? 'cancelled':
+      data.status=idle ? 'ready':run.status==='succeeded' ? 'completed':run.status==='failed' ? 'failed':run.status==='cancelled' ? 'cancelled':
         !ACTIVE.has(run.status) ? 'interrupted':planning?.status==='completed' || (planning?.status!=='started' && (run.status==='running' || run.status==='reviewing')) ? 'coordinating':status;
       data.statusLabel=data.status==='started' ? 'Planning':STATUS[data.status];
       data.duration=duration(jobEnd?.duration_ms);
       data.startedAt=Number.isFinite(run.created_at) ? run.created_at:data.startedAt;
       data.finishedAt=!ACTIVE.has(run.status) && Number.isFinite(jobEnd?.timestamp) ? jobEnd.timestamp:null;
+      if(idle){data.planningStatus=null;data.startedAt=null;data.description='Ready for your question. The orchestrator selects agents, tools and checks after planning an analysis.';}
     }
     data.mini=mini;
     const nodeWidth=compact ? 62:108, gap=compact ? 8:16, span=(keys.length-1)*(nodeWidth+gap)-gap;
@@ -58,7 +60,7 @@ export function graphFor(run,{compact=false,mini=false}={}){
       style:{stroke:working ? '#146659':completed ? '#609482':'#c3cfca',strokeWidth:working ? 2.6:1.8},
       markerEnd:{type:'arrowclosed',color:working ? '#146659':'#9eb6aa'},selectable:false};
   });
-  return {route:route || 'planning',nodes,edges,working:nodes.slice(1).find(n=>n.data.status==='started')?.id || (nodes[0].data.status==='started' ? 'planner':null),coordinating:nodes[0].data.status==='coordinating',
+  return {idle,route:idle ? 'idle':route || 'planning',nodes,edges,working:nodes.slice(1).find(n=>n.data.status==='started')?.id || (nodes[0].data.status==='started' ? 'planner':null),coordinating:nodes[0].data.status==='coordinating',
     complete:run.status==='succeeded',active:ACTIVE.has(run.status)};
 }
 

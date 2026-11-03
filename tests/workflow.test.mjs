@@ -2,6 +2,16 @@ import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {graphFor,duration,outerBranchPath} from '../frontend/workflow/model.mjs';
 
+test('the idle workspace exposes a ready orchestrator without claiming execution or choosing a route',()=>{
+  const graph=graphFor({status:'idle',events:[]},{compact:true,mini:true});
+  assert.equal(graph.idle,true);assert.equal(graph.route,'idle');
+  assert.deepEqual(graph.nodes.map(n=>n.id),['planner']);
+  const root=graph.nodes[0].data;
+  assert.equal(root.status,'ready');assert.equal(root.statusLabel,'Ready');
+  assert.equal(root.duration,null);assert.equal(root.startedAt,null);assert.equal(root.planningStatus,null);
+  assert.equal(graph.edges.length,0);assert.equal(graph.working,null);assert.equal(graph.active,false);assert.equal(graph.complete,false);
+});
+
 test('an undecided route shows only the orchestrator without inventing downstream progress',()=>{
   const graph=graphFor({status:'running',events:[{stage:'planner',status:'started',sequence:1,timestamp:123}]});
   assert.equal(graph.route,'planning');assert.equal(graph.nodes.length,1);assert.equal(graph.edges.length,0);
